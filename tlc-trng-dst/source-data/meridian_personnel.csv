@@ -1,0 +1,41 @@
+id,name,title,dept,email,mobile,office,function
+P001,Marcus Chen,Director of Operations,Operations,mchen@meridian-demo.com,555-0101,555-2001,"Director-level decision-maker for plant operations, production planning, and operational continuity."
+P002,Robert Nakashima,Operations Manager,Operations,rnakashima@meridian-demo.com,555-0102,555-2002,Day-to-day operations management; coordination across production lines and shifts.
+P003,Carla Mendez,Production Supervisor (Plant A),Operations,cmendez@meridian-demo.com,555-0103,555-2003,Plant A production floor supervisor; primary contact for Plant A line issues.
+P004,Devon Pritchard,Production Supervisor (Plant B),Operations,dpritchard@meridian-demo.com,555-0104,555-2004,Plant B production floor supervisor; primary contact for Plant B line issues.
+P005,Maya Hollander,"Shift Lead, Distribution",Operations,mhollander@meridian-demo.com,555-0105,555-2005,Lead shift supervisor for distribution operations; warehouse-side ops coordination.
+P006,Frank Lebron,Quality Control Manager,Operations,flebron@meridian-demo.com,555-0106,555-2006,Quality programs across production lines; non-conformance investigations.
+P007,Tara Levinson,Operations Planning Lead,Operations,tlevinson@meridian-demo.com,555-0107,555-2007,Operational planning and scheduling; production sequencing during disruptions.
+P008,Priya Ramaswamy,Director of Engineering & Maintenance,Engineering & Maintenance,pramaswamy@meridian-demo.com,555-0108,555-2008,"Director-level lead for engineering, reliability, and asset maintenance."
+P009,Marcus Allenby,Senior Maintenance Engineer,Engineering & Maintenance,mallenby@meridian-demo.com,555-0109,555-2009,Senior maintenance engineering and damage assessment lead.
+P010,Lin Garrett,Reliability Engineer,Engineering & Maintenance,lgarrett@meridian-demo.com,555-0110,555-2010,"Reliability engineering, root-cause analysis, asset health programs."
+P011,Patrick Sullivan,Mechanical Maintenance Lead,Engineering & Maintenance,psullivan@meridian-demo.com,555-0111,555-2011,Mechanical systems maintenance lead; rotating equipment SME.
+P012,Yuki Stevenson,Electrical Maintenance Lead,Engineering & Maintenance,ystevenson@meridian-demo.com,555-0112,555-2012,Electrical maintenance lead; power infrastructure SME.
+P013,David Okafor,Chief Information Officer,Information Technology,dokafor@meridian-demo.com,555-0113,555-2013,"Director-level lead for IT strategy, infrastructure, and cybersecurity."
+P014,Rohan Bhatia,IT Operations Manager,Information Technology,rbhatia@meridian-demo.com,555-0114,555-2014,IT operations and service delivery management.
+P015,Tasha Reinhardt,Network Administrator,Information Technology,treinhardt@meridian-demo.com,555-0115,555-2015,"Network operations; LAN/WAN, switching, routing, ISP coordination."
+P016,Sergio Marin,Systems Administrator,Information Technology,smarin@meridian-demo.com,555-0116,555-2016,"Server, AD, virtualization, and core systems administration."
+P017,Avery Linden,Cybersecurity Analyst,Information Technology,alinden@meridian-demo.com,555-0117,555-2017,"Security monitoring, incident response, vulnerability management."
+P018,Naomi Westbrook,Help Desk Lead,Information Technology,nwestbrook@meridian-demo.com,555-0118,555-2018,End-user support and Tier 1/2 escalation lead.
+P019,Helena Vasquez,Director of Facilities,Facilities Management,hvasquez@meridian-demo.com,555-0119,555-2019,"Director-level lead for facilities, utilities, HVAC, and physical plant."
+P020,Charles Pemberton,Building Maintenance Supervisor,Facilities Management,cpemberton@meridian-demo.com,555-0120,555-2020,Building maintenance supervisor across HQ and operations campus.
+P021,Renata Fiorelli,HVAC Technician Lead,Facilities Management,rfiorelli@meridian-demo.com,555-0121,555-2021,HVAC and building automation technician lead.
+P022,Thomas Bradshaw,Director of Security,Security,tbradshaw@meridian-demo.com,555-0122,555-2022,"Director-level lead for physical security, investigations, and access control."
+P023,Walter Brennan,Security Operations Manager,Security,wbrennan@meridian-demo.com,555-0123,555-2023,Day-to-day security operations and command center oversight.
+P024,Imani Caldwell,Lead Security Officer,Security,icaldwell@meridian-demo.com,555-0124,555-2024,Lead security officer; shift coordination across all sites.
+P025,Bo Zhang,Investigations Lead,Security,bzhang@meridian-demo.com,555-0125,555-2025,Internal investigations and incident review lead.
+P026,Aisha Greene,Director of Human Resources,Human Resources,agreene@meridian-demo.com,555-0126,555-2026,"Director-level lead for HR strategy, employee relations, and total rewards."
+P027,Lauren Kowalski,HR Business Partner,Human Resources,lkowalski@meridian-demo.com,555-0127,555-2027,HR business partner supporting Operations and Engineering.
+P028,Danielle Park,Benefits Manager,Human Resources,dpark@meridian-demo.com,555-0128,555-2028,Benefits administration and total rewards lead.
+P029,Stephen Adair,Training Coordinator,Human Resources,sadair@meridian-demo.com,555-0129,555-2029,Training program coordination; LMS and compliance training lead.
+P030,Eleanor Whitfield,Chief Financial Officer,Finance,ewhitfield@meridian-demo.com,555-0130,555-2030,"Director-level lead for finance, accounting, and treasury."
+P031,Marcus Whittaker,Controller,Finance,mwhittaker@meridian-demo.com,555-0131,555-2031,"Accounting controller; close, reporting, and audit lead."
+P032,Quinn Saraiva,AP/AR Manager,Finance,qsaraiva@meridian-demo.com,555-0132,555-2032,Accounts payable and receivable management; vendor payments.
+P033,Hannah Brewer,Payroll Manager,Finance,hbrewer@meridian-demo.com,555-0133,555-2033,Payroll operations lead; biweekly and exception-based runs.
+P034,Jacob Sterling,Director of Emergency Management,Emergency Management,jsterling@meridian-demo.com,555-0134,555-2034,"Director-level lead for emergency management, business continuity, and EOC."
+P035,Erica Galvan,Emergency Management Specialist,Emergency Management,egalvan@meridian-demo.com,555-0135,555-2035,"EM planning, exercises, and mass notification administration."
+P036,Matthew Hennessey,Business Continuity Coordinator,Emergency Management,mhennessey@meridian-demo.com,555-0136,555-2036,Business continuity planning and BIA program lead.
+P037,Linnea Bergstrom,Director of Supply Chain,Supply Chain,lbergstrom@meridian-demo.com,555-0137,555-2037,"Director-level lead for procurement, logistics, and inventory."
+P038,Felix Yamada,Procurement Manager,Supply Chain,fyamada@meridian-demo.com,555-0138,555-2038,Strategic sourcing and procurement operations.
+P039,Grace Thoreau,Logistics Coordinator,Supply Chain,gthoreau@meridian-demo.com,555-0139,555-2039,Inbound/outbound logistics coordination.
+P040,Otis Kovacs,Inventory Manager,Supply Chain,okovacs@meridian-demo.com,555-0140,555-2040,"Inventory accuracy, cycle counts, and warehouse layout."

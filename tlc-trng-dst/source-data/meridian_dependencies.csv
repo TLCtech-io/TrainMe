@@ -1,0 +1,167 @@
+source_id,target_id,target_type,target_name
+S001,S021,System,Access Control / Badge System
+S001,S002,System,Backup Generator System
+S001,F005,Facility,Distribution Warehouse (Main)
+S001,F006,Facility,Distribution Warehouse (Overflow)
+S001,S017,System,ERP System
+S001,S011,System,Email System (M365)
+S001,S010,System,Fire Alarm & Suppression Control
+S001,F008,Facility,Fleet Operations Hub
+S001,S020,System,HVAC Control System
+S001,F001,Facility,Headquarters Building
+S001,F013,Facility,Loading Dock A
+S001,F014,Facility,Loading Dock B
+S001,F007,Facility,Maintenance Shop
+S001,S009,System,Manufacturing Execution System (MES)
+S001,F002,Facility,Operations Center / EOC
+S001,F009,Facility,Primary Data Center
+S001,F003,Facility,Production Plant A
+S001,F004,Facility,Production Plant B
+S001,S023,System,Public Address System
+S001,S008,System,SCADA / Plant Control
+S001,F011,Facility,Security Command Center
+S001,F012,Facility,Training Center
+S001,S003,System,Uninterruptible Power Supply (UPS)
+S001,S022,System,Video Surveillance (CCTV)
+S001,S013,System,VoIP Phone System
+S001,S018,System,Warehouse Management System (WMS)
+S001,F015,Facility,Wellness Clinic
+S002,S010,System,Fire Alarm & Suppression Control
+S002,S014,System,Mass Notification Platform
+S002,F002,Facility,Operations Center / EOC
+S002,F009,Facility,Primary Data Center
+S002,F011,Facility,Security Command Center
+S003,S004,System,Active Directory
+S003,S005,System,Network Core Switching
+S003,S008,System,SCADA / Plant Control
+S005,S021,System,Access Control / Badge System
+S005,S004,System,Active Directory
+S005,S028,System,Backup & Recovery System
+S005,S031,System,Customer Portal
+S005,S026,System,Document Management System
+S005,S017,System,ERP System
+S005,S011,System,Email System (M365)
+S005,S025,System,HRIS
+S005,S030,System,Help Desk / Ticketing System
+S005,S007,System,Internet Service (Backup ISP)
+S005,S006,System,Internet Service (Primary ISP)
+S005,S027,System,Network File Storage
+S005,S019,System,Transportation Management System (TMS)
+S005,S012,System,VPN
+S005,S032,System,Vendor Portal
+S005,S029,System,Video Conferencing Platform
+S005,S022,System,Video Surveillance (CCTV)
+S005,S034,System,Visitor Management System
+S005,S013,System,VoIP Phone System
+S005,S018,System,Warehouse Management System (WMS)
+S005,S035,System,Wi-Fi (Guest)
+S004,S028,System,Backup & Recovery System
+S004,S026,System,Document Management System
+S004,S017,System,ERP System
+S004,S011,System,Email System (M365)
+S004,S025,System,HRIS
+S004,S030,System,Help Desk / Ticketing System
+S004,S027,System,Network File Storage
+S004,S033,System,Print Management Service
+S004,S019,System,Transportation Management System (TMS)
+S004,S012,System,VPN
+S004,S029,System,Video Conferencing Platform
+S004,S018,System,Warehouse Management System (WMS)
+S006,S016,System,Cellular Service
+S006,S031,System,Customer Portal
+S006,S011,System,Email System (M365)
+S006,S012,System,VPN
+S006,S032,System,Vendor Portal
+S006,S029,System,Video Conferencing Platform
+S006,S035,System,Wi-Fi (Guest)
+S007,S011,System,Email System (M365)
+S007,S012,System,VPN
+S013,1LS02,Process,Emergency Evacuation Coordination
+S013,3CA03,Process,Internal Communications
+S013,1LS01,Process,Mass Notification & Alerting
+S013,1LS03,Process,Medical Emergency Response
+S011,3CA03,Process,Internal Communications
+S011,3CA01,Process,Payroll Processing
+S011,4OT03,Process,Public Relations
+S011,4OT02,Process,Vendor Onboarding
+S011,3CA02,Process,Vendor Payments
+S014,1LS02,Process,Emergency Evacuation Coordination
+S014,1LS05,Process,Hazmat Response
+S014,1LS01,Process,Mass Notification & Alerting
+S015,1LS04,Process,Fire Suppression Response
+S015,1LS05,Process,Hazmat Response
+S015,2CO01,Process,Production Operations
+S015,2CO07,Process,Security Operations
+S016,3CA03,Process,Internal Communications
+S016,1LS01,Process,Mass Notification & Alerting
+S016,1LS03,Process,Medical Emergency Response
+S023,1LS02,Process,Emergency Evacuation Coordination
+S023,1LS01,Process,Mass Notification & Alerting
+S008,2CO06,Process,Equipment Maintenance Operations
+S008,2CO03,Process,Plant Restart Sequencing
+S008,2CO01,Process,Production Operations
+S008,2CO04,Process,Quality Control & Inspection
+S009,2CO03,Process,Plant Restart Sequencing
+S009,2CO01,Process,Production Operations
+S009,2CO04,Process,Quality Control & Inspection
+F003,2CO01,Process,Production Operations
+F003,2CO04,Process,Quality Control & Inspection
+F004,2CO01,Process,Production Operations
+F004,2CO04,Process,Quality Control & Inspection
+F007,2CO02,Process,Damage Assessment
+F007,2CO06,Process,Equipment Maintenance Operations
+2CO02,2CO06,Process,Equipment Maintenance Operations
+2CO02,2CO03,Process,Plant Restart Sequencing
+2CO03,2CO01,Process,Production Operations
+S018,2CO08,Process,Customer Order Fulfillment
+S018,2CO05,Process,Shipping & Receiving
+S018,2CO09,Process,Supply Chain Coordination
+S019,2CO10,Process,Inbound Logistics
+S019,2CO05,Process,Shipping & Receiving
+F005,2CO08,Process,Customer Order Fulfillment
+F005,2CO05,Process,Shipping & Receiving
+F005,2CO09,Process,Supply Chain Coordination
+F006,2CO05,Process,Shipping & Receiving
+F008,2CO10,Process,Inbound Logistics
+F008,2CO05,Process,Shipping & Receiving
+F013,2CO05,Process,Shipping & Receiving
+F014,2CO05,Process,Shipping & Receiving
+2CO09,2CO08,Process,Customer Order Fulfillment
+2CO10,2CO09,Process,Supply Chain Coordination
+2CO05,2CO08,Process,Customer Order Fulfillment
+S017,2CO08,Process,Customer Order Fulfillment
+S017,3CA06,Process,Financial Reporting
+S017,3CA01,Process,Payroll Processing
+S017,2CO09,Process,Supply Chain Coordination
+S017,3CA02,Process,Vendor Payments
+S010,1LS04,Process,Fire Suppression Response
+S010,1LS05,Process,Hazmat Response
+S021,2CO07,Process,Security Operations
+S021,4OT04,Process,Visitor Management
+S022,2CO07,Process,Security Operations
+S034,4OT04,Process,Visitor Management
+F011,1LS04,Process,Fire Suppression Response
+F011,2CO07,Process,Security Operations
+S024,3CA01,Process,Payroll Processing
+S025,3CA04,Process,HR Records Management
+S025,3CA01,Process,Payroll Processing
+S026,3CA06,Process,Financial Reporting
+S026,3CA04,Process,HR Records Management
+S026,3CA05,Process,Regulatory Reporting
+F001,3CA06,Process,Financial Reporting
+F001,3CA04,Process,HR Records Management
+F001,3CA01,Process,Payroll Processing
+F001,3CA02,Process,Vendor Payments
+F002,1LS02,Process,Emergency Evacuation Coordination
+F002,1LS05,Process,Hazmat Response
+F002,1LS01,Process,Mass Notification & Alerting
+F009,S004,System,Active Directory
+F009,S017,System,ERP System
+F009,S005,System,Network Core Switching
+F009,S018,System,Warehouse Management System (WMS)
+F010,S028,System,Backup & Recovery System
+F012,4OT01,Process,Training & Development
+F015,1LS03,Process,Medical Emergency Response
+S020,F009,Facility,Primary Data Center
+S020,F003,Facility,Production Plant A
+S020,F004,Facility,Production Plant B

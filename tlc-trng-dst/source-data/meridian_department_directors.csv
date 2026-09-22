@@ -1,0 +1,10 @@
+dept,personnel_id,name,title,email,mobile,office
+Operations,P001,Marcus Chen,Director of Operations,mchen@meridian-demo.com,555-0101,555-2001
+Engineering & Maintenance,P008,Priya Ramaswamy,Director of Engineering & Maintenance,pramaswamy@meridian-demo.com,555-0108,555-2008
+Information Technology,P013,David Okafor,Chief Information Officer,dokafor@meridian-demo.com,555-0113,555-2013
+Facilities Management,P019,Helena Vasquez,Director of Facilities,hvasquez@meridian-demo.com,555-0119,555-2019
+Security,P022,Thomas Bradshaw,Director of Security,tbradshaw@meridian-demo.com,555-0122,555-2022
+Human Resources,P026,Aisha Greene,Director of Human Resources,agreene@meridian-demo.com,555-0126,555-2026
+Finance,P030,Eleanor Whitfield,Chief Financial Officer,ewhitfield@meridian-demo.com,555-0130,555-2030
+Emergency Management,P034,Jacob Sterling,Director of Emergency Management,jsterling@meridian-demo.com,555-0134,555-2034
+Supply Chain,P037,Linnea Bergstrom,Director of Supply Chain,lbergstrom@meridian-demo.com,555-0137,555-2037

@@ -1,0 +1,74 @@
+{
+  "Operations": {
+    "name": "Marcus Chen",
+    "title": "Director of Operations",
+    "phone": "555-2001",
+    "email": "mchen@tlctrng.com",
+    "mobile": "555-0101",
+    "_personnelName": "Marcus Chen"
+  },
+  "Engineering & Maintenance": {
+    "name": "Priya Ramaswamy",
+    "title": "Director of Engineering & Maintenance",
+    "phone": "555-2008",
+    "email": "pramaswamy@tlctrng.com",
+    "mobile": "555-0108",
+    "_personnelName": "Priya Ramaswamy"
+  },
+  "Information Technology": {
+    "name": "David Okafor",
+    "title": "Chief Information Officer",
+    "phone": "555-2013",
+    "email": "dokafor@tlctrng.com",
+    "mobile": "555-0113",
+    "_personnelName": "David Okafor"
+  },
+  "Facilities Management": {
+    "name": "Helena Vasquez",
+    "title": "Director of Facilities",
+    "phone": "555-2019",
+    "email": "hvasquez@tlctrng.com",
+    "mobile": "555-0119",
+    "_personnelName": "Helena Vasquez"
+  },
+  "Security": {
+    "name": "Thomas Bradshaw",
+    "title": "Director of Security",
+    "phone": "555-2022",
+    "email": "tbradshaw@tlctrng.com",
+    "mobile": "555-0122",
+    "_personnelName": "Thomas Bradshaw"
+  },
+  "Human Resources": {
+    "name": "Aisha Greene",
+    "title": "Director of Human Resources",
+    "phone": "555-2026",
+    "email": "agreene@tlctrng.com",
+    "mobile": "555-0126",
+    "_personnelName": "Aisha Greene"
+  },
+  "Finance": {
+    "name": "Eleanor Whitfield",
+    "title": "Chief Financial Officer",
+    "phone": "555-2030",
+    "email": "ewhitfield@tlctrng.com",
+    "mobile": "555-0130",
+    "_personnelName": "Eleanor Whitfield"
+  },
+  "Emergency Management": {
+    "name": "Jacob Sterling",
+    "title": "Director of Emergency Management",
+    "phone": "555-2034",
+    "email": "jsterling@tlctrng.com",
+    "mobile": "555-0134",
+    "_personnelName": "Jacob Sterling"
+  },
+  "Supply Chain": {
+    "name": "Linnea Bergstrom",
+    "title": "Director of Supply Chain",
+    "phone": "555-2037",
+    "email": "lbergstrom@tlctrng.com",
+    "mobile": "555-0137",
+    "_personnelName": "Linnea Bergstrom"
+  }
+}

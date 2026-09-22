@@ -1,0 +1,452 @@
+{
+  "1LS01": {
+    "name": "Mass Notification & Alerting",
+    "type": "Process",
+    "dept": "Emergency Management",
+    "score": 90
+  },
+  "1LS02": {
+    "name": "Emergency Evacuation Coordination",
+    "type": "Process",
+    "dept": "Emergency Management",
+    "score": 88
+  },
+  "1LS03": {
+    "name": "Medical Emergency Response",
+    "type": "Process",
+    "dept": "Human Resources",
+    "score": 87
+  },
+  "1LS04": {
+    "name": "Fire Suppression Response",
+    "type": "Process",
+    "dept": "Security",
+    "score": 86
+  },
+  "1LS05": {
+    "name": "Hazmat Response",
+    "type": "Process",
+    "dept": "Emergency Management",
+    "score": 84
+  },
+  "2CO01": {
+    "name": "Production Operations",
+    "type": "Process",
+    "dept": "Operations",
+    "score": 70
+  },
+  "2CO02": {
+    "name": "Damage Assessment",
+    "type": "Process",
+    "dept": "Engineering & Maintenance",
+    "score": 73
+  },
+  "2CO03": {
+    "name": "Plant Restart Sequencing",
+    "type": "Process",
+    "dept": "Operations",
+    "score": 69
+  },
+  "2CO04": {
+    "name": "Quality Control & Inspection",
+    "type": "Process",
+    "dept": "Operations",
+    "score": 66
+  },
+  "2CO05": {
+    "name": "Shipping & Receiving",
+    "type": "Process",
+    "dept": "Supply Chain",
+    "score": 66
+  },
+  "2CO06": {
+    "name": "Equipment Maintenance Operations",
+    "type": "Process",
+    "dept": "Engineering & Maintenance",
+    "score": 62
+  },
+  "2CO07": {
+    "name": "Security Operations",
+    "type": "Process",
+    "dept": "Security",
+    "score": 61
+  },
+  "2CO08": {
+    "name": "Customer Order Fulfillment",
+    "type": "Process",
+    "dept": "Operations",
+    "score": 60
+  },
+  "2CO09": {
+    "name": "Supply Chain Coordination",
+    "type": "Process",
+    "dept": "Supply Chain",
+    "score": 60
+  },
+  "2CO10": {
+    "name": "Inbound Logistics",
+    "type": "Process",
+    "dept": "Supply Chain",
+    "score": 60
+  },
+  "3CA01": {
+    "name": "Payroll Processing",
+    "type": "Process",
+    "dept": "Finance",
+    "score": 45
+  },
+  "3CA02": {
+    "name": "Vendor Payments",
+    "type": "Process",
+    "dept": "Finance",
+    "score": 44
+  },
+  "3CA03": {
+    "name": "Internal Communications",
+    "type": "Process",
+    "dept": "Human Resources",
+    "score": 42
+  },
+  "3CA04": {
+    "name": "HR Records Management",
+    "type": "Process",
+    "dept": "Human Resources",
+    "score": 40
+  },
+  "3CA05": {
+    "name": "Regulatory Reporting",
+    "type": "Process",
+    "dept": "Finance",
+    "score": 39
+  },
+  "3CA06": {
+    "name": "Financial Reporting",
+    "type": "Process",
+    "dept": "Finance",
+    "score": 38
+  },
+  "4OT01": {
+    "name": "Training & Development",
+    "type": "Process",
+    "dept": "Human Resources",
+    "score": 25
+  },
+  "4OT02": {
+    "name": "Vendor Onboarding",
+    "type": "Process",
+    "dept": "Supply Chain",
+    "score": 24
+  },
+  "4OT03": {
+    "name": "Public Relations",
+    "type": "Process",
+    "dept": "Human Resources",
+    "score": 22
+  },
+  "4OT04": {
+    "name": "Visitor Management",
+    "type": "Process",
+    "dept": "Security",
+    "score": 20
+  },
+  "S001": {
+    "name": "Primary Power Grid",
+    "type": "System",
+    "dept": "Facilities Management",
+    "score": 90
+  },
+  "S002": {
+    "name": "Backup Generator System",
+    "type": "System",
+    "dept": "Facilities Management",
+    "score": 90
+  },
+  "S003": {
+    "name": "Uninterruptible Power Supply (UPS)",
+    "type": "System",
+    "dept": "Information Technology",
+    "score": 90
+  },
+  "S004": {
+    "name": "Active Directory",
+    "type": "System",
+    "dept": "Information Technology",
+    "score": 85
+  },
+  "S005": {
+    "name": "Network Core Switching",
+    "type": "System",
+    "dept": "Information Technology",
+    "score": 90
+  },
+  "S006": {
+    "name": "Internet Service (Primary ISP)",
+    "type": "System",
+    "dept": "Information Technology",
+    "score": 80
+  },
+  "S007": {
+    "name": "Internet Service (Backup ISP)",
+    "type": "System",
+    "dept": "Information Technology",
+    "score": 75
+  },
+  "S008": {
+    "name": "SCADA / Plant Control",
+    "type": "System",
+    "dept": "Operations",
+    "score": 74
+  },
+  "S009": {
+    "name": "Manufacturing Execution System (MES)",
+    "type": "System",
+    "dept": "Operations",
+    "score": 73
+  },
+  "S010": {
+    "name": "Fire Alarm & Suppression Control",
+    "type": "System",
+    "dept": "Security",
+    "score": 92
+  },
+  "S011": {
+    "name": "Email System (M365)",
+    "type": "System",
+    "dept": "Information Technology",
+    "score": 49
+  },
+  "S012": {
+    "name": "VPN",
+    "type": "System",
+    "dept": "Information Technology",
+    "score": 68
+  },
+  "S013": {
+    "name": "VoIP Phone System",
+    "type": "System",
+    "dept": "Information Technology",
+    "score": 72
+  },
+  "S014": {
+    "name": "Mass Notification Platform",
+    "type": "System",
+    "dept": "Emergency Management",
+    "score": 93
+  },
+  "S015": {
+    "name": "Two-Way Radio Network",
+    "type": "System",
+    "dept": "Operations",
+    "score": 72
+  },
+  "S016": {
+    "name": "Cellular Service",
+    "type": "System",
+    "dept": "Information Technology",
+    "score": 70
+  },
+  "S017": {
+    "name": "ERP System",
+    "type": "System",
+    "dept": "Finance",
+    "score": 72
+  },
+  "S018": {
+    "name": "Warehouse Management System (WMS)",
+    "type": "System",
+    "dept": "Supply Chain",
+    "score": 72
+  },
+  "S019": {
+    "name": "Transportation Management System (TMS)",
+    "type": "System",
+    "dept": "Supply Chain",
+    "score": 72
+  },
+  "S020": {
+    "name": "HVAC Control System",
+    "type": "System",
+    "dept": "Facilities Management",
+    "score": 87
+  },
+  "S021": {
+    "name": "Access Control / Badge System",
+    "type": "System",
+    "dept": "Security",
+    "score": 71
+  },
+  "S022": {
+    "name": "Video Surveillance (CCTV)",
+    "type": "System",
+    "dept": "Security",
+    "score": 69
+  },
+  "S023": {
+    "name": "Public Address System",
+    "type": "System",
+    "dept": "Facilities Management",
+    "score": 91
+  },
+  "S024": {
+    "name": "Time Clock System",
+    "type": "System",
+    "dept": "Human Resources",
+    "score": 46
+  },
+  "S025": {
+    "name": "HRIS",
+    "type": "System",
+    "dept": "Human Resources",
+    "score": 44
+  },
+  "S026": {
+    "name": "Document Management System",
+    "type": "System",
+    "dept": "Information Technology",
+    "score": 45
+  },
+  "S027": {
+    "name": "Network File Storage",
+    "type": "System",
+    "dept": "Information Technology",
+    "score": 44
+  },
+  "S028": {
+    "name": "Backup & Recovery System",
+    "type": "System",
+    "dept": "Information Technology",
+    "score": 42
+  },
+  "S029": {
+    "name": "Video Conferencing Platform",
+    "type": "System",
+    "dept": "Information Technology",
+    "score": 24
+  },
+  "S030": {
+    "name": "Help Desk / Ticketing System",
+    "type": "System",
+    "dept": "Information Technology",
+    "score": 22
+  },
+  "S031": {
+    "name": "Customer Portal",
+    "type": "System",
+    "dept": "Operations",
+    "score": 40
+  },
+  "S032": {
+    "name": "Vendor Portal",
+    "type": "System",
+    "dept": "Supply Chain",
+    "score": 22
+  },
+  "S033": {
+    "name": "Print Management Service",
+    "type": "System",
+    "dept": "Information Technology",
+    "score": 20
+  },
+  "S034": {
+    "name": "Visitor Management System",
+    "type": "System",
+    "dept": "Security",
+    "score": 24
+  },
+  "S035": {
+    "name": "Wi-Fi (Guest)",
+    "type": "System",
+    "dept": "Information Technology",
+    "score": 20
+  },
+  "F001": {
+    "name": "Headquarters Building",
+    "type": "Facility",
+    "dept": "Facilities Management",
+    "score": 47
+  },
+  "F002": {
+    "name": "Operations Center / EOC",
+    "type": "Facility",
+    "dept": "Emergency Management",
+    "score": 93
+  },
+  "F003": {
+    "name": "Production Plant A",
+    "type": "Facility",
+    "dept": "Operations",
+    "score": 72
+  },
+  "F004": {
+    "name": "Production Plant B",
+    "type": "Facility",
+    "dept": "Operations",
+    "score": 71
+  },
+  "F005": {
+    "name": "Distribution Warehouse (Main)",
+    "type": "Facility",
+    "dept": "Supply Chain",
+    "score": 72
+  },
+  "F006": {
+    "name": "Distribution Warehouse (Overflow)",
+    "type": "Facility",
+    "dept": "Supply Chain",
+    "score": 70
+  },
+  "F007": {
+    "name": "Maintenance Shop",
+    "type": "Facility",
+    "dept": "Engineering & Maintenance",
+    "score": 74
+  },
+  "F008": {
+    "name": "Fleet Operations Hub",
+    "type": "Facility",
+    "dept": "Supply Chain",
+    "score": 72
+  },
+  "F009": {
+    "name": "Primary Data Center",
+    "type": "Facility",
+    "dept": "Information Technology",
+    "score": 90
+  },
+  "F010": {
+    "name": "Backup Data Center",
+    "type": "Facility",
+    "dept": "Information Technology",
+    "score": 70
+  },
+  "F011": {
+    "name": "Security Command Center",
+    "type": "Facility",
+    "dept": "Security",
+    "score": 92
+  },
+  "F012": {
+    "name": "Training Center",
+    "type": "Facility",
+    "dept": "Human Resources",
+    "score": 26
+  },
+  "F013": {
+    "name": "Loading Dock A",
+    "type": "Facility",
+    "dept": "Supply Chain",
+    "score": 71
+  },
+  "F014": {
+    "name": "Loading Dock B",
+    "type": "Facility",
+    "dept": "Supply Chain",
+    "score": 70
+  },
+  "F015": {
+    "name": "Wellness Clinic",
+    "type": "Facility",
+    "dept": "Human Resources",
+    "score": 89
+  }
+}
