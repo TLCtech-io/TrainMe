@@ -1,0 +1,50 @@
+# ---- Dependencies ----
+node_modules/
+.pnp
+.pnp.js
+
+# ---- Build output ----
+dist/
+dist-ssr/
+build/
+*.local
+
+# ---- Environment / secrets ----
+# Never commit real credentials or AWS config
+.env
+.env.*
+!.env.example
+*.pem
+aws-exports.js
+
+# ---- SCORM / course content (belongs in S3, not Git) ----
+# Large course packages and any unzipped content
+*.zip
+scorm-packages/
+content/
+uploads/
+# Keep the small verified reference note if you add one, but not the zip itself
+
+# ---- Editor / OS ----
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+Thumbs.db
+
+# ---- Logs ----
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---- Test / coverage ----
+coverage/
+.nyc_output/
