@@ -21,5 +21,6 @@ SCORM packages are gitignored (they belong in S3, not Git).
 cd lms-app
 npm install
 npm run dev     # http://localhost:5173 (sandbox accounts: student@, instructor@, admin@demo.test / demo)
-npm test        # headless proof of the contract and the student vertical
+npm test        # headless proof of the contract, the single table, and the student vertical
+npm run e2e     # browser walkthrough (first run: npx playwright install chromium)
 ```

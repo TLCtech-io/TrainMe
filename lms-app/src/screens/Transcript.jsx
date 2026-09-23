@@ -83,9 +83,9 @@ export default function Transcript({ api, profile }) {
               <div>
                 <StatusPill status={r.status} />
               </div>
-              <div>{r.score ?? '—'}</div>
+              <div>{r.score ?? '-'}</div>
               <div style={{ color: T.neutral500 }}>
-                {r.completedAt ? new Date(r.completedAt).toLocaleDateString() : '—'}
+                {r.completedAt ? new Date(r.completedAt).toLocaleDateString() : '-'}
               </div>
             </div>
           ))}

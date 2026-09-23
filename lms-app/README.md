@@ -27,11 +27,22 @@ Uses Node's built-in test runner (no extra dependencies). It proves, without a b
 - **Student vertical:** enroll, bookmark commit, leave and resume from `cmi.suspend_data`, completion, certificate with identity from the session, SES stand-in email, the Review path (no re-issue, no hang), and one transcript line per course.
 - **Identity isolation:** one learner never sees another's enrollments, CMI, certificates, or email.
 - **SCORM runtime:** `window.API` defaults, commit copies, `snapshot()` surviving teardown (playbook 10.1), and StrictMode double-install safety.
+- **Single table:** records land under the playbook's PK/SK keys, the roster (GSI1) and catalog (GSI2) are index queries, the store has no scan, and reads return copies.
 - **Config:** required sections, hex tokens, the TLC_TRNG palette, and every sandbox account shown on sign-in actually signing in.
 
-## Smoke test (browser)
+## Browser tests
 
-With `npm run dev` running, walk:
+```bash
+npx playwright install chromium   # first run on a machine only
+npm run e2e        # against the dev server (React StrictMode on)
+npm run e2e:prod   # builds, then runs against the production build
+```
+
+Playwright starts the server itself (or reuses one already on the port) and walks the full student path, the instructor view, and a phone-width sign-in. Failures leave a trace in `test-results/` (gitignored); open it with `npx playwright show-trace <path>`.
+
+## Smoke test (by hand)
+
+`npm run e2e` automates this list. To walk it yourself with `npm run dev` running:
 
 1. Sign-in card shows the TLC_TRNG wordmark, "Learning platform - sandbox - v0.2", and the sandbox accounts.
 2. A wrong password shows "Incorrect email or password."
@@ -68,8 +79,8 @@ lms-app/
     api/
       index.js            createApi() (the single swap point) and API_CONTRACT
       mockApi.js          the backend contract: method signatures + mock bodies
-      mockStore.js        in-memory tables and the record key format
-      seed.js             mock Cognito users and COURSE# items
+      mockStore.js        the in-memory single table: key builders, get/put/query/queryIndex, no scan
+      seed.js             mock Cognito users, COURSE# items, and ITEM# content items
     scorm/
       runtime.js          SCORM 1.2 window.API mock (scorm-again stand-in)
       mockLessons.js      stand-in SCO slides (replaced by an S3 iframe in Sprint 4)
@@ -79,22 +90,23 @@ lms-app/
     screens/
       SignIn.jsx  Catalog.jsx  CoursePlayer.jsx  CompletionPanel.jsx  Transcript.jsx
   test/                   headless tests (npm test)
+  e2e/                    browser tests (npm run e2e)
+  playwright.config.js    e2e server setup (dev or production preview)
 ```
 
 ## Where things go
 
 - **Anything org-specific** (names, colors, fonts, client-facing copy, flags): `src/lms.config.js`. Components never hardcode it.
 - **A new data operation:** add the method to `src/api/mockApi.js` with the signature the backend will honor, add its name to `API_CONTRACT` in `src/api/index.js`, and cover it in `test/api.test.js`. Components call it through the `api` prop.
-- **Record keys:** the store layout lives in `src/api/mockStore.js`, and only `src/api/` touches the store. Components go through the `api` object, never the store.
+- **Record keys:** the table design and key builders live in `src/api/mockStore.js`, and only `src/api/` touches the store. A new access pattern must be a key or an index (the store has no scan). Components go through the `api` object, never the store.
 - **Plain JS stays Node-safe:** `lms.config.js`, `api/`, and `scorm/runtime.js` use no JSX or Vite-only imports, so the headless tests can import them directly.
 
 ## Feature flags
 
 `features.sandboxHints` (default `true`) shows the sandbox-only helpers: the demo accounts and prefilled credentials on sign-in, the SCORM runtime note in the player, and the SES stand-in notice on completion. Set it to `false` for any client-facing build.
 
-## Known gaps (carried from Sprint 0, not changed in Sprint 1)
+## Known gaps (carried from Sprint 0)
 
-- The mock store is not yet keyed like the DynamoDB single table (see the header of `src/api/mockStore.js`). Re-keying is recommended before Sprint 2.
 - The certificate record does not yet carry the Open Badges forward-compatible fields (issuer, criteria, skill, evidence URL, expires) that playbook Section 4 calls for.
 
 ## Security notes

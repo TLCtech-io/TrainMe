@@ -4,7 +4,7 @@
 
 **How this playbook is used.** A user will start a new chat or project, attach this playbook, then say something like "let's pick up the LMS build" or "build out the instructor grading slice." From that point, you drive the build conversationally: ask the user for inputs, produce files, walk them through local testing and (later) AWS deployment, and deliver working iterations. This playbook tells you what to ask, when to ask it, what to produce, and what to watch for.
 
-**Relationship to the DST playbook.** This LMS build is a sibling of the DST (Decision Support Tool) program documented in `DST_Build_Playbook_v2.md`. It deliberately reuses the DST's architectural spine: a React single-page app on S3 + CloudFront, a parameterized CloudFormation auth stack (Cognito User Pool with `custom:role` and `custom:status`, admin Lambdas behind an HTTP API with a JWT authorizer), and the same config-driven, iterative build philosophy. Where the DST and LMS diverge, this playbook says so explicitly. If you have not read the DST playbook, read it first; most of the AWS, branding, and deployment conventions there apply here unchanged.
+**Relationship to the DST playbook.** This LMS build is a sibling of the DST (Decision Support Tool) program documented in `DST_Build_Playbook.md`. It deliberately reuses the DST's architectural spine: a React single-page app on S3 + CloudFront, a parameterized CloudFormation auth stack (Cognito User Pool with `custom:role` and `custom:status`, admin Lambdas behind an HTTP API with a JWT authorizer), and the same config-driven, iterative build philosophy. Where the DST and LMS diverge, this playbook says so explicitly. If you have not read the DST playbook, read it first; most of the AWS, branding, and deployment conventions there apply here unchanged.
 
 **Single source of truth.** Everything organization-specific lives in one config module, `lms-app/src/lms.config.js` (the LMS analog of `dst.config.js`): org identity, brand mark, brand tokens, fonts, client-facing copy, and feature flags. Content and data stay out of components. The backend contract lives in `lms-app/src/api/mockApi.js`, whose method signatures the backend must satisfy, with the method list pinned in `API_CONTRACT` (`lms-app/src/api/index.js`). Sprint 1 (v0.2.0) broke the Sprint 0 single-file scaffold (`lms_vertical_slice.jsx`, kept at the repo root as the historical artifact) into this project tree; see Section 8.2 for the tree and the config shape.
 
@@ -30,11 +30,11 @@ These are the design philosophies that should inform every architectural decisio
 
 **SCORM is the load-bearing content standard; design for xAPI later.** Rise360 exports SCORM, and SCORM 1.2 is still the dominant compliance standard. Ship SCORM 1.2 support first because it covers TLC_TRNG's existing content and certificate records. Design the data model so an xAPI / Learning Record Store layer can be added later (cmi5 is the future-readiness flag), but do not build the LRS in v1. Treat "SCORM now, xAPI later" as settled unless the user explicitly reopens it.
 
-**The mock data layer is the API contract.** Every data operation goes through a single `api` object (built in `lms-app/src/api/mockApi.js`, obtained through `createApi()` in `lms-app/src/api/index.js`) whose method signatures are exactly what the real Lambda endpoints will be (`signIn`, `listCatalog`, `listEnrollments`, `enroll`, `getCmi`, `commitCmi`, `getCertificate`). To go live, replace each method *body* with a `fetch()` to the corresponding endpoint, JWT in the Authorization header. Components never change. When you add a feature, add its method to this object first, with the signature the backend will honor, then implement the mock body, then add its name to `API_CONTRACT`; the contract test (`npm test`) fails if the object and the list drift apart in either direction. This discipline is what keeps the front end and the eventual backend in lockstep.
+**The mock data layer is the API contract.** Every data operation goes through a single `api` object (built in `lms-app/src/api/mockApi.js`, obtained through `createApi()` in `lms-app/src/api/index.js`) whose method signatures are exactly what the real Lambda endpoints will be (`signIn`, `listCatalog`, `listEnrollments`, `enroll`, `getCmi(courseId, scoId?)`, `commitCmi(courseId, cmiBag, scoId?)`, `getCertificate`). To go live, replace each method *body* with a `fetch()` to the corresponding endpoint, JWT in the Authorization header. Components never change. When you add a feature, add its method to this object first, with the signature the backend will honor, then implement the mock body, then add its name to `API_CONTRACT`; the contract test (`npm test`) fails if the object and the list drift apart in either direction. This discipline is what keeps the front end and the eventual backend in lockstep.
 
 **The mock store mirrors the DynamoDB single-table keys.** The in-memory store keys items the way the planned single table will: `USER#`, `COURSE#`, `ITEM#`, `ENROLL#`, `CMI#`, `CERT#`. Keep this mirroring exact. When you design a new access pattern, design the key first, confirm it falls out of the single-table model (or a defined GSI) without a scan, then implement it. This is the DST's "BIA Workbook is the source of truth" discipline, adapted: here the discipline is that the key design is the source of truth for what queries are cheap.
 
-*Status at Sprint 1: not yet exact.* A Sprint 1 read of the code found that the Sprint 0 store, carried unchanged into `lms-app/src/api/mockStore.js`, does not actually use PK/SK items. It keys records `${sub}::${courseId}` across three maps (enrollments, CMI, certificates); users and courses are seed constants rather than `USER#`/`COURSE#` items; there are no `ITEM#` records; and CMI is keyed per course, not `CMI#<courseId>#<scoId>`. Re-keying to real PK/SK items, with a GSI1 emulation for the roster, is the recommended first step before Sprint 2, because the instructor roster and grading queue need those access patterns. The api signatures do not change, and the change is contained in `lms-app/src/api/` (`mockStore.js` and the method bodies in `mockApi.js`); no component changes. Settle the open design points first (how `scoId` enters the `getCmi`/`commitCmi` contract for multi-SCO packages, and the catalog GSI shape).
+*Status: exact since the pre-Sprint 2 re-key.* Sprint 1 found that the Sprint 0 store keyed records `${sub}::${courseId}` across three maps, with no `USER#`/`COURSE#`/`ITEM#` items and CMI per course. It is now a real single table in `lms-app/src/api/mockStore.js`: every record is a PK/SK item under the keys in Section 5, GSI1 serves the roster and GSI2 the catalog, and the store exposes only `get`, `put`, `query`, and `queryIndex`. There is deliberately no scan, so an access pattern that is not a key or an index cannot be written by accident; `test/store.test.js` pins both the keys and the absence of a scan.
 
 **Identity comes from the session, never from a table scan.** In the scaffold, the learner's `sub`, `name`, and `email` come from the session profile (the real backend reads them from the verified JWT). Never reverse-look-up a user by scanning the seed table; that pattern caused a hard crash in an early version (a `.find()` returned `undefined`, and destructuring `undefined` threw). If you need the caller's identity, read it from the normalized session.
 
@@ -123,13 +123,17 @@ The v0.1 scaffold implements Course, ContentItem (implicitly, as the SCORM launc
 | Entity | PK | SK | Notes |
 |---|---|---|---|
 | User profile | `USER#<sub>` | `PROFILE` | Mirror of Cognito sub; role cached for queries |
-| Course | `COURSE#<courseId>` | `META` | Title, status (draft/published), SCORM S3 prefix, cert template ref |
-| Content item | `COURSE#<courseId>` | `ITEM#<itemId>` | Type (scorm/video/doc/quiz), launch path, order |
-| Enrollment | `USER#<sub>` | `ENROLL#<courseId>` | Status, enrolledAt, completedAt, score |
+| Course | `COURSE#<courseId>` | `META` | Title, status (draft/published), SCORM S3 prefix, cert template ref. GSI2PK `CATALOG#<status>`, GSI2SK `COURSE#<courseId>` |
+| Content item | `COURSE#<courseId>` | `ITEM#<itemId>` | Type (scorm/video/doc/quiz), launch path, order; SCORM items carry `scoId` (the SCO identifier from `imsmanifest.xml`) |
+| Enrollment | `USER#<sub>` | `ENROLL#<courseId>` | Status, enrolledAt, completedAt, score. GSI1PK `COURSE#<courseId>`, GSI1SK `ENROLL#<sub>` |
 | CMI runtime | `USER#<sub>` | `CMI#<courseId>#<scoId>` | suspend_data, lesson_status, score, attempt count |
 | Certificate | `USER#<sub>` | `CERT#<courseId>` | S3 key of generated PDF, issuedAt |
 
-**GSIs:** GSI1 inverts the enrollment key (`COURSE#<courseId>` / `ENROLL#<sub>`) so an instructor or admin can pull a course **roster** without a scan. A published-courses query (status as the partition on a second GSI, or a filtered query on a known set) serves the **catalog**. The **transcript** is "query all `ENROLL#` items under `USER#<sub>` where status = completed." Roster, catalog, transcript, and the resume bookmark all fall out of this without table scans.
+**GSIs:** GSI1 inverts the enrollment key (`COURSE#<courseId>` / `ENROLL#<sub>`) so an instructor or admin can pull a course **roster** without a scan. GSI2 partitions courses by status (`CATALOG#published` / `COURSE#<courseId>`), so the **catalog** is one query; changing a course's status moves it between catalog partitions. The **transcript** is "query all `ENROLL#` items under `USER#<sub>` where status = completed." Roster, catalog, transcript, and the resume bookmark all fall out of this without table scans.
+
+**The SCO in the CMI contract.** `getCmi` and `commitCmi` take an optional `scoId`. Omitted, it resolves to the course's first SCORM item by `order` (a query on `COURSE#<courseId>` / `ITEM#`). Rise360 exports are single-SCO, so current callers never pass it; a multi-SCO package passes each SCO's id and gets its own `CMI#<courseId>#<scoId>` record. Routes: `GET`/`PUT /me/cmi/{courseId}?sco={scoId}`.
+
+**Table attributes stay in the table.** Items also carry `entity` (a record-type tag) and their index attributes. The api strips `PK`, `SK`, the GSI attributes, and `entity` before returning anything, as the Lambdas will, so the returned shapes are the same as before the re-key.
 
 **When adding a new entity:** design the PK/SK first, confirm the access patterns it needs are covered by the table or an existing GSI, and only then write the Lambda. If a new access pattern would require a scan, add a GSI rather than scanning.
 
@@ -234,7 +238,7 @@ The long-term half of the digital-credential path (Section 6.5). Build self-host
 
 This is the concrete, near-term execution order. It assumes Sprint 0 is done.
 
-1. **Sprint 1: structure.** (Done, v0.2.0.) Break the scaffold into a project tree, extract the config module, confirm local build and dev server. The user pulls the branch and runs locally. (No AWS yet.) Before Sprint 2 begins, re-key the mock store to the single-table design (see Section 0, the mock-store principle).
+1. **Sprint 1: structure.** (Done, v0.2.0.) Break the scaffold into a project tree, extract the config module, confirm local build and dev server. The user pulls the branch and runs locally. (No AWS yet.) The mock store was then re-keyed to the single-table design before Sprint 2 (see Section 5).
 2. **Sprint 2: the differentiator.** Build instructor grading and gated progression against the mock layer. Prove each path headlessly. This is the feature that justifies the whole build, so it comes before any AWS spend.
 3. **Sprint 3: prerequisites and external credit.** Round out the academic-integrity features, still on mock data.
 4. **Decision gate, backend.** Once the front end demonstrates the full differentiated feature set on mock data, the mock `api` object is a complete, tested specification. Now build the backend to match it (Sprint 4). Building the backend after the front end means the API contract is fully known before a single Lambda is written.
@@ -283,14 +287,16 @@ lms-app/
     api/
       index.js            createApi() (the single swap point) and API_CONTRACT
       mockApi.js          the backend contract: method signatures + mock bodies
-      mockStore.js        in-memory tables and the record key format
-      seed.js             mock Cognito users and COURSE# items
+      mockStore.js        the in-memory single table: key builders, get/put/query/queryIndex, no scan
+      seed.js             mock Cognito users, COURSE# items, and ITEM# content items
     scorm/
       runtime.js          SCORM 1.2 window.API mock (scorm-again stand-in)
       mockLessons.js      stand-in SCO slides (replaced by an S3 iframe in Sprint 4)
     components/           primitives.jsx (Btn, Pill, StatusPill, SectionHead, Loading, Empty), Shell.jsx
     screens/              SignIn, Catalog, CoursePlayer, CompletionPanel, Transcript
-  test/                   headless tests: config, scorm, api (npm test)
+  test/                   headless tests: config, scorm, store, api (npm test)
+  e2e/                    browser tests (npm run e2e, npm run e2e:prod)
+  playwright.config.js    starts the dev server or the production preview for e2e
 ```
 
 **Config shape.** `lms.config.js` exports one object with these sections:
@@ -303,7 +309,7 @@ lms-app/
 - `features`: `sandboxHints` (the demo accounts panel and prefill on sign-in, the SCORM runtime note, and the SES stand-in notice; turn off for client-facing builds).
 - `sandbox`: the demo accounts and password shown on sign-in. A test signs in with each, so the hint cannot drift from the mock users.
 
-Not in the config: seed users and courses (mock backend data, in `src/api/seed.js`), stand-in lesson content (`src/scorm/mockLessons.js`), and AWS values (Sprint 4 adds `cognito` and `api` sections, mirroring `dst.config.js`).
+Not in the config: seed users, courses, and content items (mock backend data, in `src/api/seed.js`), stand-in lesson content (`src/scorm/mockLessons.js`), and AWS values (Sprint 4 adds `cognito` and `api` sections, mirroring `dst.config.js`).
 
 **Node-safe modules.** `lms.config.js`, everything in `src/api/`, and `src/scorm/runtime.js` are plain JS with no JSX and no Vite-only imports, so `npm test` imports them directly. Seed data is JS modules rather than JSON for the same reason. Keep it that way; it is what makes "prove it headlessly" a one-command habit rather than a bespoke extraction each sprint.
 
@@ -315,7 +321,7 @@ Not in the config: seed users and courses (mock backend data, in `src/api/seed.j
 
 **Build front-end-first, always.** Every feature is built against the mock `api` and proven (ideally headlessly with a small Node simulation, as in Sprint 0) before any backend work. The mock layer is the contract.
 
-**Prove it headlessly.** Before declaring a slice done, run its logic in Node to confirm behavior, especially completion, grading, and gating paths where a thrown exception or a stuck state would otherwise only surface in the browser. Sprint 0's hang and crash were both caught and fixed this way. Since Sprint 1 this is `npm test` in `lms-app/` (Node's built-in runner, no extra dependencies): add a test for every new api method and every new path through it, alongside the code, and keep the modules it imports Node-safe (Section 8.2). Then walk the path in a real browser on both `npm run dev` (StrictMode on) and the production build.
+**Prove it headlessly.** Before declaring a slice done, run its logic in Node to confirm behavior, especially completion, grading, and gating paths where a thrown exception or a stuck state would otherwise only surface in the browser. Sprint 0's hang and crash were both caught and fixed this way. Since Sprint 1 this is `npm test` in `lms-app/` (Node's built-in runner, no extra dependencies): add a test for every new api method and every new path through it, alongside the code, and keep the modules it imports Node-safe (Section 8.2). Then prove it in a real browser: `npm run e2e` (dev server, StrictMode on) and `npm run e2e:prod` (production build). Extend `lms-app/e2e/` with every new user-facing path.
 
 **Match the user's path conventions.** When local install commands are needed, follow the user's established folder pattern (the DST builds live under `/Users/traviscryan/Documents/DST Demo Build Local/...`). The LMS lives in the GitHub repo `TLCtech-io/TrainMe`, with the app in `lms-app/`; local commands run from the user's clone of that repo (`cd lms-app && npm install && npm run dev`). Do not invent generic placeholders if a convention exists.
 
@@ -392,8 +398,8 @@ For sanity-check during continued work.
 
 - **Repository:** GitHub `TLCtech-io/TrainMe`. App in `lms-app/` (package `tlc-trng-lms`, version `0.2.0`, sign-in shows `v0.2`).
 - **Config module:** `lms-app/src/lms.config.js` (sections: `org`, `brand`, `theme`, `fonts`, `copy`, `features`, `sandbox`). See Section 8.2.
-- **Commands (from `lms-app/`):** `npm install`, `npm run dev` (http://localhost:5173), `npm test` (headless), `npm run build` (to `dist/`), `npm run preview` (http://localhost:4173).
-- **Stack:** React 18.3.1, Vite 5.4.21, `@vitejs/plugin-react` 4.3.1, exact pins. No runtime dependencies beyond React.
+- **Commands (from `lms-app/`):** `npm install`, `npm run dev` (http://localhost:5173), `npm test` (headless), `npm run e2e` / `npm run e2e:prod` (browser; first run `npx playwright install chromium`), `npm run build` (to `dist/`), `npm run preview` (http://localhost:4173).
+- **Stack:** React 18.3.1, Vite 5.4.21, `@vitejs/plugin-react` 4.3.1, `@playwright/test` 1.56.1 (dev only), exact pins. No runtime dependencies beyond React.
 - **Sprint 0 artifact:** `lms_vertical_slice.jsx` at the repo root (single-file React, ~1300 lines), superseded by `lms-app/` and kept for history.
 - **Roles:** student, instructor, admin (on Cognito `custom:role`).
 - **Sandbox accounts** (password `demo`): `student@demo.test`, `instructor@demo.test`, `admin@demo.test`.
@@ -401,8 +407,8 @@ For sanity-check during continued work.
 - **Fonts:** Zilla Slab (heading), Poppins (body).
 - **Resource short-name placeholder:** `lms` (rename when the user picks a real one).
 - **Persistence decision:** DynamoDB single-table; Aurora/Postgres is the documented fallback.
-- **Mock `api` methods (the backend contract):** `signIn`, `listCatalog`, `listEnrollments`, `enroll`, `getCmi`, `commitCmi`, `getCertificate`, plus the sandbox-only `_outbox`. Pinned in `API_CONTRACT` (`lms-app/src/api/index.js`). Certificate issuance is internal to the mock (not on the api object), as it will be server-side.
-- **Mock store keys (mirror the DynamoDB single table):** `USER#`, `COURSE#`, `ITEM#`, `ENROLL#`, `CMI#`, `CERT#`. Not yet exact in code; see the status note under the mock-store principle in Section 0.
+- **Mock `api` methods (the backend contract):** `signIn`, `listCatalog`, `listEnrollments`, `enroll`, `getCmi(courseId, scoId?)`, `commitCmi(courseId, cmiBag, scoId?)`, `getCertificate`, plus the sandbox-only `_outbox`. Pinned in `API_CONTRACT` (`lms-app/src/api/index.js`). Certificate issuance is internal to the mock (not on the api object), as it will be server-side.
+- **Mock store keys (mirror the DynamoDB single table):** `USER#`, `COURSE#`, `ITEM#`, `ENROLL#`, `CMI#`, `CERT#`, plus GSI1 (roster) and GSI2 (catalog). Exact in code (`lms-app/src/api/mockStore.js`); see Section 5.
 - **Verified SCORM reference package:** `pwc-mass-care-framework-training.zip` (SCORM 1.2, launch `scormdriver/indexAPI.html`, title "PWC Mass Care Framework Training").
 - **Known content trap:** Rise360 "Web" exports are not SCORM; the `EOP_Demo.zip` package was a Web export (no manifest). Always require a SCORM 1.2 export for runtime capture.
 
@@ -423,4 +429,4 @@ This document is a living artifact and an instance of the same principle the DST
 
 ---
 
-*End of LMS playbook v1. Hand this to a future LLM at the start of, or to continue, the LMS build. Read alongside `DST_Build_Playbook_v2.md` for the shared AWS, branding, and deployment conventions.*
+*End of LMS playbook v1. Hand this to a future LLM at the start of, or to continue, the LMS build. Read alongside `DST_Build_Playbook.md` for the shared AWS, branding, and deployment conventions.*
