@@ -30,13 +30,13 @@ These are the design philosophies that should inform every architectural decisio
 
 **SCORM is the load-bearing content standard; design for xAPI later.** Rise360 exports SCORM, and SCORM 1.2 is still the dominant compliance standard. Ship SCORM 1.2 support first because it covers TLC_TRNG's existing content and certificate records. Design the data model so an xAPI / Learning Record Store layer can be added later (cmi5 is the future-readiness flag), but do not build the LRS in v1. Treat "SCORM now, xAPI later" as settled unless the user explicitly reopens it.
 
-**The mock data layer is the API contract.** Every data operation goes through a single `api` object (built in `lms-app/src/api/mockApi.js`, obtained through `createApi()` in `lms-app/src/api/index.js`) whose method signatures are exactly what the real Lambda endpoints will be (`signIn`, `listCatalog`, `listEnrollments`, `enroll`, `getCmi(courseId, scoId?)`, `commitCmi(courseId, cmiBag, scoId?)`, `getCertificate`). To go live, replace each method *body* with a `fetch()` to the corresponding endpoint, JWT in the Authorization header. Components never change. When you add a feature, add its method to this object first, with the signature the backend will honor, then implement the mock body, then add its name to `API_CONTRACT`; the contract test (`npm test`) fails if the object and the list drift apart in either direction. This discipline is what keeps the front end and the eventual backend in lockstep.
+**The mock data layer is the API contract.** Every data operation goes through a single `api` object (built in `lms-app/src/api/mockApi.js`, obtained through `createApi()` in `lms-app/src/api/index.js`) whose method signatures are exactly what the real Lambda endpoints will be (`signIn`, `listCatalog`, `listEnrollments`, `enroll`, `getCmi(courseId, scoId?)`, `commitCmi(courseId, cmiBag, scoId?)`, `getCertificate`, plus the Sprint 2 grading and gating methods in Section 8.3). To go live, replace each method *body* with a `fetch()` to the corresponding endpoint, JWT in the Authorization header. Components never change. When you add a feature, add its method to this object first, with the signature the backend will honor, then implement the mock body, then add its name to `API_CONTRACT`; the contract test (`npm test`) fails if the object and the list drift apart in either direction. This discipline is what keeps the front end and the eventual backend in lockstep.
 
 **The mock store mirrors the DynamoDB single-table keys.** The in-memory store keys items the way the planned single table will: `USER#`, `COURSE#`, `ITEM#`, `ENROLL#`, `CMI#`, `CERT#`. Keep this mirroring exact. When you design a new access pattern, design the key first, confirm it falls out of the single-table model (or a defined GSI) without a scan, then implement it. This is the DST's "BIA Workbook is the source of truth" discipline, adapted: here the discipline is that the key design is the source of truth for what queries are cheap.
 
 *Status: exact since the pre-Sprint 2 re-key.* Sprint 1 found that the Sprint 0 store keyed records `${sub}::${courseId}` across three maps, with no `USER#`/`COURSE#`/`ITEM#` items and CMI per course. It is now a real single table in `lms-app/src/api/mockStore.js`: every record is a PK/SK item under the keys in Section 5, GSI1 serves the roster and GSI2 the catalog, and the store exposes only `get`, `put`, `query`, and `queryIndex`. There is deliberately no scan, so an access pattern that is not a key or an index cannot be written by accident; `test/store.test.js` pins both the keys and the absence of a scan.
 
-**Identity comes from the session, never from a table scan.** In the scaffold, the learner's `sub`, `name`, and `email` come from the session profile (the real backend reads them from the verified JWT). Never reverse-look-up a user by scanning the seed table; that pattern caused a hard crash in an early version (a `.find()` returned `undefined`, and destructuring `undefined` threw). If you need the caller's identity, read it from the normalized session.
+**Identity comes from the session, never from a table scan.** In the scaffold, the learner's `sub`, `name`, and `email` come from the session profile (the real backend reads them from the verified JWT). Never reverse-look-up a user by scanning the seed table; that pattern caused a hard crash in an early version (a `.find()` returned `undefined`, and destructuring `undefined` threw). If you need the caller's identity, read it from the normalized session. When an action concerns another user (an instructor's evaluation that completes a learner's course and issues their certificate), read that user's identity with a keyed get of `USER#<sub>` / `PROFILE`, never a scan; the learner's `sub` comes from the record being acted on.
 
 **Email dependency is acceptable here; it is NOT for the DST.** The DST is an incident-time tool and must not depend on email. The LMS is not an incident-time tool, so depending on email (certificate delivery, registration confirmations, waitlist approvals) is correct. SES is the natural fit. This is a deliberate, documented divergence from the DST's independence principle. Do not import the DST's "no email" rule into the LMS.
 
@@ -89,10 +89,10 @@ Before producing anything, confirm the shared mental model. The LMS reuses the D
 Three roles, carried on the Cognito `custom:role` attribute (extending the DST's two-role model):
 
 - **student**: enrolls, consumes content, submits work, views own transcript and certificates.
-- **instructor**: scoped to their own courses: builds course shells, grades submissions, sends work back with comments, approves gated progression, manages rosters and attendance.
+- **instructor**: scoped to the courses they are assigned to (`USER#<sub>` / `TEACH#<courseId>`): grades submissions against the course rubric, sends work back with comments, approves gated progression, sees the roster, and authors the course's rubrics. Outside their assigned courses an instructor sees the ordinary student view (they can enroll and take courses as a learner). Course building, attendance, and offerings arrive in later sprints.
 - **admin**: full access: user management, course publishing, programs/learning paths, reporting, certificate templates.
 
-The Lambda authorizers extend the DST's `custom:role === "admin"` check to recognize `instructor` where appropriate. Instructor access is the specific capability passion.io cannot provide, so it is a first-class concern, not an afterthought.
+The Lambda authorizers extend the DST's `custom:role === "admin"` check to recognize `instructor` where appropriate; every instructor endpoint also checks the `TEACH#` assignment (admins pass without one). Since Sprint 2 every role gets the learner side (Catalog, Transcript); instructors and admins also get Teaching. Instructor access is the specific capability passion.io cannot provide, so it is a first-class concern, not an afterthought.
 
 ---
 
@@ -105,7 +105,8 @@ Settled abstractions, chosen to avoid the "three copies of one course" trap:
 - **Offering**: a course delivered in a specific modality (self-paced, hybrid, instructor-led virtual, instructor-led in person) on a schedule, with its own roster. A per-offering setting controls which content items are required for that modality. This is how one course shell serves in-person, hybrid, and online delivery without duplication.
 - **Enrollment**: a learner in an offering (or a self-paced course), with status (`enrolled` -> `in_progress` -> `completed`), timestamps, and score.
 - **Attempt / CMI record**: per-learner, per-SCO runtime state: `suspend_data` (the resume bookmark), `lesson_status`, `score`, attempt count.
-- **Submission**: uploaded work awaiting instructor grading (the gated-progression and grading path).
+- **Submission**: one attempt at an assignment item: files, an optional note, and, once evaluated, the instructor's evaluation. Every attempt is kept, so the learner and instructor see the full history of feedback. See Section 8.3.
+- **Rubric**: per course, authored by admins or the course's instructors: criteria, each with a descriptor for every level of the four-level evaluation scale. See Section 8.3.
 - **Program / Learning Path**: an ordered bundle of courses, assignable individually or as a program, one-time or on a recurring/recertification schedule.
 - **Prerequisite**: a course that blocks enrollment until completed, with a learner-facing "challenge / upload external proof" path.
 - **Certificate / Credential**: generated PDF (stored in S3), issued on completion, emailed via SES. The entity is designed forward-compatible with the self-hosted digital-credential path (Section 6.5 and the credential sprints): it carries, or has room to carry, a stable public credential ID, issuer identity, the achievement criteria, the skill or competency recognized, an optional evidence URL, and issued/expires timestamps. These are the Open Badges fields; populating them costs nothing in the PDF-only phase and means the verification page and later badge layer need no data-model migration.
@@ -129,9 +130,12 @@ The v0.1 scaffold implements Course, ContentItem (implicitly, as the SCORM launc
 | Content item | `COURSE#<courseId>` | `ITEM#<itemId>` | Type (scorm/video/doc/quiz), launch path, order; SCORM items carry `scoId` (the SCO identifier from `imsmanifest.xml`) |
 | Enrollment | `USER#<sub>` | `ENROLL#<courseId>` | Status, enrolledAt, completedAt, score. GSI1PK `COURSE#<courseId>`, GSI1SK `ENROLL#<sub>` |
 | CMI runtime | `USER#<sub>` | `CMI#<courseId>#<scoId>` | suspend_data, lesson_status, score, attempt count |
+| Teaching assignment | `USER#<sub>` | `TEACH#<courseId>` | Which courses an instructor teaches |
+| Rubric | `COURSE#<courseId>` | `RUBRIC#<rubricId>` | Title, criteria with a descriptor per level |
+| Submission | `USER#<sub>` | `SUB#<courseId>#<itemId>#<attempt>` | Files, note, status, evaluation. GSI1PK `COURSE#<courseId>`, GSI1SK `QUEUE#<submittedAt>#<sub>#<itemId>` while awaiting review, then `EVAL#<evaluatedAt>#<sub>#<itemId>` |
 | Certificate | `USER#<sub>` | `CERT#<courseId>` | Open Badges fields (Section 4), S3 key of generated PDF. GSI3PK `CRED#<credentialId>`, GSI3SK `CERT` |
 
-**GSIs:** GSI1 inverts the enrollment key (`COURSE#<courseId>` / `ENROLL#<sub>`) so an instructor or admin can pull a course **roster** without a scan. GSI2 partitions courses by status (`CATALOG#published` / `COURSE#<courseId>`), so the **catalog** is one query; changing a course's status moves it between catalog partitions. GSI3 finds a certificate by its public credential ID (`CRED#<credentialId>` / `CERT`), which is the lookup the Sprint 7 verification page makes. The **transcript** is "query all `ENROLL#` items under `USER#<sub>` where status = completed." Roster, catalog, transcript, and the resume bookmark all fall out of this without table scans.
+**GSIs:** GSI1 is overloaded per course: it inverts the enrollment key (`COURSE#<courseId>` / `ENROLL#<sub>`) so an instructor or admin can pull a course **roster** without a scan, and it holds the **grading queue** (`QUEUE#...`, oldest first) and evaluated work (`EVAL#...`). Evaluating a submission rewrites its GSI1SK from `QUEUE#` to `EVAL#`, so the queue holds exactly the work awaiting review with no filter. GSI2 partitions courses by status (`CATALOG#published` / `COURSE#<courseId>`), so the **catalog** is one query; changing a course's status moves it between catalog partitions. GSI3 finds a certificate by its public credential ID (`CRED#<credentialId>` / `CERT`), which is the lookup the Sprint 7 verification page makes. The **transcript** is "query all `ENROLL#` items under `USER#<sub>` where status = completed." Roster, catalog, transcript, and the resume bookmark all fall out of this without table scans.
 
 **The SCO in the CMI contract.** `getCmi` and `commitCmi` take an optional `scoId`. Omitted, it resolves to the course's first SCORM item by `order` (a query on `COURSE#<courseId>` / `ITEM#`). Rise360 exports are single-SCO, so current callers never pass it; a multi-SCO package passes each SCO's id and gets its own `CMI#<courseId>#<scoId>` record. Routes: `GET`/`PUT /me/cmi/{courseId}?sco={scoId}`.
 
@@ -200,9 +204,11 @@ Break the single-file scaffold into a real Vite project tree (mirroring the DST 
 
 **This is the surface-transition point. Before producing the project tree, prompt the user to move to Claude Code.** Sprint 0 lived as a single artifact in Chat, which was right for it. Sprint 1 creates a multi-file project that needs a dev server, headless test runs, and (from Sprint 4) AWS deploy commands, all of which Code does inside the repo and Chat cannot. If the user is still in a Chat session when Sprint 1 begins, do not silently start emitting a file tree for them to save by hand. Stop and walk them through the move (see Section 8.1). If the user explicitly prefers to stay in Chat for this sprint, respect that, but make the trade-off visible: in Chat you will hand them files to save and commands to paste, whereas Code would run them.
 
-### Sprint 2: Instructor grading and gated progression (the passion.io gap)
+### Sprint 2: Instructor grading and gated progression (the passion.io gap) (COMPLETE, v0.3.0)
 
 The highest-value feature work and the core differentiator. Add: the instructor role's scoped view, a grading queue, submission upload by students, send-back-with-comments, student resubmission, and the approval-to-advance lock (a learner cannot proceed past a gated item until an instructor approves). This is the capability passion.io and Reach360 cannot provide and the one the scoping document leans on hardest. Build each piece against the mock `api` first.
+
+**Shipped** on the mock layer; Section 8.3 documents the data model, rules, and UI. Proof: 39 headless tests (11 of them Sprint 2's) and a browser test that walks the whole loop across roles: submit, return with rubric feedback, resubmit, approve, unlock the gated knowledge check, complete, certify.
 
 ### Sprint 3: Prerequisites and external-credit
 
@@ -241,7 +247,7 @@ The long-term half of the digital-credential path (Section 6.5). Build self-host
 This is the concrete, near-term execution order. It assumes Sprint 0 is done.
 
 1. **Sprint 1: structure.** (Done, v0.2.0.) Break the scaffold into a project tree, extract the config module, confirm local build and dev server. The user pulls the branch and runs locally. (No AWS yet.) The mock store was then re-keyed to the single-table design before Sprint 2 (see Section 5).
-2. **Sprint 2: the differentiator.** Build instructor grading and gated progression against the mock layer. Prove each path headlessly. This is the feature that justifies the whole build, so it comes before any AWS spend.
+2. **Sprint 2: the differentiator.** (Done, v0.3.0; Section 8.3.) Build instructor grading and gated progression against the mock layer. Prove each path headlessly. This is the feature that justifies the whole build, so it comes before any AWS spend.
 3. **Sprint 3: prerequisites and external credit.** Round out the academic-integrity features, still on mock data.
 4. **Decision gate, backend.** Once the front end demonstrates the full differentiated feature set on mock data, the mock `api` object is a complete, tested specification. Now build the backend to match it (Sprint 4). Building the backend after the front end means the API contract is fully known before a single Lambda is written.
 5. **Sprint 4: AWS.** Deploy the CloudFormation stack (auth + DynamoDB + S3 + SES). Wire the `api` bodies to real endpoints. Host the verified SCORM package and prove real CMI capture. Test locally against real AWS (Cognito, DynamoDB, S3, SES in sandbox).
@@ -320,6 +326,30 @@ Not in the config: seed users, courses, and content items (mock backend data, in
 
 ---
 
+### 8.3 Grading and gated progression (Sprint 2)
+
+Decided with the user before the build: per-item gating; rubric evaluation on a four-level scale; instructors scoped to their assigned courses; the sandbox demonstrates it on Effective Message Writing.
+
+**Course items are an ordered list.** Each `ITEM#` carries `order`, `required`, `unlock`, and `dueDays`; SCORM items add `scoId` and `assessment`; assignment items add `instructions` and `rubricId`.
+
+- **`unlock`, per item:** `open` (always available); `after_previous` (once the previous item is done: a SCORM item completed, or an assignment submitted at least once, so learners can keep going while they wait); `after_approval` (once the previous item is approved: a SCORM item completed, or an assignment evaluated at a passing level). This is the approval-to-advance lock.
+- **Item status:** `locked`, `available`, `in_progress` (SCORM started), `submitted` (awaiting review), `returned` (revise and resubmit), `complete`. One function in the api (`progressFor`) computes every status, so the course page, the gate checks, the roster, and completion always agree.
+- **Due dates:** `dueDays` counts from enrollment (self-paced). An item is overdue when past due and neither complete nor awaiting review; a submission made after its due date is flagged `late`.
+- **Scores:** only assessment items (quizzes, tests) record a numeric score. The course score is the last required assessment's score, or none.
+- **Completion:** the course completes, and the certificate is issued, the moment every required item is complete, whether the last step is the learner's own commit or an instructor's approval.
+
+**Evaluation.** The scale lives in `lms.config.js` (`evaluation.levels`): Advanced Competency and Competent pass; Approaching Competency and Additional Learning Required do not. The instructor rates every rubric criterion, chooses an overall outcome (prefilled with the lowest criterion rating), and adds comments. A passing outcome approves the submission; a non-passing one returns it for resubmission and requires comments. The evaluation stores a snapshot of the rubric it was made against, so later rubric edits never change a recorded evaluation. The learner is emailed either way (SES stand-in), sees every attempt with its outcome, per-criterion ratings, comments, and evaluator, and sees the rubric before submitting. Only the latest attempt can be evaluated, and nobody evaluates their own submission.
+
+**Files.** `uploadFile(courseId, itemId, file)` hides the two-step real flow (request a presigned S3 PUT URL, then PUT the file); the mock keeps the blob in memory under the S3 key it will have (`uploads/<sub>/<courseId>/<itemId>/<token>/<name>`). A submission may only reference the caller's own uploads for that item. `getFileUrl` (a presigned GET in the real build) is allowed for the file's owner and for anyone who teaches the course. Limits in `lms.config.js` (`uploads`): 25 MB per file, 5 files per submission.
+
+**Contract additions:** `getCourseOutline`, `getCourseProgress`, `uploadFile`, `getFileUrl`, `submitAssignment`, `listSubmissions`, `getRubric` (learner side); `listTeaching`, `getRoster`, `listGradingQueue`, `getReview`, `evaluateSubmission`, `saveRubric` (instructor and admin; each starts with the `TEACH#`/admin check). `commitCmi` now refuses commits without an enrollment or to a locked item.
+
+**UI.** Learner: the catalog opens a course page listing the items in order with status, due date, and the reason a locked item is locked; SCORM items open the player, assignments open the assignment view (instructions, rubric, submit or resubmit, attempt history). Instructor and admin: a Teaching tab lists the courses they teach with the number awaiting review; each opens a workspace with the grading queue, the roster (progress, awaiting review, overdue), and the rubric editor. The review screen shows the attempt's files and note, earlier attempts, and the rubric rating form.
+
+**Sandbox content.** Effective Message Writing is now three items: the lessons (SCORM, open), "Draft an alert message" (assignment, `after_previous`, due 14 days after enrollment, evaluated with a placeholder three-criterion rubric), and a knowledge check (SCORM assessment, `after_approval`). Sam Rivera (`instructor@demo.test`) teaches it and not the EOP course. The EOP course stays a single SCORM item.
+
+**Not yet:** assignments without a rubric, per-offering item selection (Section 4, Offering), attendance, group submissions, and instructor-set due dates for scheduled offerings.
+
 ## 9. Working conventions
 
 **Build front-end-first, always.** Every feature is built against the mock `api` and proven (ideally headlessly with a small Node simulation, as in Sprint 0) before any backend work. The mock layer is the contract.
@@ -385,7 +415,6 @@ Documented as symptom / cause / fix so future occurrences are recognizable.
 
 For honesty, v1 of this playbook covers the philosophy, architecture, role/content/data models, the SCORM runtime, the sprint roadmap, and the ordered plan. It does not yet contain execution detail for:
 
-- **The instructor grading and gating data model and UI (Sprint 2).** The single most important feature work; gets its own detailed section once built.
 - **The CloudFormation extension for DynamoDB + SES + the LMS Lambdas (Sprint 4).** Will extend `dst-auth-cloudformation.yaml`; documented when built.
 - **Certificate PDF template production.** TLC_TRNG already has strong brand design (see the Silent Auction flyer); the template approach is settled in Sprint 4.
 - **The real AWS deployment walkthrough.** Reuses the DST playbook's Section 8 (S3, CloudFront, ACM, GoDaddy); LMS-specific deltas documented at Sprint 8.
@@ -399,7 +428,7 @@ When the user asks about any of the above, point to the relevant sprint and ackn
 
 For sanity-check during continued work.
 
-- **Repository:** GitHub `TLCtech-io/TrainMe`. App in `lms-app/` (package `tlc-trng-lms`, version `0.2.0`, sign-in shows `v0.2`).
+- **Repository:** GitHub `TLCtech-io/TrainMe`. App in `lms-app/` (package `tlc-trng-lms`, version `0.3.0`, sign-in shows `v0.3`).
 - **Config module:** `lms-app/src/lms.config.js` (sections: `org`, `brand`, `theme`, `fonts`, `copy`, `credentials`, `features`, `sandbox`). See Section 8.2.
 - **Commands (from `lms-app/`):** `npm install`, `npm run dev` (http://localhost:5173), `npm test` (headless), `npm run e2e` / `npm run e2e:prod` (browser; first run `npx playwright install chromium`), `npm run build` (to `dist/`), `npm run preview` (http://localhost:4173).
 - **Credential issuer:** TLC TRNG, LLC, info@TLCTRNG.com, https://TLCTRNG.com. Credential IDs are random 4-4-4 Crockford base32. Course criteria, skills, and validity are placeholders.
@@ -412,8 +441,8 @@ For sanity-check during continued work.
 - **Fonts:** Zilla Slab (heading), Poppins (body).
 - **Resource short-name placeholder:** `lms` (rename when the user picks a real one).
 - **Persistence decision:** DynamoDB single-table; Aurora/Postgres is the documented fallback.
-- **Mock `api` methods (the backend contract):** `signIn`, `listCatalog`, `listEnrollments`, `enroll`, `getCmi(courseId, scoId?)`, `commitCmi(courseId, cmiBag, scoId?)`, `getCertificate`, plus the sandbox-only `_outbox`. Pinned in `API_CONTRACT` (`lms-app/src/api/index.js`). Certificate issuance is internal to the mock (not on the api object), as it will be server-side.
-- **Mock store keys (mirror the DynamoDB single table):** `USER#`, `COURSE#`, `ITEM#`, `ENROLL#`, `CMI#`, `CERT#`, plus GSI1 (roster), GSI2 (catalog), and GSI3 (credential lookup by public ID). Exact in code (`lms-app/src/api/mockStore.js`); see Section 5.
+- **Mock `api` methods (the backend contract, pinned in `API_CONTRACT`):** `signIn`, `listCatalog`, `getCourseOutline`; learner: `listEnrollments`, `enroll`, `getCourseProgress`, `getCmi(courseId, scoId?)`, `commitCmi(courseId, cmiBag, scoId?)`, `getCertificate`, `uploadFile`, `getFileUrl`, `submitAssignment`, `listSubmissions`, `getRubric`; instructor and admin: `listTeaching`, `getRoster`, `listGradingQueue`, `getReview`, `evaluateSubmission`, `saveRubric`; sandbox-only `_outbox`. Certificate issuance is internal to the mock, as it will be server-side.
+- **Mock store keys (mirror the DynamoDB single table):** `USER#`, `COURSE#`, `ITEM#`, `ENROLL#`, `CMI#`, `CERT#`, plus `TEACH#`, `RUBRIC#`, and `SUB#`; GSI1 (roster, grading queue, evaluated work), GSI2 (catalog), and GSI3 (credential lookup by public ID). Exact in code (`lms-app/src/api/mockStore.js`); see Section 5.
 - **Verified SCORM reference package:** `pwc-mass-care-framework-training.zip` (SCORM 1.2, launch `scormdriver/indexAPI.html`, title "PWC Mass Care Framework Training").
 - **Known content trap:** Rise360 "Web" exports are not SCORM; the `EOP_Demo.zip` package was a Web export (no manifest). Always require a SCORM 1.2 export for runtime capture.
 
@@ -424,7 +453,7 @@ For sanity-check during continued work.
 When a sprint ships, update this playbook at the same time, not after. Outdated content is worse than missing content.
 
 - **When Sprint 1 ships:** (Done at v0.2.0.) Replace the "single-file scaffold" framing in the intro and Section 0 with the real project tree and config module. Update Appendix A.
-- **When Sprint 2 ships:** Add the grading and gated-progression data model and UI as a full section. This is the differentiator; document it thoroughly.
+- **When Sprint 2 ships:** (Done at v0.3.0, Section 8.3.) Add the grading and gated-progression data model and UI as a full section. This is the differentiator; document it thoroughly.
 - **When Sprint 4 ships:** Add the CloudFormation extension detail, the live `api` wiring, and the SCORM-from-S3 walkthrough. Add an Appendix C with the concrete AWS resource values (table name, bucket, API URL, distribution ID), mirroring the DST playbook's Appendix C.
 - **When Sprint 8 ships:** Add the production domain, the SES production move, and the deployment deltas from the DST Section 8.
 - **When the Sprint 7 verification page ships:** Document the public verify route and the QR-on-PDF approach; confirm the credential ID is stable and public-safe.
