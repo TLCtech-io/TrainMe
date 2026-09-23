@@ -43,11 +43,11 @@ test('credential IDs are 4-4-4 Crockford base32 and do not repeat', () => {
 test('a certificate carries the Open Badges fields', async () => {
   const h = harness();
   await h.signInAs('student@demo.test');
-  await h.api.enroll('c-msg-101');
-  const { certificate: c } = await h.api.commitCmi('c-msg-101', COMPLETE);
+  await h.api.enroll('c-eop-pwc');
+  const { certificate: c } = await h.api.commitCmi('c-eop-pwc', COMPLETE);
 
   assert.match(c.credentialId, CREDENTIAL_ID_PATTERN);
-  assert.ok(!c.credentialId.includes('c-msg-101'), 'the public ID must not reveal the course');
+  assert.ok(!c.credentialId.includes('c-eop-pwc'), 'the public ID must not reveal the course');
   assert.deepEqual(c.issuer, LMS_CONFIG.credentials.issuer);
   assert.match(c.criteria, /^PLACEHOLDER: /);
   assert.equal(c.skills.length, 1);
@@ -60,29 +60,29 @@ test('a certificate carries the Open Badges fields', async () => {
 test('the issuer is snapshotted: a later config change does not rewrite issued certificates', async () => {
   const h = harness();
   await h.signInAs('student@demo.test');
-  await h.api.enroll('c-msg-101');
-  const { certificate } = await h.api.commitCmi('c-msg-101', COMPLETE);
+  await h.api.enroll('c-eop-pwc');
+  const { certificate } = await h.api.commitCmi('c-eop-pwc', COMPLETE);
   certificate.issuer.name = 'tampered'; // mutate the returned copy
-  assert.equal((await h.api.getCertificate('c-msg-101')).issuer.name, LMS_CONFIG.credentials.issuer.name);
+  assert.equal((await h.api.getCertificate('c-eop-pwc')).issuer.name, LMS_CONFIG.credentials.issuer.name);
 });
 
 test('a credential is found by its public ID with one GSI3 query', async () => {
   const h = harness();
   const me = await h.signInAs('student@demo.test');
-  await h.api.enroll('c-msg-101');
-  const { certificate } = await h.api.commitCmi('c-msg-101', COMPLETE);
+  await h.api.enroll('c-eop-pwc');
+  const { certificate } = await h.api.commitCmi('c-eop-pwc', COMPLETE);
   const hits = h.store.table.queryIndex('GSI3', keys.credential(certificate.credentialId));
   assert.equal(hits.length, 1);
   assert.equal(hits[0].sub, me.sub);
-  assert.equal(hits[0].courseId, 'c-msg-101');
+  assert.equal(hits[0].courseId, 'c-eop-pwc');
 });
 
 test('validityMonths sets expiresAt from issuedAt', async () => {
   const h = harness();
-  h.setCourse('c-msg-101', { credential: { criteria: 'x', skills: [], validityMonths: 24 } });
+  h.setCourse('c-eop-pwc', { credential: { criteria: 'x', skills: [], validityMonths: 24 } });
   await h.signInAs('student@demo.test');
-  await h.api.enroll('c-msg-101');
-  const { certificate: c } = await h.api.commitCmi('c-msg-101', COMPLETE);
+  await h.api.enroll('c-eop-pwc');
+  const { certificate: c } = await h.api.commitCmi('c-eop-pwc', COMPLETE);
   const issued = new Date(c.issuedAt);
   const expires = new Date(c.expiresAt);
   const months = (expires.getUTCFullYear() - issued.getUTCFullYear()) * 12 + (expires.getUTCMonth() - issued.getUTCMonth());

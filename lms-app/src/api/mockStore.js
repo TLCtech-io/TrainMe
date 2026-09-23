@@ -17,17 +17,31 @@
    Enrollment    USER#<sub>          ENROLL#<courseId>          GSI1PK COURSE#<courseId>, GSI1SK ENROLL#<sub>
    CMI runtime   USER#<sub>          CMI#<courseId>#<scoId>
    Certificate   USER#<sub>          CERT#<courseId>            GSI3PK CRED#<credentialId>, GSI3SK CERT
+   Teaching      USER#<sub>          TEACH#<courseId>
+   Rubric        COURSE#<courseId>   RUBRIC#<rubricId>
+   Submission    USER#<sub>          SUB#<courseId>#<itemId>#<attempt, 3 digits>
+                                                               GSI1PK COURSE#<courseId>,
+                                                               GSI1SK QUEUE#<submittedAt>#<sub>#<itemId> while awaiting review,
+                                                                      EVAL#<evaluatedAt>#<sub>#<itemId> once evaluated
 
-   GSI1 inverts the enrollment key: the course roster (Sprint 2 instructor
-   view) is one query, COURSE#<courseId> / begins_with ENROLL#.
+   GSI1 is overloaded per course (standard single-table practice):
+     roster         COURSE#<courseId> / begins_with ENROLL#
+     grading queue  COURSE#<courseId> / begins_with QUEUE#  (oldest first)
+     evaluated work COURSE#<courseId> / begins_with EVAL#
+   A submission moves from QUEUE# to EVAL# by rewriting its GSI1SK, so the
+   queue holds exactly the work awaiting review, with no filter.
    GSI2 is the catalog: CATALOG#published / begins_with COURSE#.
    GSI3 finds a certificate by its public credential ID (the Sprint 7
    verification page, verify.<domain>/c/<credentialId>): CRED#<id> / CERT.
 
-   The SES outbox is not table data; it stays a plain array.
+   A learner's attempts at one item: USER#<sub> / begins_with SUB#<courseId>#<itemId>#
+   An instructor's courses:          USER#<sub> / begins_with TEACH#
+
+   Not table data: the SES outbox (a plain array) and uploaded files (blobs,
+   keyed by the S3 object key they will have in Sprint 4).
    ============================================================================ */
 
-import { seedUsers, seedCourses, seedItems } from './seed.js';
+import { seedUsers, seedCourses, seedItems, seedTeaching, seedRubrics } from './seed.js';
 
 // Key builders: the only place key strings are spelled. Sprint 4 Lambdas
 // use the same shapes.
@@ -43,6 +57,12 @@ export const keys = {
   cert: (courseId) => `CERT#${courseId}`,
   catalog: (status) => `CATALOG#${status}`,
   credential: (credentialId) => `CRED#${credentialId}`,
+  teach: (courseId) => `TEACH#${courseId}`,
+  rubric: (rubricId) => `RUBRIC#${rubricId}`,
+  submissions: (courseId, itemId) => `SUB#${courseId}#${itemId}#`,
+  submission: (courseId, itemId, attempt) => `SUB#${courseId}#${itemId}#${String(attempt).padStart(3, '0')}`,
+  queued: (submittedAt, sub, itemId) => `QUEUE#${submittedAt}#${sub}#${itemId}`,
+  evaluated: (evaluatedAt, sub, itemId) => `EVAL#${evaluatedAt}#${sub}#${itemId}`,
 };
 
 // Attributes that exist only for the table; the api strips them before
@@ -121,9 +141,18 @@ export function makeStore() {
   for (const it of seedItems) {
     table.put({ PK: keys.course(it.courseId), SK: keys.item(it.itemId), entity: 'item', ...it });
   }
+  // USER#<sub> / TEACH#<courseId>: instructor course assignments.
+  for (const t of seedTeaching) {
+    table.put({ PK: keys.user(t.sub), SK: keys.teach(t.courseId), entity: 'teach', ...t, assignedAt: new Date(0).toISOString() });
+  }
+  // COURSE#<courseId> / RUBRIC#<rubricId>
+  for (const r of seedRubrics) {
+    table.put({ PK: keys.course(r.courseId), SK: keys.rubric(r.rubricId), entity: 'rubric', ...r });
+  }
 
   return {
     table,
-    outbox: [], // stand-in for SES; certificate "emails" land here
+    outbox: [], // stand-in for SES; "emails" land here
+    blobs: new Map(), // stand-in for S3: fileKey -> Blob
   };
 }

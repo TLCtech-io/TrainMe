@@ -147,6 +147,34 @@ const config = {
   },
 
   /* --------------------------------------------------------------------------
+     EVALUATION (Sprint 2)
+     The rubric scale every instructor evaluation uses, in order from highest
+     to lowest. A rubric rates each criterion on this scale, and the overall
+     outcome is one of these levels. `passing` decides what the outcome does:
+     a passing outcome approves the submission (the item is complete and any
+     approval gate opens); a non-passing one returns it for resubmission.
+     Numeric scores exist only on quizzes and tests (SCORM assessments).
+     -------------------------------------------------------------------------- */
+  evaluation: {
+    levels: [
+      { id: 'advanced',            label: 'Advanced Competency',          passing: true },
+      { id: 'competent',           label: 'Competent',                    passing: true },
+      { id: 'approaching',         label: 'Approaching Competency',       passing: false },
+      { id: 'additional_learning', label: 'Additional Learning Required', passing: false },
+    ],
+  },
+
+  /* --------------------------------------------------------------------------
+     UPLOADS (Sprint 2)
+     Limits for learner submission files. The real build enforces the same
+     limit server-side when it issues the presigned S3 upload URL.
+     -------------------------------------------------------------------------- */
+  uploads: {
+    maxBytes: 25 * 1024 * 1024, // 25 MB per file
+    maxFiles: 5,                // per submission
+  },
+
+  /* --------------------------------------------------------------------------
      FEATURE FLAGS
      sandboxHints  Shows the sandbox-only helper UI: the demo accounts panel
                    and prefilled credentials on sign-in, the SCORM runtime

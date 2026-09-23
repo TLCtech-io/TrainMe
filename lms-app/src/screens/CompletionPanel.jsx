@@ -1,8 +1,8 @@
 /* ============================================================================
    COMPLETION + CERTIFICATE
-   Shown by the player once a commit completes the course (or on the Review
-   path, with the existing certificate). The certificate card is a stand-in
-   for the generated PDF. certificate is null for a course with certificates
+   Shown at the top of the course page once the course is complete (every
+   required item done). The certificate card is a stand-in for the
+   generated PDF. certificate is null for a course with certificates
    turned off (certificateEnabled: false): completion shows, the card and
    the email notice do not.
    ============================================================================ */
@@ -17,7 +17,8 @@ const { copy, features } = LMS_CONFIG;
 export default function CompletionPanel({ api, courseId, certificate, onExit }) {
   const [outbox, setOutbox] = useState([]);
   useEffect(() => {
-    api._outbox().then((o) => setOutbox(o.filter((m) => m.cert.courseId === courseId)));
+    // Only certificate emails: evaluation emails in the same outbox carry no cert.
+    api._outbox().then((o) => setOutbox(o.filter((m) => m.kind === 'certificate' && m.courseId === courseId)));
   }, [api, courseId]);
 
   return (
@@ -50,8 +51,13 @@ export default function CompletionPanel({ api, courseId, certificate, onExit }) 
       </div>
       {certificate ? (
         <p style={{ fontSize: 14, color: T.neutral700, lineHeight: 1.6, marginTop: 4 }}>
-          Your completion was recorded with a score of <strong>{certificate.score}</strong>. A
-          certificate has been issued and emailed.
+          Your completion was recorded
+          {certificate.score != null && (
+            <>
+              {' '}with a score of <strong>{certificate.score}</strong>
+            </>
+          )}
+          . A certificate has been issued and emailed.
         </p>
       ) : (
         <p style={{ fontSize: 14, color: T.neutral700, lineHeight: 1.6, marginTop: 4 }}>

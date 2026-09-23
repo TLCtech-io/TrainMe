@@ -13,13 +13,30 @@ import { makeStore } from './mockStore.js';
 // contract test (test/api.test.js) fails if the implementation drifts from
 // this list in either direction. `_outbox` is sandbox-only (SES stand-in).
 export const API_CONTRACT = [
+  // auth and catalog
   'signIn',
   'listCatalog',
+  'getCourseOutline',
+  // learner
   'listEnrollments',
   'enroll',
+  'getCourseProgress',
   'getCmi',
   'commitCmi',
   'getCertificate',
+  'uploadFile',
+  'getFileUrl',
+  'submitAssignment',
+  'listSubmissions',
+  'getRubric',
+  // instructor and admin
+  'listTeaching',
+  'getRoster',
+  'listGradingQueue',
+  'getReview',
+  'evaluateSubmission',
+  'saveRubric',
+  // sandbox only
   '_outbox',
 ];
 

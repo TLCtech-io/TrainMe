@@ -46,7 +46,7 @@ test('student vertical: enroll -> play -> resume -> complete -> certificate -> t
   const h = harness();
   const { api } = h;
   const me = await h.signInAs('student@demo.test');
-  const courseId = 'c-msg-101';
+  const courseId = 'c-eop-pwc'; // single-SCO course: the Sprint 0 path
 
   // Catalog and a clean slate
   const catalog = await api.listCatalog();
@@ -136,29 +136,32 @@ test('identity isolation: one learner never sees another learner\'s records', as
   assert.equal(mine.score, 88);
 });
 
-test('a completing commit without an enrollment issues no certificate', async () => {
+test('SCORM commits are refused without an enrollment', async () => {
   const h = harness();
   const { api } = h;
   await h.signInAs('student@demo.test');
-  const res = await api.commitCmi('c-msg-101', { 'cmi.core.lesson_status': 'completed', 'cmi.core.score.raw': '90' });
-  assert.deepEqual(res, { completed: false, certificate: null });
-  assert.equal(await api.getCertificate('c-msg-101'), null);
+  await assert.rejects(
+    () => api.commitCmi('c-eop-pwc', { 'cmi.core.lesson_status': 'completed', 'cmi.core.score.raw': '90' }),
+    /Not enrolled/
+  );
+  assert.equal(await api.getCertificate('c-eop-pwc'), null);
   assert.deepEqual(await api.listEnrollments(), []);
 });
 
-test('scoId: omitted means the course\'s primary SCO; explicit scoId addresses that SCO', async () => {
+test('scoId: omitted means the course\'s first SCO; each SCO keeps its own runtime record', async () => {
   const h = harness();
   const { api } = h;
   await h.signInAs('student@demo.test');
   await api.enroll('c-msg-101');
   await api.commitCmi('c-msg-101', { 'cmi.suspend_data': '2', 'cmi.core.lesson_status': 'incomplete' });
-  // Default and explicit primary SCO read the same record
+  // Default and explicit first SCO read the same record
   assert.equal((await api.getCmi('c-msg-101'))['cmi.suspend_data'], '2');
   assert.equal((await api.getCmi('c-msg-101', 'sco-main'))['cmi.suspend_data'], '2');
-  // A different SCO in the same course has its own runtime record
-  await api.commitCmi('c-msg-101', { 'cmi.suspend_data': '9', 'cmi.core.lesson_status': 'incomplete' }, 'sco-2');
-  assert.equal((await api.getCmi('c-msg-101', 'sco-2'))['cmi.suspend_data'], '9');
-  assert.equal((await api.getCmi('c-msg-101'))['cmi.suspend_data'], '2');
+  // The second SCO has its own (empty) record, and is gated
+  assert.equal(await api.getCmi('c-msg-101', 'sco-check'), null);
+  await assert.rejects(() => api.commitCmi('c-msg-101', { 'cmi.suspend_data': '9' }, 'sco-check'), /locked/);
+  // A SCO the course does not have is refused
+  await assert.rejects(() => api.commitCmi('c-msg-101', {}, 'sco-nope'), /Unknown SCO/);
 });
 
 test('returned records carry no table key attributes', async () => {
@@ -167,9 +170,11 @@ test('returned records carry no table key attributes', async () => {
   await h.signInAs('student@demo.test');
   const leaks = (o) => Object.keys(o).filter((k) => /^(PK|SK|GSI\d(PK|SK)|entity)$/.test(k));
   for (const c of await api.listCatalog()) assert.deepEqual(leaks(c), []);
-  assert.deepEqual(leaks(await api.enroll('c-msg-101')), []);
+  assert.deepEqual(leaks(await api.enroll('c-eop-pwc')), []);
   for (const e of await api.listEnrollments()) assert.deepEqual(leaks(e), []);
-  const done = await api.commitCmi('c-msg-101', { 'cmi.core.lesson_status': 'passed', 'cmi.core.score.raw': '85' });
+  const done = await api.commitCmi('c-eop-pwc', { 'cmi.core.lesson_status': 'passed', 'cmi.core.score.raw': '85' });
   assert.deepEqual(leaks(done.certificate), []);
-  assert.deepEqual(leaks(await api.getCertificate('c-msg-101')), []);
+  assert.deepEqual(leaks(await api.getCertificate('c-eop-pwc')), []);
+  const progress = await api.getCourseProgress('c-eop-pwc');
+  for (const i of progress.items) assert.deepEqual(leaks(i), []);
 });

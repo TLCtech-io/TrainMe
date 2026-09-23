@@ -18,15 +18,21 @@ const lessonSets = {
     ['Training and Exercise', 'How the program builds and validates competency.'],
     ['Course Quiz', 'Confirm understanding to record your completion certificate.'],
   ],
+  // Effective Message Writing is two SCOs: the lessons, then the knowledge
+  // check, which unlocks only after the instructor approves the assignment.
   'c-msg-101': [
     ['Why messaging matters', 'Clear alerts drive protective action. Vague ones cost time.'],
     ['The five elements', 'Source, hazard, location, protective action, and time.'],
     ['Write for action', 'Lead with what to do. Plain language. No jargon.'],
-    ['Knowledge check', 'Mark the course complete to record your score and certificate.'],
+  ],
+  'c-msg-101#sco-check': [
+    ['Knowledge check', 'Mark the check complete to record your score.'],
   ],
 };
 
-// Slides for a course as [{ h, b }], with a generic fallback set.
-export function lessonsFor(courseId) {
-  return (lessonSets[courseId] || lessonSets['c-msg-101']).map(([h, b]) => ({ h, b }));
+// Slides for a SCO as [{ h, b }]. A course's primary SCO (sco-main) is keyed
+// by courseId; any other SCO by `${courseId}#${scoId}`. Generic fallback set.
+export function lessonsFor(courseId, scoId = 'sco-main') {
+  const set = (scoId !== 'sco-main' && lessonSets[`${courseId}#${scoId}`]) || lessonSets[courseId];
+  return (set || lessonSets['c-msg-101']).map(([h, b]) => ({ h, b }));
 }

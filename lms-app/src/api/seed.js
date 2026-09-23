@@ -94,27 +94,132 @@ export const seedCourses = [
   },
 ];
 
-// ITEM# records: the content items attached to each course (COURSE#<id> /
-// ITEM#<itemId>). Each Sprint 0 course is one SCORM package with one SCO,
-// which is how Rise360 exports. scoId is the SCO's identifier from
-// imsmanifest.xml; CMI is stored per SCO (CMI#<courseId>#<scoId>).
+// ITEM# records: the ordered content items of each course (COURSE#<id> /
+// ITEM#<itemId>). Every item carries:
+//   order     position in the course (the learner sees items in this order)
+//   required  whether the item must be complete for the course to complete
+//   unlock    per-item gating rule (playbook Section 4, Sprint 2):
+//               'open'            always available
+//               'after_previous'  once the previous item is done (a SCORM
+//                                 item completed, or an assignment submitted)
+//               'after_approval'  once the previous item is approved (a SCORM
+//                                 item completed, or an assignment evaluated
+//                                 at a passing rubric level)
+//   dueDays   days after enrollment the item is due (self-paced); null = none
+// SCORM items: scoId is the SCO's identifier from imsmanifest.xml (CMI is
+// stored per SCO, CMI#<courseId>#<scoId>); assessment: true marks a quiz or
+// test, the only items that record a numeric score.
+// Assignment items: instructions, and the rubricId instructors evaluate with.
 export const seedItems = [
   {
     courseId: 'c-eop-pwc',
     itemId: 'i-eop-pwc-scorm',
     type: 'scorm',
-    title: 'PWC EOP: New Team Member Training (SCORM 1.2)',
+    title: 'PWC EOP: New Team Member Training',
     order: 1,
+    required: true,
+    unlock: 'open',
+    dueDays: null,
     scoId: 'sco-main',
+    assessment: true, // the package ends in the Course Quiz
     launchPath: 'MOCK', // real build: S3 key of the launch file, e.g. eop-pwc/scormdriver/indexAPI.html
   },
   {
     courseId: 'c-msg-101',
-    itemId: 'i-msg-101-scorm',
+    itemId: 'i-msg-101-lessons',
     type: 'scorm',
-    title: 'Effective Message Writing (SCORM 1.2)',
+    title: 'Lessons: Effective Message Writing',
     order: 1,
+    required: true,
+    unlock: 'open',
+    dueDays: 7,
     scoId: 'sco-main',
+    assessment: false,
     launchPath: 'MOCK',
+  },
+  {
+    courseId: 'c-msg-101',
+    itemId: 'i-msg-101-draft',
+    type: 'assignment',
+    title: 'Draft an alert message',
+    order: 2,
+    required: true,
+    unlock: 'after_previous',
+    dueDays: 14,
+    rubricId: 'r-msg-101-draft',
+    instructions:
+      'Sandbox sample assignment. Write a public alert message for a flash flood ' +
+      'warning in your jurisdiction. Use the five elements from the lessons: ' +
+      'source, hazard, location, protective action, and time. Upload your draft ' +
+      'as a PDF or Word document, and add a short note if you want to explain ' +
+      'your choices.',
+  },
+  {
+    courseId: 'c-msg-101',
+    itemId: 'i-msg-101-check',
+    type: 'scorm',
+    title: 'Knowledge check',
+    order: 3,
+    required: true,
+    unlock: 'after_approval',
+    dueDays: 21,
+    scoId: 'sco-check',
+    assessment: true,
+    launchPath: 'MOCK',
+  },
+];
+
+// TEACH# records: which instructors are assigned to which courses
+// (USER#<sub> / TEACH#<courseId>). An instructor gets the instructor view of
+// exactly these courses and the student view of everything else. Admins get
+// the instructor view of every course without an assignment.
+export const seedTeaching = [
+  { sub: 'u-instr-001', courseId: 'c-msg-101' },
+];
+
+// RUBRIC# records (COURSE#<courseId> / RUBRIC#<rubricId>). Each criterion has a
+// descriptor per level of the evaluation scale in lms.config.js. Admins and
+// the course's instructors edit rubrics in the app; this one is PLACEHOLDER
+// content to demonstrate the flow.
+export const seedRubrics = [
+  {
+    courseId: 'c-msg-101',
+    rubricId: 'r-msg-101-draft',
+    title: 'PLACEHOLDER rubric: Draft an alert message',
+    criteria: [
+      {
+        criterionId: 'crit-elements',
+        title: 'Five elements',
+        description: 'Source, hazard, location, protective action, and time are all present.',
+        levels: {
+          advanced: 'All five elements, each specific and unambiguous.',
+          competent: 'All five elements present.',
+          approaching: 'One element missing or vague.',
+          additional_learning: 'Two or more elements missing.',
+        },
+      },
+      {
+        criterionId: 'crit-action',
+        title: 'Leads with the protective action',
+        description: 'The reader knows what to do from the first sentence.',
+        levels: {
+          advanced: 'Action first, specific, and achievable.',
+          competent: 'Action appears early and is clear.',
+          approaching: 'Action present but buried or unclear.',
+          additional_learning: 'No clear protective action.',
+        },
+      },
+      {
+        criterionId: 'crit-plain',
+        title: 'Plain language',
+        description: 'No jargon, acronyms, or agency-internal terms.',
+        levels: {
+          advanced: 'Reads clearly for any member of the public.',
+          competent: 'Mostly plain; minor jargon.',
+          approaching: 'Jargon gets in the way of meaning.',
+          additional_learning: 'Written for responders, not the public.',
+        },
+      },
+    ],
   },
 ];

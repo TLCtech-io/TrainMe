@@ -1,6 +1,6 @@
-# TLC_TRNG LMS (v0.2, Sprint 1: project structure and config module)
+# TLC_TRNG LMS (v0.3, Sprint 2: instructor grading and gated progression)
 
-The TLC TRNG, LLC Learning Management System as a real Vite + React project. Sprint 1 breaks the Sprint 0 single-file scaffold (`../lms_vertical_slice.jsx`) into this tree and extracts the config module. It adds no features: the student path (sign in, catalog, enroll, SCORM playback with resume, completion, certificate, transcript) behaves and renders exactly as in Sprint 0.
+The TLC TRNG, LLC Learning Management System as a Vite + React project. Sprint 1 turned the Sprint 0 single-file scaffold (`../lms_vertical_slice.jsx`) into this tree with a config module. Sprint 2 adds the core differentiator: ordered course items with per-item gating, assignment submission and resubmission, rubric evaluation by instructors (four-level scale), a grading queue and roster scoped to each instructor's courses, and the approval-to-advance lock. Playbook Section 8.3 describes the model.
 
 Status: a working iterative slice on the mock data layer. No AWS yet (that is Sprint 4). See `../LMS_Build_Playbook_v1.md` for the architecture and roadmap.
 
@@ -27,6 +27,7 @@ Uses Node's built-in test runner (no extra dependencies). It proves, without a b
 - **Student vertical:** enroll, bookmark commit, leave and resume from `cmi.suspend_data`, completion, certificate with identity from the session, SES stand-in email, the Review path (no re-issue, no hang), and one transcript line per course.
 - **Identity isolation:** one learner never sees another's enrollments, CMI, certificates, or email.
 - **SCORM runtime:** `window.API` defaults, commit copies, `snapshot()` surviving teardown (playbook 10.1), and StrictMode double-install safety.
+- **Grading and gating (Sprint 2):** each unlock rule, the submit / return / resubmit / approve loop, rubric validation and snapshots, completion by approval (certifying the learner), instructor scope and admin reach, file limits and access, due dates and late flags, the GSI1 grading queue, and the roster.
 - **Credentials:** Open Badges fields on every certificate, credential ID format and uniqueness, the GSI3 lookup by ID, expiry from `validityMonths`, and the per-course certificate switch.
 - **Single table:** records land under the playbook's PK/SK keys, the roster (GSI1) and catalog (GSI2) are index queries, the store has no scan, and reads return copies.
 - **Config:** required sections, hex tokens, the TLC_TRNG palette, and every sandbox account shown on sign-in actually signing in.
@@ -39,21 +40,20 @@ npm run e2e        # against the dev server (React StrictMode on)
 npm run e2e:prod   # builds, then runs against the production build
 ```
 
-Playwright starts the server itself (or reuses one already on the port) and walks the full student path, the instructor view, and a phone-width sign-in. Failures leave a trace in `test-results/` (gitignored); open it with `npx playwright show-trace <path>`.
+Playwright starts the server itself (or reuses one already on the port) and walks the single-SCO student path, the whole Sprint 2 loop across student and instructor (submit, return with feedback, resubmit, approve, unlock, certify), instructor scope with rubric editing, and a phone-width sign-in. Failures leave a trace in `test-results/` (gitignored); open it with `npx playwright show-trace <path>`.
 
 ## Smoke test (by hand)
 
-`npm run e2e` automates this list. To walk it yourself with `npm run dev` running:
+`npm run e2e` automates this. To walk it yourself with `npm run dev` running (the mock data resets on page reload; switch users with Sign out):
 
-1. Sign-in card shows the TLC_TRNG wordmark, "Learning platform - sandbox - v0.2", and the sandbox accounts.
-2. A wrong password shows "Incorrect email or password."
-3. Sign in as `student@demo.test` / `demo`. The catalog shows two courses, both "Not enrolled".
-4. Enroll in Effective Message Writing, open it, click Next twice (Slide 3 of 4).
-5. Back to catalog (pill reads "In progress"), reopen: it resumes on Slide 3.
-6. Finish and Mark complete: certificate for Jordan Avery, score 92, "Email sent" notice.
-7. Back to catalog, Review, Re-issue certificate: the existing certificate shows again.
-8. Transcript tab: one row, Completed, score 92.
-9. Sign out, sign in as `instructor@demo.test`: Catalog tab only, none of the student's records.
+1. Sign-in card shows "Learning platform - sandbox - v0.3". A wrong password shows "Incorrect email or password."
+2. **Student** (`student@demo.test` / `demo`): enroll in Effective Message Writing and open it. Three items: the lessons (open), "Draft an alert message" (locked until the lessons are done), and the knowledge check (locked until the instructor approves the draft).
+3. Finish the lessons. Open the draft: read the instructions and the rubric, attach any file, add a note, submit. It shows "Awaiting review"; the knowledge check stays locked.
+4. **Instructor** (`instructor@demo.test`): the Teaching tab lists Effective Message Writing only (the EOP course appears only in the catalog). Open it, then Review. Rate each criterion, pick an outcome below Competent, add comments, record. It is returned.
+5. **Student**: the draft shows "Returned: revise" with the ratings and comments. Resubmit.
+6. **Instructor**: review attempt 2, rate Competent, record. It is approved. The roster shows 2 of 3 required.
+7. **Student**: the knowledge check is open. Finish it: the course completes and the certificate appears with its credential ID.
+8. **Admin** (`admin@demo.test`): Teaching lists both courses.
 
 ## Production build
 
@@ -90,7 +90,15 @@ lms-app/
       primitives.jsx      Btn, Pill, StatusPill, SectionHead, Loading, Empty
       Shell.jsx           top bar and tabs
     screens/
-      SignIn.jsx  Catalog.jsx  CoursePlayer.jsx  CompletionPanel.jsx  Transcript.jsx
+      SignIn.jsx  Catalog.jsx  Transcript.jsx
+      CourseHome.jsx        learner course page: ordered items, status, locks, due dates
+      CoursePlayer.jsx      one SCORM item
+      AssignmentView.jsx    instructions, rubric, submit/resubmit, attempt history
+      CompletionPanel.jsx   completion and certificate
+      Teaching.jsx          instructor/admin: courses they teach
+      TeachCourse.jsx       grading queue, roster, rubrics for one course
+      ReviewSubmission.jsx  rubric evaluation of one submission
+      RubricEditor.jsx      rubric authoring
   test/                   headless tests (npm test)
   e2e/                    browser tests (npm run e2e)
   playwright.config.js    e2e server setup (dev or production preview)
@@ -109,7 +117,7 @@ lms-app/
 
 ## Credentials and placeholders
 
-Certificates carry the Open Badges fields (playbook Section 4): a random public `credentialId` (e.g. `7KQ2-M9XD-P4TA`), the issuer from `credentials.issuer` in the config, and the course's criteria, skills, and expiry. Each course in `src/api/seed.js` has `certificateEnabled` (off: completion is recorded, no certificate or email) and a `credential` policy. The criteria, skills, and validity there are **placeholder language**; search for `PLACEHOLDER` to replace them.
+Certificates carry the Open Badges fields (playbook Section 4): a random public `credentialId` (e.g. `7KQ2-M9XD-P4TA`), the issuer from `credentials.issuer` in the config, and the course's criteria, skills, and expiry. Each course in `src/api/seed.js` has `certificateEnabled` (off: completion is recorded, no certificate or email) and a `credential` policy. The criteria, skills, and validity there are **placeholder language**, as are the sample rubric and assignment for Effective Message Writing; search for `PLACEHOLDER` (and "Sandbox sample") to replace them.
 
 ## Security notes
 

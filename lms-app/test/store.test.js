@@ -33,10 +33,12 @@ test('seed data lands as USER#, COURSE#/META, and COURSE#/ITEM# items', () => {
   assert.equal(profile.role, 'student');
   assert.equal(profile.password, undefined, 'passwords belong to Cognito, never the table');
   assert.equal(table.get('COURSE#c-msg-101', 'META').title, 'Effective Message Writing');
-  const items = table.query('COURSE#c-msg-101', 'ITEM#');
-  assert.equal(items.length, 1);
-  assert.equal(items[0].type, 'scorm');
-  assert.equal(items[0].scoId, 'sco-main');
+  const items = table.query('COURSE#c-msg-101', 'ITEM#').sort((a, b) => a.order - b.order);
+  assert.deepEqual(items.map((i) => i.type), ['scorm', 'assignment', 'scorm']);
+  assert.deepEqual(items.map((i) => i.unlock), ['open', 'after_previous', 'after_approval']);
+  assert.equal(table.get('COURSE#c-msg-101', 'RUBRIC#r-msg-101-draft').criteria.length, 3);
+  assert.ok(table.get('USER#u-instr-001', 'TEACH#c-msg-101'), 'the instructor teaches c-msg-101');
+  assert.equal(table.get('USER#u-instr-001', 'TEACH#c-eop-pwc'), null, 'and not c-eop-pwc');
 });
 
 test('catalog is the GSI2 query CATALOG#published / COURSE#', () => {
@@ -49,17 +51,17 @@ test('learner records land under the playbook keys', async () => {
   const h = harness();
   const me = await h.signInAs('student@demo.test');
   const pk = keys.user(me.sub);
-  await h.api.enroll('c-msg-101');
-  await h.api.commitCmi('c-msg-101', { 'cmi.core.lesson_status': 'completed', 'cmi.core.score.raw': '92' });
+  await h.api.enroll('c-eop-pwc');
+  await h.api.commitCmi('c-eop-pwc', { 'cmi.core.lesson_status': 'completed', 'cmi.core.score.raw': '92' });
 
   const t = h.store.table;
-  assert.equal(t.get(pk, 'ENROLL#c-msg-101').status, 'completed');
-  assert.equal(t.get(pk, 'CMI#c-msg-101#sco-main').cmi['cmi.core.score.raw'], '92');
-  assert.equal(t.get(pk, 'CERT#c-msg-101').score, 92);
+  assert.equal(t.get(pk, 'ENROLL#c-eop-pwc').status, 'completed');
+  assert.equal(t.get(pk, 'CMI#c-eop-pwc#sco-main').cmi['cmi.core.score.raw'], '92');
+  assert.equal(t.get(pk, 'CERT#c-eop-pwc').score, 92);
   // The whole learner partition, in SK order
   assert.deepEqual(
     t.query(pk).map((i) => i.SK),
-    ['CERT#c-msg-101', 'CMI#c-msg-101#sco-main', 'ENROLL#c-msg-101', 'PROFILE']
+    ['CERT#c-eop-pwc', 'CMI#c-eop-pwc#sco-main', 'ENROLL#c-eop-pwc', 'PROFILE']
   );
 });
 

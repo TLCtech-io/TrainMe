@@ -139,3 +139,77 @@ export const Empty = ({ label }) => (
     {label}
   </div>
 );
+
+// Course item status pill (the learner's course page and the instructor views).
+const ITEM_STATUS = {
+  locked: ['Locked', 'neutral'],
+  available: ['Not started', 'neutral'],
+  in_progress: ['In progress', 'accent'],
+  submitted: ['Awaiting review', 'accent'],
+  returned: ['Returned: revise', 'accent'],
+  complete: ['Complete', 'success'],
+};
+export const ItemStatusPill = ({ status }) => {
+  const [label, tone] = ITEM_STATUS[status] || [status, 'neutral'];
+  return <Pill tone={tone}>{label}</Pill>;
+};
+
+// Dates as the rest of the UI shows them (the viewer's locale).
+export const fmtDate = (iso) => (iso ? new Date(iso).toLocaleDateString() : '-');
+
+// A white card, the container most screens use.
+export const Card = ({ children, style }) => (
+  <div
+    style={{
+      background: T.white,
+      borderRadius: 14,
+      border: `1px solid ${T.neutral100}`,
+      padding: 22,
+      boxShadow: '0 1px 2px rgba(15,23,42,.04)',
+      ...style,
+    }}
+  >
+    {children}
+  </div>
+);
+
+// Back link at the top of a sub-screen.
+export const BackLink = ({ onClick, children }) => (
+  <button
+    onClick={onClick}
+    style={{
+      background: 'transparent',
+      border: 'none',
+      color: T.neutral500,
+      fontSize: 13,
+      fontWeight: 600,
+      cursor: 'pointer',
+      padding: 0,
+      marginBottom: 16,
+      fontFamily: F.body,
+    }}
+  >
+    ← {children}
+  </button>
+);
+
+// Inline error text for a failed action.
+export const ErrorText = ({ children }) =>
+  children ? (
+    <div role="alert" style={{ marginTop: 12, fontSize: 13, color: T.danger, fontFamily: F.body }}>
+      {children}
+    </div>
+  ) : null;
+
+// Shared input styling for forms.
+export const fieldStyle = {
+  width: '100%',
+  boxSizing: 'border-box',
+  padding: '10px 12px',
+  borderRadius: 8,
+  border: `1px solid ${T.neutral300}`,
+  fontFamily: F.body,
+  fontSize: 14,
+  background: T.white,
+  color: T.neutral900,
+};

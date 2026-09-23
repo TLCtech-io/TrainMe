@@ -1,6 +1,8 @@
 /* ============================================================================
    SHELL / TOP BAR
    App chrome for signed-in users: brand, role-scoped tabs, identity, sign out.
+   Every role gets Catalog and Transcript; instructors and admins also get
+   Teaching.
    ============================================================================ */
 
 import React from 'react';
@@ -8,13 +10,13 @@ import LMS_CONFIG from '../lms.config.js';
 import { T, F } from '../theme.js';
 
 export default function Shell({ profile, onSignOut, tab, setTab, children }) {
-  const tabs =
-    profile.role === 'student'
-      ? [
-          ['catalog', 'Catalog'],
-          ['transcript', 'Transcript'],
-        ]
-      : [['catalog', 'Catalog']];
+  // Everyone can take courses (instructors and admins too, as learners);
+  // instructors and admins also get the instructor view of what they teach.
+  const tabs = [
+    ['catalog', 'Catalog'],
+    ['transcript', 'Transcript'],
+    ...(profile.role === 'instructor' || profile.role === 'admin' ? [['teaching', 'Teaching']] : []),
+  ];
 
   return (
     <div style={{ minHeight: '100vh', background: T.neutral50, fontFamily: F.body }}>

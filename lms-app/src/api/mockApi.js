@@ -6,6 +6,11 @@
    becomes a fetch() to the corresponding Lambda endpoint with the JWT in the
    Authorization header. Components never change.
 
+   Rules live here, not in components: gating, submission lifecycle, rubric
+   validation, instructor authorization, and course completion are enforced
+   by the api, exactly as the Lambdas will enforce them server-side. The UI
+   only reflects what the api reports.
+
    When you add a feature, add its method here first, with the signature the
    backend will honor, then implement the mock body, then add it to
    API_CONTRACT in ./index.js (the contract test enforces the list).
@@ -16,6 +21,10 @@ import { seedUsers } from './seed.js';
 import { keys, stripKeys } from './mockStore.js';
 import { newCredentialId } from './credentialId.js';
 
+const LEVELS = LMS_CONFIG.evaluation.levels;
+const levelById = (id) => LEVELS.find((l) => l.id === id);
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 // issuedAt plus a whole number of months, as an ISO string (UTC).
 function addMonths(iso, months) {
   const d = new Date(iso);
@@ -23,49 +32,195 @@ function addMonths(iso, months) {
   return d.toISOString();
 }
 
+const randomToken = () => {
+  const b = new Uint8Array(8);
+  globalThis.crypto.getRandomValues(b);
+  return [...b].map((x) => x.toString(16).padStart(2, '0')).join('');
+};
+
 export function makeApi(store, rawGetSession) {
   const { table } = store;
   const delay = (ms = 180) => new Promise((r) => setTimeout(r, ms));
+  const urlCache = new Map(); // fileKey -> object URL (mock only)
 
   // Normalize the session so callers can read `sub`, `profile`, and `token`
   // uniformly. The raw session is { token, profile }; profile carries the
   // sub. This flattening is why no call site has to know that shape, and it
   // mirrors the real backend, where `sub` comes from the verified JWT.
-  // (Playbook 10.2: identity comes from the session, never a table scan.)
+  // (Playbook 10.2: the caller's identity comes from the session, never a
+  // table scan. Another user's identity is a keyed get of USER#<sub>/PROFILE.)
   const getSession = () => {
     const s = rawGetSession() || {};
-    return { token: s.token, profile: s.profile, sub: s.profile?.sub };
+    return { token: s.token, profile: s.profile, sub: s.profile?.sub, role: s.profile?.role };
   };
 
-  // The SCO a CMI call addresses. Callers may omit scoId: a Rise360 export
-  // is a single-SCO package, so the default is the course's first SCORM item
-  // (lowest order). Query COURSE#<id> / begins_with ITEM#, no scan.
+  const profileOf = (sub) => stripKeys(table.get(keys.user(sub), keys.profile()));
+
+  function courseOrThrow(courseId) {
+    const course = stripKeys(table.get(keys.course(courseId), keys.meta()));
+    if (!course) throw new Error('Course not found.');
+    return course;
+  }
+
+  const itemsOf = (courseId) =>
+    table.query(keys.course(courseId), 'ITEM#').map(stripKeys).sort((a, b) => a.order - b.order);
+
+  function itemOrThrow(courseId, itemId) {
+    const item = stripKeys(table.get(keys.course(courseId), keys.item(itemId)));
+    if (!item) throw new Error('Course item not found.');
+    return item;
+  }
+
+  function enrollmentOrThrow(sub, courseId) {
+    const enr = table.get(keys.user(sub), keys.enroll(courseId));
+    if (!enr) throw new Error('Not enrolled in this course.');
+    return enr;
+  }
+
+  // Instructor authorization (the Lambda authorizer plus a keyed check):
+  // admins may act on any course; instructors only on courses they are
+  // assigned to (USER#<sub>/TEACH#<courseId>). Everyone else is refused.
+  function requireTeacher(courseId) {
+    const { sub, role } = getSession();
+    if (role === 'admin') return;
+    if (role === 'instructor' && table.get(keys.user(sub), keys.teach(courseId))) return;
+    throw new Error('Not authorized for this course.');
+  }
+  function isTeacher(courseId) {
+    try {
+      requireTeacher(courseId);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // The SCO a CMI call addresses. Callers may omit scoId: the default is the
+  // course's first SCORM item (lowest order). Query COURSE#<id> / ITEM#.
   function resolveScoId(courseId, scoId) {
     if (scoId) return scoId;
-    const sco = table
-      .query(keys.course(courseId), 'ITEM#')
-      .filter((i) => i.type === 'scorm')
-      .sort((a, b) => a.order - b.order)[0];
+    const sco = itemsOf(courseId).find((i) => i.type === 'scorm');
     if (!sco) throw new Error(`Course ${courseId} has no SCORM item.`);
     return sco.scoId;
   }
 
+  function sendEmail(to, subject, extra = {}) {
+    store.outbox.push({ to, subject, sentAt: new Date().toISOString(), ...extra });
+  }
+
+  /* --------------------------------------------------------------------------
+     PROGRESS AND GATING
+     One function computes every item's state for one learner, so the course
+     page, the gate checks, the roster, and completion all agree.
+
+     Item status: locked | available | in_progress (SCORM started) |
+     submitted (awaiting review) | returned (resubmit) | complete.
+     "done" opens an 'after_previous' gate (SCORM completed, or an assignment
+     submitted at least once); "approved" opens an 'after_approval' gate
+     (SCORM completed, or an assignment evaluated at a passing level).
+     -------------------------------------------------------------------------- */
+  function progressFor(sub, courseId) {
+    const course = courseOrThrow(courseId);
+    const enr = table.get(keys.user(sub), keys.enroll(courseId));
+    const now = Date.now();
+    let prev = null;
+
+    const items = itemsOf(courseId).map((item, idx) => {
+      let status = 'available';
+      let done = false;
+      let approved = false;
+      let latestSubmission = null;
+      let attempts = 0;
+      let score = null;
+
+      if (item.type === 'scorm') {
+        const rec = table.get(keys.user(sub), keys.cmi(courseId, item.scoId));
+        const ls = rec?.cmi?.['cmi.core.lesson_status'];
+        const complete = ls === 'completed' || ls === 'passed';
+        status = complete ? 'complete' : rec ? 'in_progress' : 'available';
+        done = approved = complete;
+        const raw = rec?.cmi?.['cmi.core.score.raw'];
+        if (item.assessment && complete && raw !== undefined && raw !== '') score = Number(raw);
+      } else if (item.type === 'assignment') {
+        const subs = table.query(keys.user(sub), keys.submissions(courseId, item.itemId)).map(stripKeys);
+        attempts = subs.length;
+        latestSubmission = subs[subs.length - 1] || null;
+        status = !latestSubmission
+          ? 'available'
+          : latestSubmission.status === 'approved'
+          ? 'complete'
+          : latestSubmission.status === 'returned'
+          ? 'returned'
+          : 'submitted';
+        done = attempts > 0;
+        approved = status === 'complete';
+      }
+
+      const unlocked =
+        idx === 0 ||
+        item.unlock === 'open' ||
+        (item.unlock === 'after_approval' ? prev.approved : prev.done);
+      if (!unlocked && status === 'available') status = 'locked';
+
+      const dueAt =
+        enr && item.dueDays != null ? new Date(Date.parse(enr.enrolledAt) + item.dueDays * DAY_MS).toISOString() : null;
+      const overdue = !!dueAt && now > Date.parse(dueAt) && !['complete', 'submitted'].includes(status);
+
+      prev = { done, approved };
+      return { ...item, state: { status, locked: !unlocked, dueAt, overdue, attempts, latestSubmission, score } };
+    });
+
+    const required = items.filter((i) => i.required !== false);
+    const allRequiredComplete = required.every((i) => i.state.status === 'complete');
+    // Course score: the last required assessment (quiz or test) with a score.
+    const scored = required.filter((i) => i.type === 'scorm' && i.assessment && i.state.score != null);
+    const score = scored.length ? scored[scored.length - 1].state.score : null;
+
+    return {
+      course,
+      enrollment: enr ? stripKeys(enr) : null,
+      items,
+      summary: {
+        required: required.length,
+        complete: required.filter((i) => i.state.status === 'complete').length,
+        allRequiredComplete,
+      },
+      score,
+    };
+  }
+
+  function markActive(sub, courseId) {
+    const enr = table.get(keys.user(sub), keys.enroll(courseId));
+    if (enr && enr.status === 'enrolled') table.put({ ...enr, status: 'in_progress' });
+  }
+
+  // Completes the course (and issues the certificate) the moment every
+  // required item is complete. Called after any learner commit and after any
+  // passing evaluation. Returns what the COMPLETE+CERTIFY Lambda returns.
+  function completeIfDone(sub, courseId) {
+    const enr = table.get(keys.user(sub), keys.enroll(courseId));
+    if (!enr || enr.status === 'completed') return { completed: false, certificate: null };
+    const p = progressFor(sub, courseId);
+    if (!p.summary.allRequiredComplete) return { completed: false, certificate: null };
+    table.put({ ...enr, status: 'completed', completedAt: new Date().toISOString(), score: p.score });
+    const certificate = p.course.certificateEnabled === false ? null : issueCertificate(sub, p.course, p.score);
+    return { completed: true, certificate };
+  }
+
   // Stands in for the COMPLETE+CERTIFY Lambda (PDF -> S3 -> SES). Internal:
-  // not part of the contract, because in the real build the backend issues
-  // the certificate server-side inside the commit. Reads the learner's
-  // identity from the session profile (the real backend reads it from the
-  // JWT), so there is no lookup that can return undefined and crash the
-  // completion path.
+  // not part of the contract; the backend issues certificates server-side.
+  // The learner's name and email come from a keyed get of their profile
+  // (USER#<sub>/PROFILE), because the trigger may be an instructor's
+  // evaluation rather than the learner's own session. Never a scan.
   //
   // The record carries the Open Badges fields from day one (playbook
-  // Section 4) so the Sprint 7 verification page and Sprint 9 badges need
-  // no migration: a public credentialId, the issuer (snapshotted from
+  // Section 4): a public credentialId, the issuer (snapshotted from
   // lms.config.js), the course's criteria and skills, an evidence URL slot,
   // and expiresAt from the course's validityMonths.
   function issueCertificate(sub, course, score) {
-    const { profile } = getSession() || {};
-    const learnerName = profile?.name || 'Learner';
-    const learnerEmail = profile?.email || 'unknown@demo.test';
+    const learner = profileOf(sub) || {};
+    const learnerName = learner.name || 'Learner';
+    const learnerEmail = learner.email || 'unknown@demo.test';
     const policy = course.credential || {};
     const issuedAt = new Date().toISOString();
 
@@ -94,17 +249,18 @@ export function makeApi(store, rawGetSession) {
       GSI3PK: keys.credential(credentialId), GSI3SK: 'CERT',
       ...cert,
     });
-    // SES stand-in:
-    store.outbox.push({
-      to: learnerEmail,
-      subject: `Your certificate: ${course.title}`,
-      cert,
-      sentAt: new Date().toISOString(),
-    });
+    sendEmail(learnerEmail, `Your certificate: ${course.title}`, { kind: 'certificate', courseId: course.courseId, cert });
     return cert;
   }
 
+  // Files a learner may attach: their own uploads for this course item.
+  const uploadPrefix = (sub, courseId, itemId) => `uploads/${sub}/${courseId}/${itemId}/`;
+
   return {
+    /* ======================================================================
+       AUTH AND CATALOG
+       ====================================================================== */
+
     // POST /auth/signin  ->  { token, profile }
     async signIn(email, password) {
       await delay();
@@ -126,6 +282,16 @@ export function makeApi(store, rawGetSession) {
       return table.queryIndex('GSI2', keys.catalog('published'), 'COURSE#').map(stripKeys);
     },
 
+    // GET /courses/{courseId}  ->  { course, items }  (the public outline)
+    async getCourseOutline(courseId) {
+      await delay(80);
+      return { course: courseOrThrow(courseId), items: itemsOf(courseId) };
+    },
+
+    /* ======================================================================
+       LEARNER
+       ====================================================================== */
+
     // GET /me/enrollments  ->  this user's enrollments (transcript source)
     // Query USER#<sub> / begins_with ENROLL#
     async listEnrollments() {
@@ -139,6 +305,7 @@ export function makeApi(store, rawGetSession) {
     async enroll(courseId) {
       await delay();
       const { sub } = getSession();
+      courseOrThrow(courseId);
       const existing = table.get(keys.user(sub), keys.enroll(courseId));
       if (existing) return stripKeys(existing);
       const item = {
@@ -157,9 +324,20 @@ export function makeApi(store, rawGetSession) {
       return item;
     },
 
+    // GET /me/courses/{courseId}/progress
+    //   ->  { course, enrollment, items[] with state, summary, score, certificate }
+    // The learner's course page: every item with its status, lock, due date.
+    async getCourseProgress(courseId) {
+      await delay(120);
+      const { sub } = getSession();
+      const p = progressFor(sub, courseId);
+      const certificate = stripKeys(table.get(keys.user(sub), keys.cert(courseId)));
+      return { ...p, certificate };
+    },
+
     // GET /me/cmi/{courseId}?sco={scoId}  ->  saved runtime bag (for resume)
-    // Get USER#<sub> / CMI#<courseId>#<scoId>. scoId is optional (see
-    // resolveScoId); omit it for single-SCO packages.
+    // Get USER#<sub> / CMI#<courseId>#<scoId>. scoId is optional; omitted, it
+    // is the course's first SCORM item.
     async getCmi(courseId, scoId) {
       await delay(80);
       const { sub } = getSession();
@@ -167,36 +345,27 @@ export function makeApi(store, rawGetSession) {
       return rec ? rec.cmi : null;
     },
 
-    // PUT /me/cmi/{courseId}?sco={scoId}  { cmi }  ->  persist runtime (the Commit path)
-    // Returns whether this commit completed the course, so the client can
-    // show the certificate step. In the real build the COMPLETE+CERTIFY
-    // Lambda does this server-side and emits the cert; here we mirror it.
-    // A course with certificateEnabled === false completes with
-    // certificate: null (no certificate, no email).
+    // PUT /me/cmi/{courseId}?sco={scoId}  { cmi }  ->  { completed, certificate }
+    // Persists the runtime (the Commit path). Refused when the learner is not
+    // enrolled or the SCO's item is locked. `completed` is true when this
+    // commit completed the whole course (every required item), and then
+    // `certificate` is the issued certificate (null if the course issues none).
     async commitCmi(courseId, cmiBag, scoId) {
       await delay(80);
       const { sub } = getSession();
+      enrollmentOrThrow(sub, courseId);
       const sco = resolveScoId(courseId, scoId);
+      const p = progressFor(sub, courseId);
+      const item = p.items.find((i) => i.type === 'scorm' && i.scoId === sco);
+      if (!item) throw new Error(`Unknown SCO ${sco} for course ${courseId}.`);
+      if (item.state.locked) throw new Error('This item is locked.');
+
       table.put({
         PK: keys.user(sub), SK: keys.cmi(courseId, sco), entity: 'cmi',
         sub, courseId, scoId: sco, cmi: { ...cmiBag },
       });
-
-      const status = cmiBag['cmi.core.lesson_status'];
-      const rawScore = Number(cmiBag['cmi.core.score.raw'] ?? 0);
-
-      const enr = table.get(keys.user(sub), keys.enroll(courseId));
-      if (enr && enr.status !== 'completed') {
-        if (status === 'completed' || status === 'passed') {
-          table.put({ ...enr, status: 'completed', completedAt: new Date().toISOString(), score: rawScore });
-          const course = stripKeys(table.get(keys.course(courseId), keys.meta()));
-          const cert = course.certificateEnabled === false ? null : issueCertificate(sub, course, rawScore);
-          return { completed: true, certificate: cert };
-        } else if (status === 'incomplete') {
-          table.put({ ...enr, status: 'in_progress' });
-        }
-      }
-      return { completed: false, certificate: null };
+      markActive(sub, courseId);
+      return completeIfDone(sub, courseId);
     },
 
     // GET /me/certificates/{courseId}
@@ -207,7 +376,292 @@ export function makeApi(store, rawGetSession) {
       return stripKeys(table.get(keys.user(sub), keys.cert(courseId)));
     },
 
-    // GET /me/outbox  (sandbox-only: lets the UI show the "sent" email)
+    // Upload one file for an assignment  ->  { fileKey, name, size, type }
+    // Real build: POST /me/uploads { courseId, itemId, name, type, size }
+    // returns a presigned S3 PUT URL; this method then PUTs the file to it.
+    // The size limit is enforced when the URL is issued.
+    async uploadFile(courseId, itemId, file) {
+      await delay(150);
+      const { sub } = getSession();
+      enrollmentOrThrow(sub, courseId);
+      if (itemOrThrow(courseId, itemId).type !== 'assignment') throw new Error('This item does not take uploads.');
+      if (!file || typeof file.size !== 'number') throw new Error('No file.');
+      if (file.size > LMS_CONFIG.uploads.maxBytes) {
+        throw new Error(`File is too large (limit ${Math.round(LMS_CONFIG.uploads.maxBytes / 1048576)} MB).`);
+      }
+      const name = String(file.name || 'file').replace(/[\\/]/g, '_').slice(0, 200);
+      const fileKey = `${uploadPrefix(sub, courseId, itemId)}${randomToken()}/${name}`;
+      store.blobs.set(fileKey, file);
+      return { fileKey, name, size: file.size, type: file.type || 'application/octet-stream' };
+    },
+
+    // GET /files?key={fileKey}  ->  URL to open the file
+    // Real build: a short-lived presigned S3 GET URL. Allowed for the file's
+    // owner and for anyone who teaches the course it was submitted to.
+    async getFileUrl(fileKey) {
+      await delay(60);
+      const { sub } = getSession();
+      const [root, owner, courseId] = String(fileKey).split('/');
+      if (root !== 'uploads' || !courseId) throw new Error('File not found.');
+      if (owner !== sub && !isTeacher(courseId)) throw new Error('Not authorized for this file.');
+      const blob = store.blobs.get(fileKey);
+      if (!blob) throw new Error('File not found.');
+      if (!urlCache.has(fileKey)) urlCache.set(fileKey, URL.createObjectURL(blob));
+      return urlCache.get(fileKey);
+    },
+
+    // POST /me/courses/{courseId}/items/{itemId}/submissions { note, files }
+    //   ->  submission
+    // Allowed when the item is unlocked and not awaiting review or approved
+    // (a returned item may be resubmitted). Each attempt is its own record,
+    // so the full history of feedback is kept.
+    async submitAssignment(courseId, itemId, { note = '', files = [] } = {}) {
+      await delay(150);
+      const { sub } = getSession();
+      enrollmentOrThrow(sub, courseId);
+      const item = progressFor(sub, courseId).items.find((i) => i.itemId === itemId);
+      if (!item) throw new Error('Course item not found.');
+      if (item.type !== 'assignment') throw new Error('This item does not take submissions.');
+      if (item.state.locked) throw new Error('This item is locked.');
+      if (item.state.status === 'submitted') throw new Error('Your last submission is still awaiting review.');
+      if (item.state.status === 'complete') throw new Error('This assignment is already approved.');
+      if (!files.length) throw new Error('Attach at least one file.');
+      if (files.length > LMS_CONFIG.uploads.maxFiles) {
+        throw new Error(`Attach no more than ${LMS_CONFIG.uploads.maxFiles} files.`);
+      }
+      const prefix = uploadPrefix(sub, courseId, itemId);
+      for (const f of files) {
+        if (!String(f.fileKey).startsWith(prefix) || !store.blobs.has(f.fileKey)) {
+          throw new Error('A file was not uploaded for this assignment.');
+        }
+      }
+
+      const attempt = item.state.attempts + 1;
+      const submittedAt = new Date().toISOString();
+      const submission = {
+        sub,
+        courseId,
+        itemId,
+        attempt,
+        note: String(note).slice(0, 4000),
+        files: files.map(({ fileKey, name, size, type }) => ({ fileKey, name, size, type })),
+        status: 'submitted', // submitted -> approved | returned
+        submittedAt,
+        late: !!item.state.dueAt && Date.parse(submittedAt) > Date.parse(item.state.dueAt),
+        evaluation: null,
+      };
+      table.put({
+        PK: keys.user(sub), SK: keys.submission(courseId, itemId, attempt), entity: 'submission',
+        GSI1PK: keys.course(courseId), GSI1SK: keys.queued(submittedAt, sub, itemId),
+        ...submission,
+      });
+      markActive(sub, courseId);
+      return submission;
+    },
+
+    // GET /me/courses/{courseId}/items/{itemId}/submissions  ->  attempts, oldest first
+    // Query USER#<sub> / begins_with SUB#<courseId>#<itemId>#
+    async listSubmissions(courseId, itemId) {
+      await delay(80);
+      const { sub } = getSession();
+      return table.query(keys.user(sub), keys.submissions(courseId, itemId)).map(stripKeys);
+    },
+
+    // GET /courses/{courseId}/rubrics/{rubricId}
+    // Learners enrolled in the course see it (they know what is expected);
+    // so does anyone who teaches it.
+    async getRubric(courseId, rubricId) {
+      await delay(60);
+      const { sub } = getSession();
+      if (!table.get(keys.user(sub), keys.enroll(courseId)) && !isTeacher(courseId)) {
+        throw new Error('Not authorized for this course.');
+      }
+      return stripKeys(table.get(keys.course(courseId), keys.rubric(rubricId)));
+    },
+
+    /* ======================================================================
+       INSTRUCTOR AND ADMIN
+       Every method below starts with requireTeacher(courseId).
+       ====================================================================== */
+
+    // GET /teaching  ->  courses the caller may teach, with queue and roster counts
+    // Admin: every published course (GSI2). Instructor: USER#<sub>/TEACH#.
+    async listTeaching() {
+      await delay();
+      const { sub, role } = getSession();
+      let courses = [];
+      if (role === 'admin') {
+        courses = table.queryIndex('GSI2', keys.catalog('published'), 'COURSE#').map(stripKeys);
+      } else if (role === 'instructor') {
+        courses = table
+          .query(keys.user(sub), 'TEACH#')
+          .map((t) => stripKeys(table.get(keys.course(t.courseId), keys.meta())))
+          .filter(Boolean);
+      }
+      return courses.map((course) => ({
+        ...course,
+        pendingCount: table.queryIndex('GSI1', keys.course(course.courseId), 'QUEUE#').length,
+        learnerCount: table.queryIndex('GSI1', keys.course(course.courseId), 'ENROLL#').length,
+      }));
+    },
+
+    // GET /courses/{courseId}/roster  ->  learners with progress
+    // Query GSI1: COURSE#<courseId> / begins_with ENROLL#
+    async getRoster(courseId) {
+      await delay();
+      requireTeacher(courseId);
+      return table.queryIndex('GSI1', keys.course(courseId), 'ENROLL#').map((e) => {
+        const learner = profileOf(e.sub) || {};
+        const p = progressFor(e.sub, courseId);
+        return {
+          sub: e.sub,
+          name: learner.name || e.sub,
+          email: learner.email || '',
+          status: e.status,
+          enrolledAt: e.enrolledAt,
+          completedAt: e.completedAt,
+          score: e.score,
+          complete: p.summary.complete,
+          required: p.summary.required,
+          awaitingReview: p.items.filter((i) => i.state.status === 'submitted').length,
+          overdue: p.items.filter((i) => i.state.overdue).length,
+        };
+      });
+    },
+
+    // GET /courses/{courseId}/queue  ->  submissions awaiting review, oldest first
+    // Query GSI1: COURSE#<courseId> / begins_with QUEUE#
+    async listGradingQueue(courseId) {
+      await delay();
+      requireTeacher(courseId);
+      return table.queryIndex('GSI1', keys.course(courseId), 'QUEUE#').map((s) => {
+        const learner = profileOf(s.sub) || {};
+        const item = stripKeys(table.get(keys.course(courseId), keys.item(s.itemId))) || {};
+        return {
+          sub: s.sub,
+          learnerName: learner.name || s.sub,
+          itemId: s.itemId,
+          itemTitle: item.title || s.itemId,
+          attempt: s.attempt,
+          submittedAt: s.submittedAt,
+          late: s.late,
+          fileCount: s.files.length,
+        };
+      });
+    },
+
+    // GET /courses/{courseId}/learners/{sub}/items/{itemId}/review
+    //   ->  { learner, item, rubric, attempts }
+    async getReview(courseId, learnerSub, itemId) {
+      await delay();
+      requireTeacher(courseId);
+      const learner = profileOf(learnerSub);
+      if (!learner) throw new Error('Learner not found.');
+      const item = itemOrThrow(courseId, itemId);
+      const rubric = item.rubricId ? stripKeys(table.get(keys.course(courseId), keys.rubric(item.rubricId))) : null;
+      const attempts = table.query(keys.user(learnerSub), keys.submissions(courseId, itemId)).map(stripKeys);
+      return { learner: { sub: learner.sub, name: learner.name, email: learner.email }, item, rubric, attempts };
+    },
+
+    // POST /courses/{courseId}/learners/{sub}/items/{itemId}/submissions/{attempt}/evaluation
+    //   { ratings: { criterionId: levelId }, outcome: levelId, comments }
+    //   ->  { submission, completed, certificate }
+    // A passing outcome approves the submission (opening any approval gate
+    // and possibly completing the course, which certifies the learner); a
+    // non-passing outcome returns it for resubmission and requires comments.
+    // The rubric is snapshotted onto the evaluation, so later rubric edits
+    // never change a recorded evaluation.
+    async evaluateSubmission(courseId, learnerSub, itemId, attempt, { ratings = {}, outcome, comments = '' } = {}) {
+      await delay(150);
+      requireTeacher(courseId);
+      const { sub: evaluatorSub, profile } = getSession();
+      if (learnerSub === evaluatorSub) throw new Error('You cannot evaluate your own submission.');
+
+      const rec = table.get(keys.user(learnerSub), keys.submission(courseId, itemId, attempt));
+      if (!rec) throw new Error('Submission not found.');
+      if (rec.status !== 'submitted') throw new Error('This submission has already been evaluated.');
+      const latest = table.query(keys.user(learnerSub), keys.submissions(courseId, itemId)).pop();
+      if (latest.attempt !== rec.attempt) throw new Error('Only the latest attempt can be evaluated.');
+
+      const item = itemOrThrow(courseId, itemId);
+      const rubric = table.get(keys.course(courseId), keys.rubric(item.rubricId));
+      if (!rubric) throw new Error('This assignment has no rubric.');
+      for (const c of rubric.criteria) {
+        if (!levelById(ratings[c.criterionId])) throw new Error(`Rate every rubric criterion (missing: ${c.title}).`);
+      }
+      const level = levelById(outcome);
+      if (!level) throw new Error('Choose an overall outcome.');
+      const text = String(comments).trim();
+      if (!level.passing && !text) throw new Error('Add comments explaining what to revise.');
+
+      const evaluatedAt = new Date().toISOString();
+      const evaluation = {
+        outcome: level.id,
+        outcomeLabel: level.label,
+        passing: level.passing,
+        ratings: Object.fromEntries(rubric.criteria.map((c) => [c.criterionId, ratings[c.criterionId]])),
+        comments: text,
+        rubric: { rubricId: rubric.rubricId, title: rubric.title, criteria: rubric.criteria.map(({ criterionId, title }) => ({ criterionId, title })) },
+        evaluatorSub,
+        evaluatorName: profile?.name || 'Instructor',
+        evaluatedAt,
+      };
+      const updated = {
+        ...rec,
+        status: level.passing ? 'approved' : 'returned',
+        evaluation,
+        GSI1SK: keys.evaluated(evaluatedAt, learnerSub, itemId),
+      };
+      table.put(updated);
+
+      const learner = profileOf(learnerSub) || {};
+      if (learner.email) {
+        sendEmail(
+          learner.email,
+          level.passing ? `Approved: ${item.title}` : `Returned for revision: ${item.title}`,
+          { kind: 'evaluation', courseId, itemId, outcome: level.label }
+        );
+      }
+      const result = level.passing ? completeIfDone(learnerSub, courseId) : { completed: false, certificate: null };
+      return { submission: stripKeys(updated), ...result };
+    },
+
+    // PUT /courses/{courseId}/rubrics/{rubricId}  { title, criteria }  ->  rubric
+    // Admins and the course's instructors author rubrics. Each criterion has
+    // a title, a description, and a descriptor per evaluation level.
+    async saveRubric(courseId, rubric = {}) {
+      await delay(120);
+      requireTeacher(courseId);
+      const { sub } = getSession();
+      courseOrThrow(courseId);
+      const title = String(rubric.title || '').trim();
+      if (!rubric.rubricId) throw new Error('Rubric id is required.');
+      if (!title) throw new Error('Give the rubric a title.');
+      const criteria = (rubric.criteria || []).map((c) => ({
+        criterionId: c.criterionId || `crit-${randomToken().slice(0, 8)}`,
+        title: String(c.title || '').trim(),
+        description: String(c.description || '').trim(),
+        levels: Object.fromEntries(LEVELS.map((l) => [l.id, String(c.levels?.[l.id] || '').trim()])),
+      }));
+      if (!criteria.length) throw new Error('Add at least one criterion.');
+      if (criteria.some((c) => !c.title)) throw new Error('Every criterion needs a title.');
+      const saved = {
+        courseId,
+        rubricId: rubric.rubricId,
+        title,
+        criteria,
+        updatedAt: new Date().toISOString(),
+        updatedBy: sub,
+      };
+      table.put({ PK: keys.course(courseId), SK: keys.rubric(rubric.rubricId), entity: 'rubric', ...saved });
+      return saved;
+    },
+
+    /* ======================================================================
+       SANDBOX ONLY
+       ====================================================================== */
+
+    // GET /me/outbox  (lets the UI show the "sent" email)
     async _outbox() {
       const { profile } = getSession() || {};
       const myEmail = profile?.email;
