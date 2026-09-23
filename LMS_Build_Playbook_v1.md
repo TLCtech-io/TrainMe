@@ -6,7 +6,7 @@
 
 **Relationship to the DST playbook.** This LMS build is a sibling of the DST (Decision Support Tool) program documented in `DST_Build_Playbook_v2.md`. It deliberately reuses the DST's architectural spine: a React single-page app on S3 + CloudFront, a parameterized CloudFormation auth stack (Cognito User Pool with `custom:role` and `custom:status`, admin Lambdas behind an HTTP API with a JWT authorizer), and the same config-driven, iterative build philosophy. Where the DST and LMS diverge, this playbook says so explicitly. If you have not read the DST playbook, read it first; most of the AWS, branding, and deployment conventions there apply here unchanged.
 
-**Single source of truth.** As the codebase matures, everything organization-specific should live in one config module (the LMS analog of `dst.config.js`), with content and data kept out of components. The v0.1 scaffold (`lms_vertical_slice.jsx`) is a single-file React artifact; the first structural sprint breaks it into a real project tree. Until then, the "single source of truth" is the `api` object inside the scaffold, whose method signatures are the contract the backend must satisfy.
+**Single source of truth.** Everything organization-specific lives in one config module, `lms-app/src/lms.config.js` (the LMS analog of `dst.config.js`): org identity, brand mark, brand tokens, fonts, client-facing copy, and feature flags. Content and data stay out of components. The backend contract lives in `lms-app/src/api/mockApi.js`, whose method signatures the backend must satisfy, with the method list pinned in `API_CONTRACT` (`lms-app/src/api/index.js`). Sprint 1 (v0.2.0) broke the Sprint 0 single-file scaffold (`lms_vertical_slice.jsx`, kept at the repo root as the historical artifact) into this project tree; see Section 8.2 for the tree and the config shape.
 
 **Sequence at a glance.**
 
@@ -30,9 +30,11 @@ These are the design philosophies that should inform every architectural decisio
 
 **SCORM is the load-bearing content standard; design for xAPI later.** Rise360 exports SCORM, and SCORM 1.2 is still the dominant compliance standard. Ship SCORM 1.2 support first because it covers TLC_TRNG's existing content and certificate records. Design the data model so an xAPI / Learning Record Store layer can be added later (cmi5 is the future-readiness flag), but do not build the LRS in v1. Treat "SCORM now, xAPI later" as settled unless the user explicitly reopens it.
 
-**The mock data layer is the API contract.** Every data operation in the scaffold goes through a single `api` object whose method signatures are exactly what the real Lambda endpoints will be (`signIn`, `listCatalog`, `listEnrollments`, `enroll`, `getCmi`, `commitCmi`, `getCertificate`). To go live, replace each method *body* with a `fetch()` to the corresponding endpoint, JWT in the Authorization header. Components never change. When you add a feature, add its method to this object first, with the signature the backend will honor, then implement the mock body. This discipline is what keeps the front end and the eventual backend in lockstep.
+**The mock data layer is the API contract.** Every data operation goes through a single `api` object (built in `lms-app/src/api/mockApi.js`, obtained through `createApi()` in `lms-app/src/api/index.js`) whose method signatures are exactly what the real Lambda endpoints will be (`signIn`, `listCatalog`, `listEnrollments`, `enroll`, `getCmi`, `commitCmi`, `getCertificate`). To go live, replace each method *body* with a `fetch()` to the corresponding endpoint, JWT in the Authorization header. Components never change. When you add a feature, add its method to this object first, with the signature the backend will honor, then implement the mock body, then add its name to `API_CONTRACT`; the contract test (`npm test`) fails if the object and the list drift apart in either direction. This discipline is what keeps the front end and the eventual backend in lockstep.
 
 **The mock store mirrors the DynamoDB single-table keys.** The in-memory store keys items the way the planned single table will: `USER#`, `COURSE#`, `ITEM#`, `ENROLL#`, `CMI#`, `CERT#`. Keep this mirroring exact. When you design a new access pattern, design the key first, confirm it falls out of the single-table model (or a defined GSI) without a scan, then implement it. This is the DST's "BIA Workbook is the source of truth" discipline, adapted: here the discipline is that the key design is the source of truth for what queries are cheap.
+
+*Status at Sprint 1: not yet exact.* A Sprint 1 read of the code found that the Sprint 0 store, carried unchanged into `lms-app/src/api/mockStore.js`, does not actually use PK/SK items. It keys records `${sub}::${courseId}` across three maps (enrollments, CMI, certificates); users and courses are seed constants rather than `USER#`/`COURSE#` items; there are no `ITEM#` records; and CMI is keyed per course, not `CMI#<courseId>#<scoId>`. Re-keying to real PK/SK items, with a GSI1 emulation for the roster, is the recommended first step before Sprint 2, because the instructor roster and grading queue need those access patterns. The api signatures do not change, and the change is contained in `lms-app/src/api/` (`mockStore.js` and the method bodies in `mockApi.js`); no component changes. Settle the open design points first (how `scoId` enters the `getCmi`/`commitCmi` contract for multi-SCO packages, and the catalog GSI shape).
 
 **Identity comes from the session, never from a table scan.** In the scaffold, the learner's `sub`, `name`, and `email` come from the session profile (the real backend reads them from the verified JWT). Never reverse-look-up a user by scanning the seed table; that pattern caused a hard crash in an early version (a `.find()` returned `undefined`, and destructuring `undefined` threw). If you need the caller's identity, read it from the normalized session.
 
@@ -53,7 +55,7 @@ Start by establishing where in the roadmap the build currently is. Do not assume
 **Ask (in natural prose, not all at once):**
 
 1. Which sprint are we working on, or is this a new direction?
-2. Do you have the latest scaffold (`lms_vertical_slice.jsx`) and, once it exists, the project tree? Upload the most recent version.
+2. Is the working copy current? Since Sprint 1 the code is the `lms-app/` tree in the GitHub repo `TLCtech-io/TrainMe`; in Claude Code, read it from the repo. In Chat, ask the user to share the files the session needs.
 3. Are we still in localhost / mock-data mode, or have AWS resources been stood up yet?
 4. Do you have new content (SCORM packages) or test data to fold in?
 5. Is there a new domain yet, or are we still sandboxing on localhost?
@@ -184,9 +186,11 @@ The LMS build is organized into defined sprints. Sprint 0 is complete. The order
 
 The full student path against the mock data layer: sign in (three-role model), catalog, enroll, SCORM-style playback with a real resume bookmark, completion with certificate issuance and an SES-stand-in email, and a transcript that rolls up to one line per course. Proven headlessly end to end. Artifact: `lms_vertical_slice.jsx`. The mock `api` object is the backend contract; the mock store mirrors the DynamoDB keys.
 
-### Sprint 1: Project structure and the config module
+### Sprint 1: Project structure and the config module (COMPLETE, v0.2.0)
 
-Break the single-file scaffold into a real Vite project tree (mirroring the DST template layout). Extract a single config module (the LMS analog of `dst.config.js`) for org name, brand tokens, copy strings, and feature flags. Establish the folder conventions, the build, and a local dev smoke test. Output: a project ZIP the user installs and runs locally. No new features; this is the structural foundation everything else builds on.
+Break the single-file scaffold into a real Vite project tree (mirroring the DST template layout). Extract a single config module (the LMS analog of `dst.config.js`) for org name, brand tokens, copy strings, and feature flags. Establish the folder conventions, the build, and a local dev smoke test. No new features; this is the structural foundation everything else builds on.
+
+**Shipped.** Built in Claude Code on the GitHub repo `TLCtech-io/TrainMe`, so the deliverable is the pushed branch, not a ZIP. The tree lives in `lms-app/`, the config module is `lms-app/src/lms.config.js`, and Section 8.2 documents both. Proof: `npm test` (headless Node tests for the contract, the full student vertical, identity isolation, the SCORM runtime, and the config), a browser walkthrough of the full student path on both the dev server (React StrictMode on) and the production build, and a DOM and computed-style parity check against the Sprint 0 file across ten screen states (identical apart from the intended version marker and font-stack strings).
 
 **This is the surface-transition point. Before producing the project tree, prompt the user to move to Claude Code.** Sprint 0 lived as a single artifact in Chat, which was right for it. Sprint 1 creates a multi-file project that needs a dev server, headless test runs, and (from Sprint 4) AWS deploy commands, all of which Code does inside the repo and Chat cannot. If the user is still in a Chat session when Sprint 1 begins, do not silently start emitting a file tree for them to save by hand. Stop and walk them through the move (see Section 8.1). If the user explicitly prefers to stay in Chat for this sprint, respect that, but make the trade-off visible: in Chat you will hand them files to save and commands to paste, whereas Code would run them.
 
@@ -230,7 +234,7 @@ The long-term half of the digital-credential path (Section 6.5). Build self-host
 
 This is the concrete, near-term execution order. It assumes Sprint 0 is done.
 
-1. **Sprint 1: structure.** Break the scaffold into a project tree, extract the config module, confirm local build and dev server. Deliver the ZIP. The user installs and runs locally. (No AWS yet.)
+1. **Sprint 1: structure.** (Done, v0.2.0.) Break the scaffold into a project tree, extract the config module, confirm local build and dev server. The user pulls the branch and runs locally. (No AWS yet.) Before Sprint 2 begins, re-key the mock store to the single-table design (see Section 0, the mock-store principle).
 2. **Sprint 2: the differentiator.** Build instructor grading and gated progression against the mock layer. Prove each path headlessly. This is the feature that justifies the whole build, so it comes before any AWS spend.
 3. **Sprint 3: prerequisites and external credit.** Round out the academic-integrity features, still on mock data.
 4. **Decision gate, backend.** Once the front end demonstrates the full differentiated feature set on mock data, the mock `api` object is a complete, tested specification. Now build the backend to match it (Sprint 4). Building the backend after the front end means the API contract is fully known before a single Lambda is written.
@@ -261,15 +265,59 @@ Claude Code runs in one of four places, all equivalent for this build: the termi
 
 **If the user wants to stay in Chat anyway.** Respect it, but be honest about the trade-off: in Chat you produce files for them to save by hand and commands for them to paste and run, and you cannot see the result of a build or test except by their report. Code removes that friction. State this once, then proceed however they choose.
 
+**As it happened.** Sprint 1 moved to Claude Code working on the GitHub repo `TLCtech-io/TrainMe`. The repo root holds the reference material (this playbook, the DST playbook and `tlc-trng-dst/` reference tree, the requirements doc, the client PDFs, and the Sprint 0 file); the application lives in `lms-app/`. The verified SCORM package (`pwc-mass-care-framework-training.zip`, 318 MB) is gitignored and stays on the user's disk until it goes to S3 in Sprint 4; ask the user for its local path when you need to inspect it.
+
+### 8.2 The project tree and the config module (Sprint 1)
+
+```
+lms-app/
+  index.html              page shell; %LMS_*% placeholders filled from the config at build time
+  vite.config.js          build config and the lms-html-inject plugin (no per-org edits)
+  public/                 favicons (TLC_TRNG brand set, copied from the DST)
+  src/
+    lms.config.js         the config module
+    theme.js              T (tokens) and F (font stacks) for components
+    version.js            display version derived from package.json (DST playbook 10.14)
+    main.jsx              entry; React StrictMode on, so dev keeps proving 10.1
+    App.jsx               root: session ref, navigation, role-scoped shell
+    api/
+      index.js            createApi() (the single swap point) and API_CONTRACT
+      mockApi.js          the backend contract: method signatures + mock bodies
+      mockStore.js        in-memory tables and the record key format
+      seed.js             mock Cognito users and COURSE# items
+    scorm/
+      runtime.js          SCORM 1.2 window.API mock (scorm-again stand-in)
+      mockLessons.js      stand-in SCO slides (replaced by an S3 iframe in Sprint 4)
+    components/           primitives.jsx (Btn, Pill, StatusPill, SectionHead, Loading, Empty), Shell.jsx
+    screens/              SignIn, Catalog, CoursePlayer, CompletionPanel, Transcript
+  test/                   headless tests: config, scorm, api (npm test)
+```
+
+**Config shape.** `lms.config.js` exports one object with these sections:
+
+- `org`: `fullName`, `shortName`, `productName`, `titleLong`, `metaDescription`, `emailDomain`, `resourcePrefix` (the `lms` placeholder).
+- `brand`: `mark` and `wordmark` (Sprint 0's emoji mark plus "TLC_TRNG" text; swap for a processed logo per DST playbook Section 4 when wanted).
+- `theme`: hue-neutral token names on purpose. A `neutral` scale (`neutral900` to `neutral50`, holding Slate-900 to Slate-50), an `accent` scale (`accent600`, `accent500`, `accent400`, `accent100`, holding the ambers), and status colors (`successSoft`, `successInk`, `danger`), plus `white`. A client re-skin (the scoping document asks for district or department branding) swaps values without leaving misleading names behind, which is exactly the debt the DST carries in its PCCA-era `darkBlue`/`teal` slots.
+- `fonts`: `heading`, `body` (CSS stacks), and `googleFontsHref` (injected into `index.html`, so the stylesheet and the stacks are edited in one place).
+- `copy`: client-facing strings (sign-in tagline, catalog and transcript headings, completion and certificate text). Generic control labels stay in components.
+- `features`: `sandboxHints` (the demo accounts panel and prefill on sign-in, the SCORM runtime note, and the SES stand-in notice; turn off for client-facing builds).
+- `sandbox`: the demo accounts and password shown on sign-in. A test signs in with each, so the hint cannot drift from the mock users.
+
+Not in the config: seed users and courses (mock backend data, in `src/api/seed.js`), stand-in lesson content (`src/scorm/mockLessons.js`), and AWS values (Sprint 4 adds `cognito` and `api` sections, mirroring `dst.config.js`).
+
+**Node-safe modules.** `lms.config.js`, everything in `src/api/`, and `src/scorm/runtime.js` are plain JS with no JSX and no Vite-only imports, so `npm test` imports them directly. Seed data is JS modules rather than JSON for the same reason. Keep it that way; it is what makes "prove it headlessly" a one-command habit rather than a bespoke extraction each sprint.
+
+**Deliberately not carried from the DST:** the Cognito `global` polyfill (add it in Sprint 4 only if `amazon-cognito-identity-js` is used), Mapbox and weather, and the monolithic `App.jsx` with section banners (the LMS uses one module per screen instead). Vite is pinned to 5.4.21 rather than the DST's 5.4.10 to close dev-server file-access advisories, and the dev server binds to localhost by default (`npm run dev -- --host` exposes it for tablet testing).
+
 ---
 
 ## 9. Working conventions
 
 **Build front-end-first, always.** Every feature is built against the mock `api` and proven (ideally headlessly with a small Node simulation, as in Sprint 0) before any backend work. The mock layer is the contract.
 
-**Prove it headlessly.** Before declaring a slice done, extract the relevant logic and run it in Node to confirm behavior, especially completion, grading, and gating paths where a thrown exception or a stuck state would otherwise only surface in the browser. Sprint 0's hang and crash were both caught and fixed this way.
+**Prove it headlessly.** Before declaring a slice done, run its logic in Node to confirm behavior, especially completion, grading, and gating paths where a thrown exception or a stuck state would otherwise only surface in the browser. Sprint 0's hang and crash were both caught and fixed this way. Since Sprint 1 this is `npm test` in `lms-app/` (Node's built-in runner, no extra dependencies): add a test for every new api method and every new path through it, alongside the code, and keep the modules it imports Node-safe (Section 8.2). Then walk the path in a real browser on both `npm run dev` (StrictMode on) and the production build.
 
-**Match the user's path conventions.** When local install commands are needed, follow the user's established folder pattern (the DST builds live under `/Users/traviscryan/Documents/DST Demo Build Local/...`; the LMS will have an analogous location once the user sets one). Do not invent generic placeholders if a convention exists.
+**Match the user's path conventions.** When local install commands are needed, follow the user's established folder pattern (the DST builds live under `/Users/traviscryan/Documents/DST Demo Build Local/...`). The LMS lives in the GitHub repo `TLCtech-io/TrainMe`, with the app in `lms-app/`; local commands run from the user's clone of that repo (`cd lms-app && npm install && npm run dev`). Do not invent generic placeholders if a convention exists.
 
 **Use the `lms` short-name placeholder until the user names it.** The sandbox uses `lms` as the resource prefix (the DST convention is `${ShortName}`). Rename when the user picks a real short name or domain.
 
@@ -304,13 +352,30 @@ Documented as symptom / cause / fix so future occurrences are recognizable.
 **Cause:** The package is a Rise360 "Web" export, which has no `imsmanifest.xml` and makes no SCORM API calls.
 **Fix:** Check for `imsmanifest.xml` before assuming a package is SCORM. If absent, instruct the user to re-export from Rise360 as SCORM 1.2 (Export -> SCORM 1.2, not Web). The verified-good reference is `pwc-mass-care-framework-training.zip`.
 
+### 10.4 Vite build fails with "URI malformed" on index.html
+
+**Symptom:** `npm run build` stops at `[vite:build-html] URI malformed` pointing at `index.html`.
+**Cause:** A `%LMS_*%` placeholder sits inside a URL attribute (the Google Fonts `href`). Vite's HTML build step URI-decodes attribute URLs before a default-order `transformIndexHtml` hook runs, and `%LM` is not a valid percent escape.
+**Fix:** The `lms-html-inject` plugin runs with `order: 'pre'`, so substitution happens before Vite parses the HTML. The DST never hit this because its placeholders are only in text and `content` attributes. Keep the `order: 'pre'` if the plugin is ever rewritten. The plugin also fails the build on any unresolved placeholder rather than shipping the literal text.
+
+### 10.5 Headless browser in a Claude Code cloud session cannot load Google Fonts
+
+**Symptom:** Headless Chromium runs in a cloud session log `Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID` for `fonts.googleapis.com`, and screenshots render in fallback fonts.
+**Cause:** The cloud session's egress proxy re-terminates TLS, and the Playwright Chromium build does not trust its CA. This is environment-only; on the user's machine the fonts load normally.
+**Fix:** None needed in the app. In browser checks, allow a failed request only when its URL is Google Fonts and fail on anything else. Do not compare layout sizes between builds whose font stacks fall back differently; compare structure, text, and design tokens.
+
+### 10.6 A browser test step passes or fails on the wrong element
+
+**Symptom:** A Playwright walkthrough reported the completion panel before the app had finished "Recording...", and a status-pill check passed even though it should not have.
+**Cause:** Playwright's `text=` selector is a case-insensitive substring match. `text=Course complete` matched the slide copy "Mark the course complete...", and `text=Enrolled` matched "Not enrolled".
+**Fix:** Use exact matchers (`h2:text-is("Course complete")`, `:text-is("Enrolled")`) for any state assertion. Also note `innerText` honors `text-transform`, so the role label reads "Student", not "student"; compare case-insensitively.
+
 ---
 
 ## 11. What this playbook does not yet cover
 
 For honesty, v1 of this playbook covers the philosophy, architecture, role/content/data models, the SCORM runtime, the sprint roadmap, and the ordered plan. It does not yet contain execution detail for:
 
-- **Sprint 1's exact project tree and config module shape.** Written when Sprint 1 ships.
 - **The instructor grading and gating data model and UI (Sprint 2).** The single most important feature work; gets its own detailed section once built.
 - **The CloudFormation extension for DynamoDB + SES + the LMS Lambdas (Sprint 4).** Will extend `dst-auth-cloudformation.yaml`; documented when built.
 - **Certificate PDF template production.** TLC_TRNG already has strong brand design (see the Silent Auction flyer); the template approach is settled in Sprint 4.
@@ -321,19 +386,23 @@ When the user asks about any of the above, point to the relevant sprint and ackn
 
 ---
 
-## 12. Appendix A: Sprint 0 reference values
+## 12. Appendix A: Reference values (current through Sprint 1)
 
 For sanity-check during continued work.
 
-- **Scaffold artifact:** `lms_vertical_slice.jsx` (single-file React, ~1300 lines).
+- **Repository:** GitHub `TLCtech-io/TrainMe`. App in `lms-app/` (package `tlc-trng-lms`, version `0.2.0`, sign-in shows `v0.2`).
+- **Config module:** `lms-app/src/lms.config.js` (sections: `org`, `brand`, `theme`, `fonts`, `copy`, `features`, `sandbox`). See Section 8.2.
+- **Commands (from `lms-app/`):** `npm install`, `npm run dev` (http://localhost:5173), `npm test` (headless), `npm run build` (to `dist/`), `npm run preview` (http://localhost:4173).
+- **Stack:** React 18.3.1, Vite 5.4.21, `@vitejs/plugin-react` 4.3.1, exact pins. No runtime dependencies beyond React.
+- **Sprint 0 artifact:** `lms_vertical_slice.jsx` at the repo root (single-file React, ~1300 lines), superseded by `lms-app/` and kept for history.
 - **Roles:** student, instructor, admin (on Cognito `custom:role`).
 - **Sandbox accounts** (password `demo`): `student@demo.test`, `instructor@demo.test`, `admin@demo.test`.
 - **Brand palette:** Slate + Amber (same as the TLC_TRNG DST build). Slate-900 `#0F172A`, Slate-800 `#1E293B`, Slate-700 `#334155`, Slate-500 `#64748B`, Amber-500 `#F59E0B`, Amber-600 `#D97706`.
 - **Fonts:** Zilla Slab (heading), Poppins (body).
 - **Resource short-name placeholder:** `lms` (rename when the user picks a real one).
 - **Persistence decision:** DynamoDB single-table; Aurora/Postgres is the documented fallback.
-- **Mock `api` methods (the backend contract):** `signIn`, `listCatalog`, `listEnrollments`, `enroll`, `getCmi`, `commitCmi`, `getCertificate`, plus the sandbox-only `_outbox`.
-- **Mock store keys (mirror the DynamoDB single table):** `USER#`, `COURSE#`, `ITEM#`, `ENROLL#`, `CMI#`, `CERT#`.
+- **Mock `api` methods (the backend contract):** `signIn`, `listCatalog`, `listEnrollments`, `enroll`, `getCmi`, `commitCmi`, `getCertificate`, plus the sandbox-only `_outbox`. Pinned in `API_CONTRACT` (`lms-app/src/api/index.js`). Certificate issuance is internal to the mock (not on the api object), as it will be server-side.
+- **Mock store keys (mirror the DynamoDB single table):** `USER#`, `COURSE#`, `ITEM#`, `ENROLL#`, `CMI#`, `CERT#`. Not yet exact in code; see the status note under the mock-store principle in Section 0.
 - **Verified SCORM reference package:** `pwc-mass-care-framework-training.zip` (SCORM 1.2, launch `scormdriver/indexAPI.html`, title "PWC Mass Care Framework Training").
 - **Known content trap:** Rise360 "Web" exports are not SCORM; the `EOP_Demo.zip` package was a Web export (no manifest). Always require a SCORM 1.2 export for runtime capture.
 
@@ -343,7 +412,7 @@ For sanity-check during continued work.
 
 When a sprint ships, update this playbook at the same time, not after. Outdated content is worse than missing content.
 
-- **When Sprint 1 ships:** Replace the "single-file scaffold" framing in the intro and Section 0 with the real project tree and config module. Update Appendix A.
+- **When Sprint 1 ships:** (Done at v0.2.0.) Replace the "single-file scaffold" framing in the intro and Section 0 with the real project tree and config module. Update Appendix A.
 - **When Sprint 2 ships:** Add the grading and gated-progression data model and UI as a full section. This is the differentiator; document it thoroughly.
 - **When Sprint 4 ships:** Add the CloudFormation extension detail, the live `api` wiring, and the SCORM-from-S3 walkthrough. Add an Appendix C with the concrete AWS resource values (table name, bucket, API URL, distribution ID), mirroring the DST playbook's Appendix C.
 - **When Sprint 8 ships:** Add the production domain, the SES production move, and the deployment deltas from the DST Section 8.
