@@ -1,0 +1,21 @@
+{
+  "name": "tlc-trng-lms",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "description": "TLC TRNG, LLC Learning Management System: sandbox build on the mock api (slate + amber palette).",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test test/config.test.js test/scorm.test.js test/api.test.js"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "4.3.1",
+    "vite": "5.4.21"
+  }
+}
