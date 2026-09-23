@@ -7,7 +7,7 @@ Status: a working iterative slice on the mock data layer. No AWS yet (that is Sp
 ## One-time setup
 
 ```bash
-node --version    # 18.x, 20.x, or 22.x
+node --version    # 20.x or 22.x (Node 18 lacks the global Web Crypto the credential ID uses)
 cd lms-app
 npm install
 npm run dev
@@ -27,6 +27,7 @@ Uses Node's built-in test runner (no extra dependencies). It proves, without a b
 - **Student vertical:** enroll, bookmark commit, leave and resume from `cmi.suspend_data`, completion, certificate with identity from the session, SES stand-in email, the Review path (no re-issue, no hang), and one transcript line per course.
 - **Identity isolation:** one learner never sees another's enrollments, CMI, certificates, or email.
 - **SCORM runtime:** `window.API` defaults, commit copies, `snapshot()` surviving teardown (playbook 10.1), and StrictMode double-install safety.
+- **Credentials:** Open Badges fields on every certificate, credential ID format and uniqueness, the GSI3 lookup by ID, expiry from `validityMonths`, and the per-course certificate switch.
 - **Single table:** records land under the playbook's PK/SK keys, the roster (GSI1) and catalog (GSI2) are index queries, the store has no scan, and reads return copies.
 - **Config:** required sections, hex tokens, the TLC_TRNG palette, and every sandbox account shown on sign-in actually signing in.
 
@@ -80,7 +81,8 @@ lms-app/
       index.js            createApi() (the single swap point) and API_CONTRACT
       mockApi.js          the backend contract: method signatures + mock bodies
       mockStore.js        the in-memory single table: key builders, get/put/query/queryIndex, no scan
-      seed.js             mock Cognito users, COURSE# items, and ITEM# content items
+      seed.js             mock Cognito users, COURSE# items (with credential policy), and ITEM# content items
+      credentialId.js     random public credential IDs (4-4-4 Crockford base32)
     scorm/
       runtime.js          SCORM 1.2 window.API mock (scorm-again stand-in)
       mockLessons.js      stand-in SCO slides (replaced by an S3 iframe in Sprint 4)
@@ -105,9 +107,9 @@ lms-app/
 
 `features.sandboxHints` (default `true`) shows the sandbox-only helpers: the demo accounts and prefilled credentials on sign-in, the SCORM runtime note in the player, and the SES stand-in notice on completion. Set it to `false` for any client-facing build.
 
-## Known gaps (carried from Sprint 0)
+## Credentials and placeholders
 
-- The certificate record does not yet carry the Open Badges forward-compatible fields (issuer, criteria, skill, evidence URL, expires) that playbook Section 4 calls for.
+Certificates carry the Open Badges fields (playbook Section 4): a random public `credentialId` (e.g. `7KQ2-M9XD-P4TA`), the issuer from `credentials.issuer` in the config, and the course's criteria, skills, and expiry. Each course in `src/api/seed.js` has `certificateEnabled` (off: completion is recorded, no certificate or email) and a `credential` policy. The criteria, skills, and validity there are **placeholder language**; search for `PLACEHOLDER` to replace them.
 
 ## Security notes
 

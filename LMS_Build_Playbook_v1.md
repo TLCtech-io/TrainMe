@@ -110,6 +110,8 @@ Settled abstractions, chosen to avoid the "three copies of one course" trap:
 - **Prerequisite**: a course that blocks enrollment until completed, with a learner-facing "challenge / upload external proof" path.
 - **Certificate / Credential**: generated PDF (stored in S3), issued on completion, emailed via SES. The entity is designed forward-compatible with the self-hosted digital-credential path (Section 6.5 and the credential sprints): it carries, or has room to carry, a stable public credential ID, issuer identity, the achievement criteria, the skill or competency recognized, an optional evidence URL, and issued/expires timestamps. These are the Open Badges fields; populating them costs nothing in the PDF-only phase and means the verification page and later badge layer need no data-model migration.
 
+*Implemented before Sprint 2.* Every certificate carries `credentialId` (random, 12 Crockford base32 characters grouped 4-4-4, e.g. `7KQ2-M9XD-P4TA`, revealing no course, learner, or time; `lms-app/src/api/credentialId.js`), `issuer` (name, email, url, snapshotted from `credentials.issuer` in the config at issue time), `criteria`, `skills`, `evidenceUrl` (null for now), `issuedAt`, and `expiresAt`. Each course carries its credential policy: `certificateEnabled` (the scoping document's per-course switch; off means completion is recorded with no certificate and no email), and `credential.criteria`, `credential.skills`, `credential.validityMonths` (null means no expiry). The sandbox courses' criteria, skills, and validity are marked `PLACEHOLDER` pending real course policies. Issuer: TLC TRNG, LLC, info@TLCTRNG.com, https://TLCTRNG.com.
+
 The v0.1 scaffold implements Course, ContentItem (implicitly, as the SCORM launch), Enrollment, CMI record, and Certificate. The rest arrive in later sprints.
 
 ---
@@ -127,9 +129,9 @@ The v0.1 scaffold implements Course, ContentItem (implicitly, as the SCORM launc
 | Content item | `COURSE#<courseId>` | `ITEM#<itemId>` | Type (scorm/video/doc/quiz), launch path, order; SCORM items carry `scoId` (the SCO identifier from `imsmanifest.xml`) |
 | Enrollment | `USER#<sub>` | `ENROLL#<courseId>` | Status, enrolledAt, completedAt, score. GSI1PK `COURSE#<courseId>`, GSI1SK `ENROLL#<sub>` |
 | CMI runtime | `USER#<sub>` | `CMI#<courseId>#<scoId>` | suspend_data, lesson_status, score, attempt count |
-| Certificate | `USER#<sub>` | `CERT#<courseId>` | S3 key of generated PDF, issuedAt |
+| Certificate | `USER#<sub>` | `CERT#<courseId>` | Open Badges fields (Section 4), S3 key of generated PDF. GSI3PK `CRED#<credentialId>`, GSI3SK `CERT` |
 
-**GSIs:** GSI1 inverts the enrollment key (`COURSE#<courseId>` / `ENROLL#<sub>`) so an instructor or admin can pull a course **roster** without a scan. GSI2 partitions courses by status (`CATALOG#published` / `COURSE#<courseId>`), so the **catalog** is one query; changing a course's status moves it between catalog partitions. The **transcript** is "query all `ENROLL#` items under `USER#<sub>` where status = completed." Roster, catalog, transcript, and the resume bookmark all fall out of this without table scans.
+**GSIs:** GSI1 inverts the enrollment key (`COURSE#<courseId>` / `ENROLL#<sub>`) so an instructor or admin can pull a course **roster** without a scan. GSI2 partitions courses by status (`CATALOG#published` / `COURSE#<courseId>`), so the **catalog** is one query; changing a course's status moves it between catalog partitions. GSI3 finds a certificate by its public credential ID (`CRED#<credentialId>` / `CERT`), which is the lookup the Sprint 7 verification page makes. The **transcript** is "query all `ENROLL#` items under `USER#<sub>` where status = completed." Roster, catalog, transcript, and the resume bookmark all fall out of this without table scans.
 
 **The SCO in the CMI contract.** `getCmi` and `commitCmi` take an optional `scoId`. Omitted, it resolves to the course's first SCORM item by `order` (a query on `COURSE#<courseId>` / `ITEM#`). Rise360 exports are single-SCO, so current callers never pass it; a multi-SCO package passes each SCO's id and gets its own `CMI#<courseId>#<scoId>` record. Routes: `GET`/`PUT /me/cmi/{courseId}?sco={scoId}`.
 
@@ -306,6 +308,7 @@ lms-app/
 - `theme`: hue-neutral token names on purpose. A `neutral` scale (`neutral900` to `neutral50`, holding Slate-900 to Slate-50), an `accent` scale (`accent600`, `accent500`, `accent400`, `accent100`, holding the ambers), and status colors (`successSoft`, `successInk`, `danger`), plus `white`. A client re-skin (the scoping document asks for district or department branding) swaps values without leaving misleading names behind, which is exactly the debt the DST carries in its PCCA-era `darkBlue`/`teal` slots.
 - `fonts`: `heading`, `body` (CSS stacks), and `googleFontsHref` (injected into `index.html`, so the stylesheet and the stacks are edited in one place).
 - `copy`: client-facing strings (sign-in tagline, catalog and transcript headings, completion and certificate text). Generic control labels stay in components.
+- `credentials`: `issuer` (`name`, `email`, `url`: the Open Badges Issuer Profile, snapshotted onto each certificate) and `verifyBaseUrl` (null until the verify domain exists).
 - `features`: `sandboxHints` (the demo accounts panel and prefill on sign-in, the SCORM runtime note, and the SES stand-in notice; turn off for client-facing builds).
 - `sandbox`: the demo accounts and password shown on sign-in. A test signs in with each, so the hint cannot drift from the mock users.
 
@@ -397,8 +400,10 @@ When the user asks about any of the above, point to the relevant sprint and ackn
 For sanity-check during continued work.
 
 - **Repository:** GitHub `TLCtech-io/TrainMe`. App in `lms-app/` (package `tlc-trng-lms`, version `0.2.0`, sign-in shows `v0.2`).
-- **Config module:** `lms-app/src/lms.config.js` (sections: `org`, `brand`, `theme`, `fonts`, `copy`, `features`, `sandbox`). See Section 8.2.
+- **Config module:** `lms-app/src/lms.config.js` (sections: `org`, `brand`, `theme`, `fonts`, `copy`, `credentials`, `features`, `sandbox`). See Section 8.2.
 - **Commands (from `lms-app/`):** `npm install`, `npm run dev` (http://localhost:5173), `npm test` (headless), `npm run e2e` / `npm run e2e:prod` (browser; first run `npx playwright install chromium`), `npm run build` (to `dist/`), `npm run preview` (http://localhost:4173).
+- **Credential issuer:** TLC TRNG, LLC, info@TLCTRNG.com, https://TLCTRNG.com. Credential IDs are random 4-4-4 Crockford base32. Course criteria, skills, and validity are placeholders.
+- **Node:** 20 or later (`engines` in `package.json`; the credential ID uses the global Web Crypto API).
 - **Stack:** React 18.3.1, Vite 5.4.21, `@vitejs/plugin-react` 4.3.1, `@playwright/test` 1.56.1 (dev only), exact pins. No runtime dependencies beyond React.
 - **Sprint 0 artifact:** `lms_vertical_slice.jsx` at the repo root (single-file React, ~1300 lines), superseded by `lms-app/` and kept for history.
 - **Roles:** student, instructor, admin (on Cognito `custom:role`).
@@ -408,7 +413,7 @@ For sanity-check during continued work.
 - **Resource short-name placeholder:** `lms` (rename when the user picks a real one).
 - **Persistence decision:** DynamoDB single-table; Aurora/Postgres is the documented fallback.
 - **Mock `api` methods (the backend contract):** `signIn`, `listCatalog`, `listEnrollments`, `enroll`, `getCmi(courseId, scoId?)`, `commitCmi(courseId, cmiBag, scoId?)`, `getCertificate`, plus the sandbox-only `_outbox`. Pinned in `API_CONTRACT` (`lms-app/src/api/index.js`). Certificate issuance is internal to the mock (not on the api object), as it will be server-side.
-- **Mock store keys (mirror the DynamoDB single table):** `USER#`, `COURSE#`, `ITEM#`, `ENROLL#`, `CMI#`, `CERT#`, plus GSI1 (roster) and GSI2 (catalog). Exact in code (`lms-app/src/api/mockStore.js`); see Section 5.
+- **Mock store keys (mirror the DynamoDB single table):** `USER#`, `COURSE#`, `ITEM#`, `ENROLL#`, `CMI#`, `CERT#`, plus GSI1 (roster), GSI2 (catalog), and GSI3 (credential lookup by public ID). Exact in code (`lms-app/src/api/mockStore.js`); see Section 5.
 - **Verified SCORM reference package:** `pwc-mass-care-framework-training.zip` (SCORM 1.2, launch `scormdriver/indexAPI.html`, title "PWC Mass Care Framework Training").
 - **Known content trap:** Rise360 "Web" exports are not SCORM; the `EOP_Demo.zip` package was a Web export (no manifest). Always require a SCORM 1.2 export for runtime capture.
 

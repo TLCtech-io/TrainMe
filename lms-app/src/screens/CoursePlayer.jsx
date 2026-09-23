@@ -229,7 +229,11 @@ export default function CoursePlayer({ api, courseId, onExit }) {
               <Btn onClick={() => go(slide + 1)}>Next</Btn>
             ) : (
               <Btn kind="dark" onClick={finish} disabled={saving}>
-                {saving ? 'Recording...' : alreadyDone ? 'Re-issue certificate' : 'Mark complete'}
+                {saving
+                  ? 'Recording...'
+                  : alreadyDone && course.certificateEnabled !== false
+                  ? 'Re-issue certificate'
+                  : 'Mark complete'}
               </Btn>
             )}
           </div>

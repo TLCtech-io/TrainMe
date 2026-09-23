@@ -2,7 +2,9 @@
    COMPLETION + CERTIFICATE
    Shown by the player once a commit completes the course (or on the Review
    path, with the existing certificate). The certificate card is a stand-in
-   for the generated PDF.
+   for the generated PDF. certificate is null for a course with certificates
+   turned off (certificateEnabled: false): completion shows, the card and
+   the email notice do not.
    ============================================================================ */
 
 import React, { useState, useEffect } from 'react';
@@ -46,46 +48,56 @@ export default function CompletionPanel({ api, courseId, certificate, onExit }) 
           {copy.completionTitle}
         </h2>
       </div>
-      <p style={{ fontSize: 14, color: T.neutral700, lineHeight: 1.6, marginTop: 4 }}>
-        Your completion was recorded with a score of <strong>{certificate.score}</strong>. A
-        certificate has been issued and emailed.
-      </p>
+      {certificate ? (
+        <p style={{ fontSize: 14, color: T.neutral700, lineHeight: 1.6, marginTop: 4 }}>
+          Your completion was recorded with a score of <strong>{certificate.score}</strong>. A
+          certificate has been issued and emailed.
+        </p>
+      ) : (
+        <p style={{ fontSize: 14, color: T.neutral700, lineHeight: 1.6, marginTop: 4 }}>
+          Your completion was recorded. This course does not issue a certificate.
+        </p>
+      )}
 
       {/* certificate preview (stand-in for the generated PDF) */}
-      <div
-        style={{
-          marginTop: 18,
-          border: `2px solid ${T.accent500}`,
-          borderRadius: 12,
-          padding: '28px 32px',
-          background: `linear-gradient(135deg, ${T.neutral900}, ${T.neutral800})`,
-          color: T.white,
-          textAlign: 'center',
-        }}
-      >
-        <div style={{ fontSize: 11, letterSpacing: '.18em', color: T.accent400, fontWeight: 600 }}>
-          {copy.certificateHeading}
-        </div>
+      {certificate && (
         <div
           style={{
-            fontFamily: F.heading,
-            fontSize: 30,
-            fontWeight: 700,
-            margin: '14px 0 6px',
+            marginTop: 18,
+            border: `2px solid ${T.accent500}`,
+            borderRadius: 12,
+            padding: '28px 32px',
+            background: `linear-gradient(135deg, ${T.neutral900}, ${T.neutral800})`,
+            color: T.white,
+            textAlign: 'center',
           }}
         >
-          {certificate.learnerName}
+          <div style={{ fontSize: 11, letterSpacing: '.18em', color: T.accent400, fontWeight: 600 }}>
+            {copy.certificateHeading}
+          </div>
+          <div
+            style={{
+              fontFamily: F.heading,
+              fontSize: 30,
+              fontWeight: 700,
+              margin: '14px 0 6px',
+            }}
+          >
+            {certificate.learnerName}
+          </div>
+          <div style={{ fontSize: 13, color: T.neutral300 }}>{copy.certificateLine}</div>
+          <div style={{ fontSize: 17, fontWeight: 600, margin: '8px 0 16px' }}>
+            {certificate.courseTitle}
+          </div>
+          <div style={{ fontSize: 11, color: T.neutral500 }}>
+            Credential ID {certificate.credentialId} - issued{' '}
+            {new Date(certificate.issuedAt).toLocaleDateString()}
+            {certificate.expiresAt && ` - expires ${new Date(certificate.expiresAt).toLocaleDateString()}`}
+          </div>
         </div>
-        <div style={{ fontSize: 13, color: T.neutral300 }}>{copy.certificateLine}</div>
-        <div style={{ fontSize: 17, fontWeight: 600, margin: '8px 0 16px' }}>
-          {certificate.courseTitle}
-        </div>
-        <div style={{ fontSize: 11, color: T.neutral500 }}>
-          {certificate.certId} - issued {new Date(certificate.issuedAt).toLocaleDateString()}
-        </div>
-      </div>
+      )}
 
-      {features.sandboxHints && outbox.length > 0 && (
+      {features.sandboxHints && certificate && outbox.length > 0 && (
         <div
           style={{
             marginTop: 18,
@@ -105,9 +117,11 @@ export default function CompletionPanel({ api, courseId, certificate, onExit }) 
 
       <div style={{ marginTop: 22, display: 'flex', gap: 10 }}>
         <Btn onClick={onExit}>Back to catalog</Btn>
-        <Btn kind="ghost" onClick={() => alert('Real build: downloads the PDF from S3 (presigned URL).')}>
-          Download PDF
-        </Btn>
+        {certificate && (
+          <Btn kind="ghost" onClick={() => alert('Real build: downloads the PDF from S3 (presigned URL).')}>
+            Download PDF
+          </Btn>
+        )}
       </div>
     </div>
   );

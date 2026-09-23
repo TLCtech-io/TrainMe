@@ -7,7 +7,7 @@ import LMS_CONFIG from '../src/lms.config.js';
 import { createApi } from '../src/api/index.js';
 
 test('has the sections the app and index.html injection read', () => {
-  for (const section of ['org', 'brand', 'theme', 'fonts', 'copy', 'features', 'sandbox']) {
+  for (const section of ['org', 'brand', 'theme', 'fonts', 'copy', 'credentials', 'features', 'sandbox']) {
     assert.ok(LMS_CONFIG[section], `missing config section: ${section}`);
   }
   for (const key of ['fullName', 'shortName', 'titleLong', 'metaDescription', 'resourcePrefix']) {
@@ -17,6 +17,9 @@ test('has the sections the app and index.html injection read', () => {
     assert.ok(LMS_CONFIG.fonts[key], `missing fonts.${key}`);
   }
   assert.equal(typeof LMS_CONFIG.features.sandboxHints, 'boolean');
+  const { issuer } = LMS_CONFIG.credentials;
+  assert.ok(issuer.name && issuer.email && issuer.url, 'issuer needs name, email, and url');
+  assert.match(issuer.url, /^https:\/\//);
 });
 
 test('every theme token is a 6-digit hex color', () => {

@@ -16,11 +16,13 @@
    Content item  COURSE#<courseId>   ITEM#<itemId>
    Enrollment    USER#<sub>          ENROLL#<courseId>          GSI1PK COURSE#<courseId>, GSI1SK ENROLL#<sub>
    CMI runtime   USER#<sub>          CMI#<courseId>#<scoId>
-   Certificate   USER#<sub>          CERT#<courseId>
+   Certificate   USER#<sub>          CERT#<courseId>            GSI3PK CRED#<credentialId>, GSI3SK CERT
 
    GSI1 inverts the enrollment key: the course roster (Sprint 2 instructor
    view) is one query, COURSE#<courseId> / begins_with ENROLL#.
    GSI2 is the catalog: CATALOG#published / begins_with COURSE#.
+   GSI3 finds a certificate by its public credential ID (the Sprint 7
+   verification page, verify.<domain>/c/<credentialId>): CRED#<id> / CERT.
 
    The SES outbox is not table data; it stays a plain array.
    ============================================================================ */
@@ -40,11 +42,12 @@ export const keys = {
   cmi: (courseId, scoId) => `CMI#${courseId}#${scoId}`,
   cert: (courseId) => `CERT#${courseId}`,
   catalog: (status) => `CATALOG#${status}`,
+  credential: (credentialId) => `CRED#${credentialId}`,
 };
 
 // Attributes that exist only for the table; the api strips them before
 // returning an item, as the real Lambdas will.
-const KEY_ATTRS = ['PK', 'SK', 'GSI1PK', 'GSI1SK', 'GSI2PK', 'GSI2SK', 'entity'];
+const KEY_ATTRS = ['PK', 'SK', 'GSI1PK', 'GSI1SK', 'GSI2PK', 'GSI2SK', 'GSI3PK', 'GSI3SK', 'entity'];
 
 export function stripKeys(item) {
   if (!item) return null;
@@ -56,6 +59,7 @@ export function stripKeys(item) {
 const INDEXES = {
   GSI1: ['GSI1PK', 'GSI1SK'],
   GSI2: ['GSI2PK', 'GSI2SK'],
+  GSI3: ['GSI3PK', 'GSI3SK'],
 };
 
 function makeTable() {

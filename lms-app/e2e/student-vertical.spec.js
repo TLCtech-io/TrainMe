@@ -89,6 +89,8 @@ test('student vertical: sign in, enroll, resume, complete, certificate, review, 
   expect(t).toContain('jordan avery');
   expect(t).toContain('score of 92');
   expect(t).toContain('to student@demo.test');
+  // Public credential ID, 4-4-4 Crockford base32 (no course, learner, or time in it)
+  expect(t).toMatch(/credential id [0-9a-hjkmnp-tv-z]{4}-[0-9a-hjkmnp-tv-z]{4}-[0-9a-hjkmnp-tv-z]{4}/);
 
   // Review path: re-shows the existing certificate, no hang (10.2)
   await page.getByRole('button', { name: 'Back to catalog', exact: true }).click();

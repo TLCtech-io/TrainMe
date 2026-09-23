@@ -11,8 +11,17 @@
    API_CONTRACT in ./index.js (the contract test enforces the list).
    ============================================================================ */
 
+import LMS_CONFIG from '../lms.config.js';
 import { seedUsers } from './seed.js';
 import { keys, stripKeys } from './mockStore.js';
+import { newCredentialId } from './credentialId.js';
+
+// issuedAt plus a whole number of months, as an ISO string (UTC).
+function addMonths(iso, months) {
+  const d = new Date(iso);
+  d.setUTCMonth(d.getUTCMonth() + months);
+  return d.toISOString();
+}
 
 export function makeApi(store, rawGetSession) {
   const { table } = store;
@@ -47,22 +56,44 @@ export function makeApi(store, rawGetSession) {
   // identity from the session profile (the real backend reads it from the
   // JWT), so there is no lookup that can return undefined and crash the
   // completion path.
+  //
+  // The record carries the Open Badges fields from day one (playbook
+  // Section 4) so the Sprint 7 verification page and Sprint 9 badges need
+  // no migration: a public credentialId, the issuer (snapshotted from
+  // lms.config.js), the course's criteria and skills, an evidence URL slot,
+  // and expiresAt from the course's validityMonths.
   function issueCertificate(sub, course, score) {
     const { profile } = getSession() || {};
     const learnerName = profile?.name || 'Learner';
     const learnerEmail = profile?.email || 'unknown@demo.test';
+    const policy = course.credential || {};
+    const issuedAt = new Date().toISOString();
+
+    // Unique public ID: GSI3 lookup, regenerate on the (vanishing) chance of a clash
+    let credentialId = newCredentialId();
+    while (table.queryIndex('GSI3', keys.credential(credentialId)).length) credentialId = newCredentialId();
+
     const cert = {
+      credentialId,
       sub,
       courseId: course.courseId,
       courseTitle: course.title,
       learnerName,
       score,
-      issuedAt: new Date().toISOString(),
-      certId: `CERT-${course.courseId}-${Date.now().toString(36)}`,
+      issuer: { ...LMS_CONFIG.credentials.issuer },
+      criteria: policy.criteria ?? null,
+      skills: [...(policy.skills || [])],
+      evidenceUrl: null, // e.g. an uploaded proof or graded submission, later sprints
+      issuedAt,
+      expiresAt: policy.validityMonths ? addMonths(issuedAt, policy.validityMonths) : null,
       s3Key: `certs/${sub}/${course.courseId}.pdf`, // where the real PDF lands
     };
-    // USER#<sub> / CERT#<courseId>
-    table.put({ PK: keys.user(sub), SK: keys.cert(course.courseId), entity: 'cert', ...cert });
+    // USER#<sub> / CERT#<courseId>, findable by credential ID on GSI3
+    table.put({
+      PK: keys.user(sub), SK: keys.cert(course.courseId), entity: 'cert',
+      GSI3PK: keys.credential(credentialId), GSI3SK: 'CERT',
+      ...cert,
+    });
     // SES stand-in:
     store.outbox.push({
       to: learnerEmail,
@@ -140,6 +171,8 @@ export function makeApi(store, rawGetSession) {
     // Returns whether this commit completed the course, so the client can
     // show the certificate step. In the real build the COMPLETE+CERTIFY
     // Lambda does this server-side and emits the cert; here we mirror it.
+    // A course with certificateEnabled === false completes with
+    // certificate: null (no certificate, no email).
     async commitCmi(courseId, cmiBag, scoId) {
       await delay(80);
       const { sub } = getSession();
@@ -157,7 +190,7 @@ export function makeApi(store, rawGetSession) {
         if (status === 'completed' || status === 'passed') {
           table.put({ ...enr, status: 'completed', completedAt: new Date().toISOString(), score: rawScore });
           const course = stripKeys(table.get(keys.course(courseId), keys.meta()));
-          const cert = issueCertificate(sub, course, rawScore);
+          const cert = course.certificateEnabled === false ? null : issueCertificate(sub, course, rawScore);
           return { completed: true, certificate: cert };
         } else if (status === 'incomplete') {
           table.put({ ...enr, status: 'in_progress' });

@@ -34,6 +34,16 @@ export const seedUsers = {
 };
 
 // COURSE# items. scormLaunch would be an S3 URL to imsmanifest's launch file.
+//
+// Credential policy, per course (playbook Section 4):
+//   certificateEnabled  false = completion is recorded but no certificate is
+//                       issued or emailed (the scoping doc's "turn off
+//                       certificates for a course")
+//   credential.criteria        what the learner did to earn it (Open Badges criteria)
+//   credential.skills          skills or competencies it recognizes
+//   credential.validityMonths  months until it expires; null = no expiry
+// The criteria, skills, and validity below are PLACEHOLDER language pending
+// the real course policies. Search for "PLACEHOLDER" to find them.
 export const seedCourses = [
   {
     courseId: 'c-eop-pwc',
@@ -50,6 +60,14 @@ export const seedCourses = [
     durationMin: 45,
     certTemplate: 'ct-contact-hour',
     passingScore: 80,
+    certificateEnabled: true,
+    credential: {
+      criteria:
+        'PLACEHOLDER: Completed all required lessons of PWC Emergency Operations Plan: New Team Member Training and ' +
+        'passed the course assessment with a score of 80 or higher.',
+      skills: ['PLACEHOLDER: skill or competency this course recognizes'],
+      validityMonths: null, // PLACEHOLDER: no expiry until a recertification policy is set
+    },
   },
   {
     courseId: 'c-msg-101',
@@ -65,6 +83,14 @@ export const seedCourses = [
     durationMin: 20,
     certTemplate: 'ct-contact-hour',
     passingScore: 80,
+    certificateEnabled: true,
+    credential: {
+      criteria:
+        'PLACEHOLDER: Completed all required lessons of Effective Message Writing and ' +
+        'passed the course assessment with a score of 80 or higher.',
+      skills: ['PLACEHOLDER: skill or competency this course recognizes'],
+      validityMonths: null, // PLACEHOLDER: no expiry until a recertification policy is set
+    },
   },
 ];
 

@@ -126,6 +126,27 @@ const config = {
   },
 
   /* --------------------------------------------------------------------------
+     CREDENTIALS (Open Badges forward-compatible; playbook Sections 4 and 6.5)
+     issuer         the Open Badges Issuer Profile: who stands behind every
+                    certificate. Snapshotted onto each certificate when it is
+                    issued, so a later change here never rewrites history.
+     verifyBaseUrl  public verification route for a credential ID
+                    (verify.<domain>/c/<credentialId>). Null until the domain
+                    is chosen (Sprint 7 page, Sprint 8 domain).
+
+     Per-course credential policy (certificate on/off, criteria, skills,
+     validity) lives on each course record, not here.
+     -------------------------------------------------------------------------- */
+  credentials: {
+    issuer: {
+      name:  'TLC TRNG, LLC',
+      email: 'info@TLCTRNG.com',
+      url:   'https://TLCTRNG.com',
+    },
+    verifyBaseUrl: null,
+  },
+
+  /* --------------------------------------------------------------------------
      FEATURE FLAGS
      sandboxHints  Shows the sandbox-only helper UI: the demo accounts panel
                    and prefilled credentials on sign-in, the SCORM runtime
