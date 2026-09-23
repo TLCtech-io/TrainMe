@@ -1,8 +1,10 @@
 /* ============================================================================
    MOCK SEED DATA
    Stands in for what the real backend holds: Cognito users (with the
-   `custom:role` attribute) and published COURSE# items. Lives with the mock
-   api, not in lms.config.js, because it is backend data, not org config.
+   `custom:role` attribute), COURSE# items, and their ITEM# content items.
+   makeStore() (mockStore.js) loads the courses and items into the table and
+   mirrors each user as a USER#/PROFILE item. Lives with the mock api, not
+   in lms.config.js, because it is backend data, not org config.
    ============================================================================ */
 
 // Cognito stand-in. Keyed by email; the password check happens in signIn().
@@ -63,5 +65,30 @@ export const seedCourses = [
     durationMin: 20,
     certTemplate: 'ct-contact-hour',
     passingScore: 80,
+  },
+];
+
+// ITEM# records: the content items attached to each course (COURSE#<id> /
+// ITEM#<itemId>). Each Sprint 0 course is one SCORM package with one SCO,
+// which is how Rise360 exports. scoId is the SCO's identifier from
+// imsmanifest.xml; CMI is stored per SCO (CMI#<courseId>#<scoId>).
+export const seedItems = [
+  {
+    courseId: 'c-eop-pwc',
+    itemId: 'i-eop-pwc-scorm',
+    type: 'scorm',
+    title: 'PWC EOP: New Team Member Training (SCORM 1.2)',
+    order: 1,
+    scoId: 'sco-main',
+    launchPath: 'MOCK', // real build: S3 key of the launch file, e.g. eop-pwc/scormdriver/indexAPI.html
+  },
+  {
+    courseId: 'c-msg-101',
+    itemId: 'i-msg-101-scorm',
+    type: 'scorm',
+    title: 'Effective Message Writing (SCORM 1.2)',
+    order: 1,
+    scoId: 'sco-main',
+    launchPath: 'MOCK',
   },
 ];

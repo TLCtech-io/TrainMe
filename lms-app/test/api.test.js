@@ -57,7 +57,7 @@ test('student vertical: enroll -> play -> resume -> complete -> certificate -> t
   const enr = await api.enroll(courseId);
   assert.equal(enr.status, 'enrolled');
   assert.equal(enr.sub, me.sub);
-  assert.equal(await api.enroll(courseId), enr);
+  assert.deepEqual(await api.enroll(courseId), enr);
 
   // Open the course: nothing saved yet; install the runtime like the player
   assert.equal(await api.getCmi(courseId), null);
@@ -144,4 +144,32 @@ test('a completing commit without an enrollment issues no certificate', async ()
   assert.deepEqual(res, { completed: false, certificate: null });
   assert.equal(await api.getCertificate('c-msg-101'), null);
   assert.deepEqual(await api.listEnrollments(), []);
+});
+
+test('scoId: omitted means the course\'s primary SCO; explicit scoId addresses that SCO', async () => {
+  const h = harness();
+  const { api } = h;
+  await h.signInAs('student@demo.test');
+  await api.enroll('c-msg-101');
+  await api.commitCmi('c-msg-101', { 'cmi.suspend_data': '2', 'cmi.core.lesson_status': 'incomplete' });
+  // Default and explicit primary SCO read the same record
+  assert.equal((await api.getCmi('c-msg-101'))['cmi.suspend_data'], '2');
+  assert.equal((await api.getCmi('c-msg-101', 'sco-main'))['cmi.suspend_data'], '2');
+  // A different SCO in the same course has its own runtime record
+  await api.commitCmi('c-msg-101', { 'cmi.suspend_data': '9', 'cmi.core.lesson_status': 'incomplete' }, 'sco-2');
+  assert.equal((await api.getCmi('c-msg-101', 'sco-2'))['cmi.suspend_data'], '9');
+  assert.equal((await api.getCmi('c-msg-101'))['cmi.suspend_data'], '2');
+});
+
+test('returned records carry no table key attributes', async () => {
+  const h = harness();
+  const { api } = h;
+  await h.signInAs('student@demo.test');
+  const leaks = (o) => Object.keys(o).filter((k) => /^(PK|SK|GSI\d(PK|SK)|entity)$/.test(k));
+  for (const c of await api.listCatalog()) assert.deepEqual(leaks(c), []);
+  assert.deepEqual(leaks(await api.enroll('c-msg-101')), []);
+  for (const e of await api.listEnrollments()) assert.deepEqual(leaks(e), []);
+  const done = await api.commitCmi('c-msg-101', { 'cmi.core.lesson_status': 'passed', 'cmi.core.score.raw': '85' });
+  assert.deepEqual(leaks(done.certificate), []);
+  assert.deepEqual(leaks(await api.getCertificate('c-msg-101')), []);
 });

@@ -11,10 +11,11 @@
    API_CONTRACT in ./index.js (the contract test enforces the list).
    ============================================================================ */
 
-import { seedUsers, seedCourses } from './seed.js';
-import { learnerCourseKey as k } from './mockStore.js';
+import { seedUsers } from './seed.js';
+import { keys, stripKeys } from './mockStore.js';
 
 export function makeApi(store, rawGetSession) {
+  const { table } = store;
   const delay = (ms = 180) => new Promise((r) => setTimeout(r, ms));
 
   // Normalize the session so callers can read `sub`, `profile`, and `token`
@@ -27,11 +28,24 @@ export function makeApi(store, rawGetSession) {
     return { token: s.token, profile: s.profile, sub: s.profile?.sub };
   };
 
+  // The SCO a CMI call addresses. Callers may omit scoId: a Rise360 export
+  // is a single-SCO package, so the default is the course's first SCORM item
+  // (lowest order). Query COURSE#<id> / begins_with ITEM#, no scan.
+  function resolveScoId(courseId, scoId) {
+    if (scoId) return scoId;
+    const sco = table
+      .query(keys.course(courseId), 'ITEM#')
+      .filter((i) => i.type === 'scorm')
+      .sort((a, b) => a.order - b.order)[0];
+    if (!sco) throw new Error(`Course ${courseId} has no SCORM item.`);
+    return sco.scoId;
+  }
+
   // Stands in for the COMPLETE+CERTIFY Lambda (PDF -> S3 -> SES). Internal:
   // not part of the contract, because in the real build the backend issues
   // the certificate server-side inside the commit. Reads the learner's
   // identity from the session profile (the real backend reads it from the
-  // JWT), so there is no table scan that can return undefined and crash the
+  // JWT), so there is no lookup that can return undefined and crash the
   // completion path.
   function issueCertificate(sub, course, score) {
     const { profile } = getSession() || {};
@@ -47,7 +61,8 @@ export function makeApi(store, rawGetSession) {
       certId: `CERT-${course.courseId}-${Date.now().toString(36)}`,
       s3Key: `certs/${sub}/${course.courseId}.pdf`, // where the real PDF lands
     };
-    store.certs[k(sub, course.courseId)] = cert;
+    // USER#<sub> / CERT#<courseId>
+    table.put({ PK: keys.user(sub), SK: keys.cert(course.courseId), entity: 'cert', ...cert });
     // SES stand-in:
     store.outbox.push({
       to: learnerEmail,
@@ -74,24 +89,27 @@ export function makeApi(store, rawGetSession) {
     },
 
     // GET /courses  ->  published catalog
+    // Query GSI2: CATALOG#published / begins_with COURSE#
     async listCatalog() {
       await delay();
-      return seedCourses.filter((c) => c.status === 'published');
+      return table.queryIndex('GSI2', keys.catalog('published'), 'COURSE#').map(stripKeys);
     },
 
     // GET /me/enrollments  ->  this user's enrollments (transcript source)
+    // Query USER#<sub> / begins_with ENROLL#
     async listEnrollments() {
       await delay();
       const { sub } = getSession();
-      return Object.values(store.enrollments).filter((e) => e.sub === sub);
+      return table.query(keys.user(sub), 'ENROLL#').map(stripKeys);
     },
 
     // POST /me/enrollments { courseId }  ->  enrollment item
+    // Put USER#<sub> / ENROLL#<courseId>, indexed on GSI1 for the roster.
     async enroll(courseId) {
       await delay();
       const { sub } = getSession();
-      const key = k(sub, courseId);
-      if (store.enrollments[key]) return store.enrollments[key];
+      const existing = table.get(keys.user(sub), keys.enroll(courseId));
+      if (existing) return stripKeys(existing);
       const item = {
         sub,
         courseId,
@@ -100,51 +118,60 @@ export function makeApi(store, rawGetSession) {
         completedAt: null,
         score: null,
       };
-      store.enrollments[key] = item;
+      table.put({
+        PK: keys.user(sub), SK: keys.enroll(courseId), entity: 'enrollment',
+        GSI1PK: keys.course(courseId), GSI1SK: keys.enrollee(sub),
+        ...item,
+      });
       return item;
     },
 
-    // GET /me/cmi/{courseId}  ->  saved runtime bag (for resume)
-    async getCmi(courseId) {
+    // GET /me/cmi/{courseId}?sco={scoId}  ->  saved runtime bag (for resume)
+    // Get USER#<sub> / CMI#<courseId>#<scoId>. scoId is optional (see
+    // resolveScoId); omit it for single-SCO packages.
+    async getCmi(courseId, scoId) {
       await delay(80);
       const { sub } = getSession();
-      return store.cmi[k(sub, courseId)] || null;
+      const rec = table.get(keys.user(sub), keys.cmi(courseId, resolveScoId(courseId, scoId)));
+      return rec ? rec.cmi : null;
     },
 
-    // PUT /me/cmi/{courseId}  { cmi }  ->  persist runtime (the Commit path)
+    // PUT /me/cmi/{courseId}?sco={scoId}  { cmi }  ->  persist runtime (the Commit path)
     // Returns whether this commit completed the course, so the client can
     // show the certificate step. In the real build the COMPLETE+CERTIFY
     // Lambda does this server-side and emits the cert; here we mirror it.
-    async commitCmi(courseId, cmiBag) {
+    async commitCmi(courseId, cmiBag, scoId) {
       await delay(80);
       const { sub } = getSession();
-      const key = k(sub, courseId);
-      store.cmi[key] = { ...cmiBag };
+      const sco = resolveScoId(courseId, scoId);
+      table.put({
+        PK: keys.user(sub), SK: keys.cmi(courseId, sco), entity: 'cmi',
+        sub, courseId, scoId: sco, cmi: { ...cmiBag },
+      });
 
-      const course = seedCourses.find((c) => c.courseId === courseId);
       const status = cmiBag['cmi.core.lesson_status'];
       const rawScore = Number(cmiBag['cmi.core.score.raw'] ?? 0);
 
-      const enr = store.enrollments[key];
+      const enr = table.get(keys.user(sub), keys.enroll(courseId));
       if (enr && enr.status !== 'completed') {
         if (status === 'completed' || status === 'passed') {
-          enr.status = 'completed';
-          enr.completedAt = new Date().toISOString();
-          enr.score = rawScore;
+          table.put({ ...enr, status: 'completed', completedAt: new Date().toISOString(), score: rawScore });
+          const course = stripKeys(table.get(keys.course(courseId), keys.meta()));
           const cert = issueCertificate(sub, course, rawScore);
           return { completed: true, certificate: cert };
         } else if (status === 'incomplete') {
-          enr.status = 'in_progress';
+          table.put({ ...enr, status: 'in_progress' });
         }
       }
       return { completed: false, certificate: null };
     },
 
     // GET /me/certificates/{courseId}
+    // Get USER#<sub> / CERT#<courseId>
     async getCertificate(courseId) {
       await delay(60);
       const { sub } = getSession();
-      return store.certs[k(sub, courseId)] || null;
+      return stripKeys(table.get(keys.user(sub), keys.cert(courseId)));
     },
 
     // GET /me/outbox  (sandbox-only: lets the UI show the "sent" email)
