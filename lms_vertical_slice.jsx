@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 
 /* ============================================================================
-   LMS — Thin Vertical Slice (v0.1, sandbox)
+   LMS: Thin Vertical Slice (v0.1, sandbox)
    ----------------------------------------------------------------------------
    Proves the full student journey end to end against an in-memory mock backend:
      sign in  ->  catalog  ->  enroll  ->  play SCORM  ->  complete
@@ -1170,9 +1170,9 @@ function Transcript({ api, profile }) {
                   {r.status === "completed" ? "Completed" : r.status === "in_progress" ? "In progress" : "Enrolled"}
                 </Pill>
               </div>
-              <div>{r.score ?? "—"}</div>
+              <div>{r.score ?? "-"}</div>
               <div style={{ color: T.slate500 }}>
-                {r.completedAt ? new Date(r.completedAt).toLocaleDateString() : "—"}
+                {r.completedAt ? new Date(r.completedAt).toLocaleDateString() : "-"}
               </div>
             </div>
           ))}

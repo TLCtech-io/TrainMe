@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="%LMS_THEME_COLOR%" />
+  <meta name="description" content="%LMS_META_DESCRIPTION%" />
+  <title>%LMS_TITLE%</title>
+
+  <!-- Favicons (TLC_TRNG brand set, shared with the DST) -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+  <!-- Fonts: the href comes from lms.config.js (fonts.googleFontsHref) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="%LMS_FONTS_HREF%" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body, #root { min-height: 100%; margin: 0; padding: 0; }
+    body {
+      font-family: %LMS_FONT_BODY%;
+      background: %LMS_COLOR_BG%;
+      color: %LMS_COLOR_INK%;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    button { font-family: inherit; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+</html>
