@@ -36,7 +36,10 @@ test('seed data lands as USER#, COURSE#/META, and COURSE#/ITEM# items', () => {
   const items = table.query('COURSE#c-msg-101', 'ITEM#').sort((a, b) => a.order - b.order);
   assert.deepEqual(items.map((i) => i.type), ['scorm', 'assignment', 'scorm']);
   assert.deepEqual(items.map((i) => i.unlock), ['open', 'after_previous', 'after_approval']);
-  assert.equal(table.get('COURSE#c-msg-101', 'RUBRIC#r-msg-101-draft').criteria.length, 3);
+  // The assignment item holds its form: fields, each with its own rubric criteria
+  const draft = table.get('COURSE#c-msg-101', 'ITEM#i-msg-101-draft');
+  assert.deepEqual(draft.fields.map((f) => f.criteria.length), [2, 1]);
+  assert.equal(table.query('COURSE#c-msg-101', 'RUBRIC#').length, 0, 'no separate rubric records');
   assert.ok(table.get('USER#u-instr-001', 'TEACH#c-msg-101'), 'the instructor teaches c-msg-101');
   assert.equal(table.get('USER#u-instr-001', 'TEACH#c-eop-pwc'), null, 'and not c-eop-pwc');
 });

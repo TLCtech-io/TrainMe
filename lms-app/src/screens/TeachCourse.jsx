@@ -1,7 +1,8 @@
 /* ============================================================================
    TEACH COURSE  (instructor / admin workspace for one course)
    Three views: the grading queue (submissions awaiting review, oldest
-   first), the roster (every learner's progress), and the course's rubrics.
+   first), the roster (every learner's progress), and the course's
+   assignments (instructions, fields, and each field's rubric).
    Opening a queue entry shows the review screen.
    ============================================================================ */
 
@@ -19,12 +20,12 @@ import {
   fmtDate,
 } from '../components/primitives.jsx';
 import ReviewSubmission from './ReviewSubmission.jsx';
-import RubricEditor from './RubricEditor.jsx';
+import AssignmentEditor from './AssignmentEditor.jsx';
 
 const VIEWS = [
   ['queue', 'Grading queue'],
   ['roster', 'Roster'],
-  ['rubrics', 'Rubrics'],
+  ['assignments', 'Assignments'],
 ];
 
 const th = {
@@ -82,7 +83,11 @@ export default function TeachCourse({ api, courseId, onExit }) {
     );
   }
 
-  const assignments = items.filter((i) => i.type === 'assignment' && i.rubricId);
+  const assignments = items.filter((i) => i.type === 'assignment');
+  // A saved assignment replaces its item here at once, so leaving and
+  // returning to the tab shows what was saved.
+  const keepSaved = (updated) =>
+    setOutline((o) => ({ ...o, items: o.items.map((i) => (i.itemId === updated.itemId ? updated : i)) }));
 
   return (
     <div>
@@ -190,12 +195,12 @@ export default function TeachCourse({ api, courseId, onExit }) {
           </Card>
         ))}
 
-      {view === 'rubrics' &&
+      {view === 'assignments' &&
         (assignments.length === 0 ? (
-          <Empty label="This course has no assignments that use a rubric." />
+          <Empty label="This course has no assignments." />
         ) : (
           assignments.map((a) => (
-            <RubricEditor key={a.rubricId} api={api} courseId={courseId} rubricId={a.rubricId} itemTitle={a.title} />
+            <AssignmentEditor key={a.itemId} api={api} courseId={courseId} item={a} onSaved={keepSaved} />
           ))
         ))}
     </div>

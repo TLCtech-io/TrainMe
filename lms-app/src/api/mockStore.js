@@ -13,13 +13,12 @@
    Entity        PK                  SK                         Index attributes
    User profile  USER#<sub>          PROFILE
    Course        COURSE#<courseId>   META                       GSI2PK CATALOG#<status>, GSI2SK COURSE#<courseId>
-   Content item  COURSE#<courseId>   ITEM#<itemId>
+   Content item  COURSE#<courseId>   ITEM#<itemId>              (an assignment item holds its form: fields and per-field rubric criteria)
    Enrollment    USER#<sub>          ENROLL#<courseId>          GSI1PK COURSE#<courseId>, GSI1SK ENROLL#<sub>
    CMI runtime   USER#<sub>          CMI#<courseId>#<scoId>
    Certificate   USER#<sub>          CERT#<courseId>            GSI3PK CRED#<credentialId>, GSI3SK CERT
    Teaching      USER#<sub>          TEACH#<courseId>
-   Rubric        COURSE#<courseId>   RUBRIC#<rubricId>
-   Submission    USER#<sub>          SUB#<courseId>#<itemId>#<attempt, 3 digits>
+   Submission    USER#<sub>          SUB#<courseId>#<itemId>#<attempt, 3 digits>  (answers per field, plus a snapshot of the form)
                                                                GSI1PK COURSE#<courseId>,
                                                                GSI1SK QUEUE#<submittedAt>#<sub>#<itemId> while awaiting review,
                                                                       EVAL#<evaluatedAt>#<sub>#<itemId> once evaluated
@@ -41,7 +40,7 @@
    keyed by the S3 object key they will have in Sprint 4).
    ============================================================================ */
 
-import { seedUsers, seedCourses, seedItems, seedTeaching, seedRubrics } from './seed.js';
+import { seedUsers, seedCourses, seedItems, seedTeaching } from './seed.js';
 
 // Key builders: the only place key strings are spelled. Sprint 4 Lambdas
 // use the same shapes.
@@ -58,7 +57,6 @@ export const keys = {
   catalog: (status) => `CATALOG#${status}`,
   credential: (credentialId) => `CRED#${credentialId}`,
   teach: (courseId) => `TEACH#${courseId}`,
-  rubric: (rubricId) => `RUBRIC#${rubricId}`,
   submissions: (courseId, itemId) => `SUB#${courseId}#${itemId}#`,
   submission: (courseId, itemId, attempt) => `SUB#${courseId}#${itemId}#${String(attempt).padStart(3, '0')}`,
   queued: (submittedAt, sub, itemId) => `QUEUE#${submittedAt}#${sub}#${itemId}`,
@@ -144,10 +142,6 @@ export function makeStore() {
   // USER#<sub> / TEACH#<courseId>: instructor course assignments.
   for (const t of seedTeaching) {
     table.put({ PK: keys.user(t.sub), SK: keys.teach(t.courseId), entity: 'teach', ...t, assignedAt: new Date(0).toISOString() });
-  }
-  // COURSE#<courseId> / RUBRIC#<rubricId>
-  for (const r of seedRubrics) {
-    table.put({ PK: keys.course(r.courseId), SK: keys.rubric(r.rubricId), entity: 'rubric', ...r });
   }
 
   return {

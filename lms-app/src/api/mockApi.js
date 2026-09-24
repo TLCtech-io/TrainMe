@@ -6,10 +6,10 @@
    becomes a fetch() to the corresponding Lambda endpoint with the JWT in the
    Authorization header. Components never change.
 
-   Rules live here, not in components: gating, submission lifecycle, rubric
-   validation, instructor authorization, and course completion are enforced
-   by the api, exactly as the Lambdas will enforce them server-side. The UI
-   only reflects what the api reports.
+   Rules live here, not in components: gating, submission lifecycle,
+   assignment forms and rubric validation, instructor authorization, and
+   course completion are enforced by the api, exactly as the Lambdas will
+   enforce them server-side. The UI only reflects what the api reports.
 
    When you add a feature, add its method here first, with the signature the
    backend will honor, then implement the mock body, then add it to
@@ -256,6 +256,43 @@ export function makeApi(store, rawGetSession) {
   // Files a learner may attach: their own uploads for this course item.
   const uploadPrefix = (sub, courseId, itemId) => `uploads/${sub}/${courseId}/${itemId}/`;
 
+  // Every rubric criterion of an assignment form, in field order.
+  const criteriaOf = (fields = []) => fields.flatMap((f) => f.criteria || []);
+
+  const FIELD_TYPES = ['text', 'file'];
+  const TEXT_LIMIT = 20000;
+  const COMMENT_LIMIT = 4000;
+  const newId = (prefix) => `${prefix}-${randomToken().slice(0, 8)}`;
+
+  // Cleans an assignment form from the editor into what is stored on the
+  // ITEM#: ids assigned, text trimmed, one descriptor slot per level.
+  function normalizeFields(fields) {
+    const out = (fields || []).map((f) => ({
+      fieldId: f.fieldId || newId('f'),
+      label: String(f.label || '').trim(),
+      prompt: String(f.prompt || '').trim(),
+      type: f.type,
+      required: f.required !== false,
+      criteria: (f.criteria || []).map((c) => ({
+        criterionId: c.criterionId || newId('crit'),
+        title: String(c.title || '').trim(),
+        description: String(c.description || '').trim(),
+        levels: Object.fromEntries(LEVELS.map((l) => [l.id, String(c.levels?.[l.id] || '').trim()])),
+      })),
+    }));
+    if (!out.length) throw new Error('Add at least one field.');
+    for (const [i, f] of out.entries()) {
+      if (!f.label) throw new Error(`Field ${i + 1} needs a label.`);
+      if (!FIELD_TYPES.includes(f.type)) throw new Error(`Field ${i + 1} needs a type (text or file).`);
+      if (f.criteria.some((c) => !c.title)) throw new Error(`Every criterion in "${f.label}" needs a title.`);
+    }
+    const ids = criteriaOf(out).map((c) => c.criterionId);
+    if (new Set(ids).size !== ids.length || new Set(out.map((f) => f.fieldId)).size !== out.length) {
+      throw new Error('Field and criterion ids must be unique.');
+    }
+    return out;
+  }
+
   return {
     /* ======================================================================
        AUTH AND CATALOG
@@ -410,12 +447,17 @@ export function makeApi(store, rawGetSession) {
       return urlCache.get(fileKey);
     },
 
-    // POST /me/courses/{courseId}/items/{itemId}/submissions { note, files }
-    //   ->  submission
-    // Allowed when the item is unlocked and not awaiting review or approved
-    // (a returned item may be resubmitted). Each attempt is its own record,
-    // so the full history of feedback is kept.
-    async submitAssignment(courseId, itemId, { note = '', files = [] } = {}) {
+    // POST /me/courses/{courseId}/items/{itemId}/submissions
+    //   { responses: { [fieldId]: { text } | { files, comment } } }  ->  submission
+    // One answer per field of the assignment form: a text field takes
+    // { text }; a file field takes { files, comment } (files already
+    // uploaded with uploadFile, comment optional). Required fields must be
+    // answered. Allowed when the item is unlocked and not awaiting review
+    // or approved (a returned item may be resubmitted). Each attempt is its
+    // own record and keeps a snapshot of the form it answered, so later
+    // edits to the assignment never change what was submitted or how it is
+    // evaluated.
+    async submitAssignment(courseId, itemId, { responses = {} } = {}) {
       await delay(150);
       const { sub } = getSession();
       enrollmentOrThrow(sub, courseId);
@@ -425,16 +467,37 @@ export function makeApi(store, rawGetSession) {
       if (item.state.locked) throw new Error('This item is locked.');
       if (item.state.status === 'submitted') throw new Error('Your last submission is still awaiting review.');
       if (item.state.status === 'complete') throw new Error('This assignment is already approved.');
-      if (!files.length) throw new Error('Attach at least one file.');
-      if (files.length > LMS_CONFIG.uploads.maxFiles) {
-        throw new Error(`Attach no more than ${LMS_CONFIG.uploads.maxFiles} files.`);
-      }
+
       const prefix = uploadPrefix(sub, courseId, itemId);
-      for (const f of files) {
-        if (!String(f.fileKey).startsWith(prefix) || !store.blobs.has(f.fileKey)) {
-          throw new Error('A file was not uploaded for this assignment.');
+      const answers = {};
+      for (const field of item.fields || []) {
+        const r = responses[field.fieldId] || {};
+        if (field.type === 'text') {
+          const text = String(r.text || '').trim();
+          if (text.length > TEXT_LIMIT) throw new Error(`"${field.label}" is too long (limit ${TEXT_LIMIT} characters).`);
+          if (field.required && !text) throw new Error(`Answer "${field.label}".`);
+          if (text) answers[field.fieldId] = { text };
+        } else {
+          const files = r.files || [];
+          if (field.required && !files.length) throw new Error(`Attach a file for "${field.label}".`);
+          if (files.length > LMS_CONFIG.uploads.maxFiles) {
+            throw new Error(`Attach no more than ${LMS_CONFIG.uploads.maxFiles} files for "${field.label}".`);
+          }
+          for (const f of files) {
+            if (!String(f.fileKey).startsWith(prefix) || !store.blobs.has(f.fileKey)) {
+              throw new Error('A file was not uploaded for this assignment.');
+            }
+          }
+          const comment = String(r.comment || '').trim().slice(0, COMMENT_LIMIT);
+          if (files.length || comment) {
+            answers[field.fieldId] = {
+              files: files.map(({ fileKey, name, size, type }) => ({ fileKey, name, size, type })),
+              comment,
+            };
+          }
         }
       }
+      if (!Object.keys(answers).length) throw new Error('Answer at least one field.');
 
       const attempt = item.state.attempts + 1;
       const submittedAt = new Date().toISOString();
@@ -443,8 +506,8 @@ export function makeApi(store, rawGetSession) {
         courseId,
         itemId,
         attempt,
-        note: String(note).slice(0, 4000),
-        files: files.map(({ fileKey, name, size, type }) => ({ fileKey, name, size, type })),
+        responses: answers,
+        form: { instructions: item.instructions || '', fields: item.fields || [] },
         status: 'submitted', // submitted -> approved | returned
         submittedAt,
         late: !!item.state.dueAt && Date.parse(submittedAt) > Date.parse(item.state.dueAt),
@@ -465,18 +528,6 @@ export function makeApi(store, rawGetSession) {
       await delay(80);
       const { sub } = getSession();
       return table.query(keys.user(sub), keys.submissions(courseId, itemId)).map(stripKeys);
-    },
-
-    // GET /courses/{courseId}/rubrics/{rubricId}
-    // Learners enrolled in the course see it (they know what is expected);
-    // so does anyone who teaches it.
-    async getRubric(courseId, rubricId) {
-      await delay(60);
-      const { sub } = getSession();
-      if (!table.get(keys.user(sub), keys.enroll(courseId)) && !isTeacher(courseId)) {
-        throw new Error('Not authorized for this course.');
-      }
-      return stripKeys(table.get(keys.course(courseId), keys.rubric(rubricId)));
     },
 
     /* ======================================================================
@@ -545,33 +596,42 @@ export function makeApi(store, rawGetSession) {
           attempt: s.attempt,
           submittedAt: s.submittedAt,
           late: s.late,
-          fileCount: s.files.length,
         };
       });
     },
 
     // GET /courses/{courseId}/learners/{sub}/items/{itemId}/review
-    //   ->  { learner, item, rubric, attempts }
+    //   ->  { learner, item, attempts }
+    // Each attempt carries its own form snapshot; review against that.
     async getReview(courseId, learnerSub, itemId) {
       await delay();
       requireTeacher(courseId);
       const learner = profileOf(learnerSub);
       if (!learner) throw new Error('Learner not found.');
       const item = itemOrThrow(courseId, itemId);
-      const rubric = item.rubricId ? stripKeys(table.get(keys.course(courseId), keys.rubric(item.rubricId))) : null;
       const attempts = table.query(keys.user(learnerSub), keys.submissions(courseId, itemId)).map(stripKeys);
-      return { learner: { sub: learner.sub, name: learner.name, email: learner.email }, item, rubric, attempts };
+      return { learner: { sub: learner.sub, name: learner.name, email: learner.email }, item, attempts };
     },
 
     // POST /courses/{courseId}/learners/{sub}/items/{itemId}/submissions/{attempt}/evaluation
-    //   { ratings: { criterionId: levelId }, outcome: levelId, comments }
+    //   { ratings: { criterionId: levelId }, criterionComments: { criterionId: text },
+    //     outcome: levelId, comments }
     //   ->  { submission, completed, certificate }
-    // A passing outcome approves the submission (opening any approval gate
-    // and possibly completing the course, which certifies the learner); a
-    // non-passing outcome returns it for resubmission and requires comments.
-    // The rubric is snapshotted onto the evaluation, so later rubric edits
-    // never change a recorded evaluation.
-    async evaluateSubmission(courseId, learnerSub, itemId, attempt, { ratings = {}, outcome, comments = '' } = {}) {
+    // Every criterion in the attempt's form snapshot must be rated; each may
+    // carry its own comment, and `comments` is the overall comment on the
+    // assignment. A passing outcome approves the submission (opening any
+    // approval gate and possibly completing the course, which certifies the
+    // learner); a non-passing outcome returns it for resubmission and needs
+    // feedback (an overall comment or at least one criterion comment). The
+    // form snapshot on the submission is the rubric of record, so later
+    // edits to the assignment never change a recorded evaluation.
+    async evaluateSubmission(
+      courseId,
+      learnerSub,
+      itemId,
+      attempt,
+      { ratings = {}, criterionComments = {}, outcome, comments = '' } = {}
+    ) {
       await delay(150);
       requireTeacher(courseId);
       const { sub: evaluatorSub, profile } = getSession();
@@ -584,24 +644,30 @@ export function makeApi(store, rawGetSession) {
       if (latest.attempt !== rec.attempt) throw new Error('Only the latest attempt can be evaluated.');
 
       const item = itemOrThrow(courseId, itemId);
-      const rubric = table.get(keys.course(courseId), keys.rubric(item.rubricId));
-      if (!rubric) throw new Error('This assignment has no rubric.');
-      for (const c of rubric.criteria) {
+      const criteria = criteriaOf(rec.form?.fields);
+      for (const c of criteria) {
         if (!levelById(ratings[c.criterionId])) throw new Error(`Rate every rubric criterion (missing: ${c.title}).`);
       }
       const level = levelById(outcome);
       if (!level) throw new Error('Choose an overall outcome.');
-      const text = String(comments).trim();
-      if (!level.passing && !text) throw new Error('Add comments explaining what to revise.');
+      const text = String(comments).trim().slice(0, COMMENT_LIMIT);
+      const perCriterion = Object.fromEntries(
+        criteria
+          .map((c) => [c.criterionId, String(criterionComments[c.criterionId] || '').trim().slice(0, COMMENT_LIMIT)])
+          .filter(([, t]) => t)
+      );
+      if (!level.passing && !text && !Object.keys(perCriterion).length) {
+        throw new Error('Add comments explaining what to revise.');
+      }
 
       const evaluatedAt = new Date().toISOString();
       const evaluation = {
         outcome: level.id,
         outcomeLabel: level.label,
         passing: level.passing,
-        ratings: Object.fromEntries(rubric.criteria.map((c) => [c.criterionId, ratings[c.criterionId]])),
+        ratings: Object.fromEntries(criteria.map((c) => [c.criterionId, ratings[c.criterionId]])),
+        criterionComments: perCriterion,
         comments: text,
-        rubric: { rubricId: rubric.rubricId, title: rubric.title, criteria: rubric.criteria.map(({ criterionId, title }) => ({ criterionId, title })) },
         evaluatorSub,
         evaluatorName: profile?.name || 'Instructor',
         evaluatedAt,
@@ -626,35 +692,29 @@ export function makeApi(store, rawGetSession) {
       return { submission: stripKeys(updated), ...result };
     },
 
-    // PUT /courses/{courseId}/rubrics/{rubricId}  { title, criteria }  ->  rubric
-    // Admins and the course's instructors author rubrics. Each criterion has
-    // a title, a description, and a descriptor per evaluation level.
-    async saveRubric(courseId, rubric = {}) {
+    // PUT /courses/{courseId}/items/{itemId}/assignment  { instructions, fields }  ->  item
+    // Admins and the course's instructors build assignments: instructions,
+    // then the fields the learner answers (text, or files with a comment),
+    // each with its own rubric criteria (zero or more). Submissions already
+    // made keep the form they answered.
+    async saveAssignment(courseId, itemId, { instructions = '', fields = [] } = {}) {
       await delay(120);
       requireTeacher(courseId);
       const { sub } = getSession();
-      courseOrThrow(courseId);
-      const title = String(rubric.title || '').trim();
-      if (!rubric.rubricId) throw new Error('Rubric id is required.');
-      if (!title) throw new Error('Give the rubric a title.');
-      const criteria = (rubric.criteria || []).map((c) => ({
-        criterionId: c.criterionId || `crit-${randomToken().slice(0, 8)}`,
-        title: String(c.title || '').trim(),
-        description: String(c.description || '').trim(),
-        levels: Object.fromEntries(LEVELS.map((l) => [l.id, String(c.levels?.[l.id] || '').trim()])),
-      }));
-      if (!criteria.length) throw new Error('Add at least one criterion.');
-      if (criteria.some((c) => !c.title)) throw new Error('Every criterion needs a title.');
-      const saved = {
-        courseId,
-        rubricId: rubric.rubricId,
-        title,
-        criteria,
+      const rec = table.get(keys.course(courseId), keys.item(itemId));
+      if (!rec) throw new Error('Course item not found.');
+      if (rec.type !== 'assignment') throw new Error('This item is not an assignment.');
+      const text = String(instructions).trim();
+      if (!text) throw new Error('Add instructions.');
+      const updated = {
+        ...rec,
+        instructions: text,
+        fields: normalizeFields(fields),
         updatedAt: new Date().toISOString(),
         updatedBy: sub,
       };
-      table.put({ PK: keys.course(courseId), SK: keys.rubric(rubric.rubricId), entity: 'rubric', ...saved });
-      return saved;
+      table.put(updated);
+      return stripKeys(updated);
     },
 
     /* ======================================================================

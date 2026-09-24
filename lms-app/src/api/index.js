@@ -28,14 +28,13 @@ export const API_CONTRACT = [
   'getFileUrl',
   'submitAssignment',
   'listSubmissions',
-  'getRubric',
   // instructor and admin
   'listTeaching',
   'getRoster',
   'listGradingQueue',
   'getReview',
   'evaluateSubmission',
-  'saveRubric',
+  'saveAssignment',
   // sandbox only
   '_outbox',
 ];

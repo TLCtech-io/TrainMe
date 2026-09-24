@@ -104,12 +104,23 @@ export const seedCourses = [
 //                                 item completed, or an assignment submitted)
 //               'after_approval'  once the previous item is approved (a SCORM
 //                                 item completed, or an assignment evaluated
-//                                 at a passing rubric level)
+//                                 at a passing evaluation level)
 //   dueDays   days after enrollment the item is due (self-paced); null = none
 // SCORM items: scoId is the SCO's identifier from imsmanifest.xml (CMI is
 // stored per SCO, CMI#<courseId>#<scoId>); assessment: true marks a quiz or
 // test, the only items that record a numeric score.
-// Assignment items: instructions, and the rubricId instructors evaluate with.
+// Assignment items are forms (playbook Section 8.3):
+//   instructions  what the learner is asked to do, shown above the fields
+//   fields        the questions the learner answers, in order. Each field:
+//                   fieldId, label, prompt (optional guidance), required,
+//                   type 'text' (a written answer) or 'file' (one or more
+//                   uploads plus an optional comment to the instructor),
+//                   criteria: the field's rubric, zero or more criteria, each
+//                   with a descriptor per level of the evaluation scale in
+//                   lms.config.js. A field with no criteria is not rated on
+//                   its own; the overall outcome still applies.
+// Admins and the course's instructors edit all of this in the app
+// (Teaching > course > Assignments).
 export const seedItems = [
   {
     courseId: 'c-eop-pwc',
@@ -146,13 +157,67 @@ export const seedItems = [
     required: true,
     unlock: 'after_previous',
     dueDays: 14,
-    rubricId: 'r-msg-101-draft',
     instructions:
       'Sandbox sample assignment. Write a public alert message for a flash flood ' +
-      'warning in your jurisdiction. Use the five elements from the lessons: ' +
-      'source, hazard, location, protective action, and time. Upload your draft ' +
-      'as a PDF or Word document, and add a short note if you want to explain ' +
-      'your choices.',
+      'warning in your jurisdiction, using the five elements from the lessons: ' +
+      'source, hazard, location, protective action, and time. Answer each field ' +
+      'below. Open "How this is evaluated" under a field to see what your ' +
+      'instructor looks for.',
+    fields: [
+      {
+        fieldId: 'f-message',
+        label: 'Your alert message',
+        prompt: 'Type the message exactly as the public would receive it.',
+        type: 'text',
+        required: true,
+        criteria: [
+          {
+            criterionId: 'crit-elements',
+            title: 'Five elements',
+            description: 'Source, hazard, location, protective action, and time are all present.',
+            levels: {
+              advanced: 'All five elements, each specific and unambiguous.',
+              competent: 'All five elements present.',
+              approaching: 'One element missing or vague.',
+              additional_learning: 'Two or more elements missing.',
+            },
+          },
+          {
+            criterionId: 'crit-action',
+            title: 'Leads with the protective action',
+            description: 'The reader knows what to do from the first sentence.',
+            levels: {
+              advanced: 'Action first, specific, and achievable.',
+              competent: 'Action appears early and is clear.',
+              approaching: 'Action present but buried or unclear.',
+              additional_learning: 'No clear protective action.',
+            },
+          },
+        ],
+      },
+      {
+        fieldId: 'f-formatted',
+        label: 'Formatted for your alerting system',
+        prompt:
+          'Upload the message as it would go out (for example a screenshot of your alerting ' +
+          'tool or a Word document). Use the comments box to explain your choices.',
+        type: 'file',
+        required: true,
+        criteria: [
+          {
+            criterionId: 'crit-plain',
+            title: 'Plain language',
+            description: 'No jargon, acronyms, or agency-internal terms.',
+            levels: {
+              advanced: 'Reads clearly for any member of the public.',
+              competent: 'Mostly plain; minor jargon.',
+              approaching: 'Jargon gets in the way of meaning.',
+              additional_learning: 'Written for responders, not the public.',
+            },
+          },
+        ],
+      },
+    ],
   },
   {
     courseId: 'c-msg-101',
@@ -175,51 +240,4 @@ export const seedItems = [
 // the instructor view of every course without an assignment.
 export const seedTeaching = [
   { sub: 'u-instr-001', courseId: 'c-msg-101' },
-];
-
-// RUBRIC# records (COURSE#<courseId> / RUBRIC#<rubricId>). Each criterion has a
-// descriptor per level of the evaluation scale in lms.config.js. Admins and
-// the course's instructors edit rubrics in the app; this one is PLACEHOLDER
-// content to demonstrate the flow.
-export const seedRubrics = [
-  {
-    courseId: 'c-msg-101',
-    rubricId: 'r-msg-101-draft',
-    title: 'PLACEHOLDER rubric: Draft an alert message',
-    criteria: [
-      {
-        criterionId: 'crit-elements',
-        title: 'Five elements',
-        description: 'Source, hazard, location, protective action, and time are all present.',
-        levels: {
-          advanced: 'All five elements, each specific and unambiguous.',
-          competent: 'All five elements present.',
-          approaching: 'One element missing or vague.',
-          additional_learning: 'Two or more elements missing.',
-        },
-      },
-      {
-        criterionId: 'crit-action',
-        title: 'Leads with the protective action',
-        description: 'The reader knows what to do from the first sentence.',
-        levels: {
-          advanced: 'Action first, specific, and achievable.',
-          competent: 'Action appears early and is clear.',
-          approaching: 'Action present but buried or unclear.',
-          additional_learning: 'No clear protective action.',
-        },
-      },
-      {
-        criterionId: 'crit-plain',
-        title: 'Plain language',
-        description: 'No jargon, acronyms, or agency-internal terms.',
-        levels: {
-          advanced: 'Reads clearly for any member of the public.',
-          competent: 'Mostly plain; minor jargon.',
-          approaching: 'Jargon gets in the way of meaning.',
-          additional_learning: 'Written for responders, not the public.',
-        },
-      },
-    ],
-  },
 ];

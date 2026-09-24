@@ -1,6 +1,7 @@
 // Browser tests: the single-SCO student path, the Sprint 2 grading and
-// gating loop across student and instructor, instructor scope, rubric
-// editing, and a phone-width sign-in.
+// gating loop across student and instructor (a form assignment with
+// per-field rubrics and per-criterion comments), instructor scope,
+// assignment building, and a phone-width sign-in.
 // Run with: npm run e2e (dev server) or npm run e2e:prod (build).
 //
 // Selector rule (playbook 10.6): Playwright's text= is a case-insensitive
@@ -57,7 +58,7 @@ test('single-SCO course: enroll, resume, complete, certificate, transcript', asy
   // Sign-in card, driven by lms.config.js
   await expect(page).toHaveTitle('TLC_TRNG Learning Platform');
   let t = await bodyText(page);
-  expect(t).toContain('learning platform - sandbox - v0.3');
+  expect(t).toContain('learning platform - sandbox - v0.4');
   expect(t).toContain('student@demo.test - instructor@demo.test - admin@demo.test');
   await page.locator('input[type=password]').fill('nope');
   await page.getByRole('button', { name: 'Sign in' }).click();
@@ -132,11 +133,20 @@ test('grading and gating: submit, return with feedback, resubmit, approve, unloc
   await expect(itemRow(page, 'i-msg-101-draft').locator(':text-is("Not started")')).toBeVisible();
   await expect(itemRow(page, 'i-msg-101-check').locator(':text-is("Locked")')).toBeVisible();
 
-  // Submit the draft with a file and a note; the rubric is visible to the learner
+  // Answer the form: a written message and a file with a comment. Each
+  // field's criteria sit collapsed under it.
   await itemRow(page, 'i-msg-101-draft').getByRole('button', { name: 'Start' }).click();
-  await expect(page.locator('h3:text-is("How this is evaluated")')).toBeVisible();
-  await page.getByLabel('Files').setInputFiles({ name: 'alert-v1.pdf', mimeType: 'application/pdf', buffer: Buffer.from('draft one') });
-  await page.getByLabel('Note to your instructor').fill('First try.');
+  await expect(page.locator('summary', { hasText: 'How this is evaluated' })).toHaveCount(2);
+  await expect(page.getByTestId('field-f-message').locator('td strong:text-is("Five elements")')).toBeHidden();
+  await page.getByTestId('field-f-message').locator('summary').click();
+  await expect(page.getByTestId('field-f-message').locator('td strong:text-is("Five elements")')).toBeVisible();
+  await page.getByRole('button', { name: 'Submit for review' }).click();
+  await expect(page.getByRole('alert')).toHaveText('Answer "Your alert message".');
+  await page.getByLabel('Your alert message', { exact: true }).fill('Flood warning: move to higher ground now.');
+  await page.getByLabel('Formatted for your alerting system: files').setInputFiles({
+    name: 'alert-v1.pdf', mimeType: 'application/pdf', buffer: Buffer.from('draft one'),
+  });
+  await page.getByLabel('Formatted for your alerting system: comments').fill('First try.');
   await page.getByRole('button', { name: 'Submit for review' }).click();
   await expect(page.getByTestId('attempt-1')).toBeVisible();
   await expect(page.locator(':text-is("Awaiting review")').first()).toBeVisible();
@@ -154,7 +164,19 @@ test('grading and gating: submit, return with feedback, resubmit, approve, unloc
   await expect(page.locator('td:text-is("Jordan Avery")')).toBeVisible();
   await page.getByRole('button', { name: 'Review' }).click();
   await expect(page.locator('h1:text-is("Jordan Avery")')).toBeVisible();
-  await expect(page.getByRole('button', { name: '📎 alert-v1.pdf' })).toBeVisible();
+  // Each field's answer, with its evaluation block under it
+  await expect(page.getByTestId('review-field-f-message')).toContainText('Flood warning: move to higher ground now.');
+  await expect(page.getByTestId('review-field-f-formatted')).toContainText('First try.');
+  // The attachment is a new-tab link, so the instructor can read and score side by side
+  const link = page.getByRole('link', { name: /alert-v1\.pdf/ });
+  await expect(link).toHaveAttribute('target', '_blank');
+  await expect(link).toHaveAttribute('href', /^blob:/);
+  // (Headless Chromium has no PDF viewer, so the new tab downloads the PDF
+  // rather than showing it; a desktop browser shows it. The new tab opening
+  // while the review stays put is what this checks.)
+  const [popup] = await Promise.all([page.waitForEvent('popup'), link.click()]);
+  await popup.close();
+  await expect(page.getByTestId('review-field-f-message')).toBeVisible();
   await page.getByLabel('Five elements: Competent').check();
   await page.getByLabel('Leads with the protective action: Approaching Competency').check();
   await page.getByLabel('Plain language: Competent').check();
@@ -162,7 +184,8 @@ test('grading and gating: submit, return with feedback, resubmit, approve, unloc
   await expect(page.getByLabel('Overall outcome')).toHaveValue('approaching');
   await page.getByRole('button', { name: 'Record evaluation' }).click();
   await expect(page.getByRole('alert')).toHaveText('Add comments explaining what to revise.');
-  await page.getByLabel('Comments to the learner').fill('Lead with the protective action.');
+  await page.getByLabel('Comments on Leads with the protective action').fill('Put "move to higher ground" first.');
+  await page.getByLabel('Overall comments').fill('Close. Lead with the action.');
   await page.getByRole('button', { name: 'Record evaluation' }).click();
   await expect(page.locator('h1:text-is("Evaluation recorded")')).toBeVisible();
   expect(await bodyText(page)).toContain('returned: jordan avery can revise and resubmit');
@@ -177,9 +200,15 @@ test('grading and gating: submit, return with feedback, resubmit, approve, unloc
   await itemRow(page, 'i-msg-101-draft').getByRole('button', { name: 'Revise and resubmit' }).click();
   const first = page.getByTestId('attempt-1');
   await expect(first).toContainText('Approaching Competency');
-  await expect(first).toContainText('Lead with the protective action.');
+  await expect(first).toContainText('Put "move to higher ground" first.');
+  await expect(first).toContainText('Close. Lead with the action.');
   await expect(first).toContainText('Sam Rivera');
-  await page.getByLabel('Files').setInputFiles({ name: 'alert-v2.pdf', mimeType: 'application/pdf', buffer: Buffer.from('draft two') });
+  // The written answer starts from the last attempt; files are attached again
+  await expect(page.getByLabel('Your alert message', { exact: true })).toHaveValue('Flood warning: move to higher ground now.');
+  await page.getByLabel('Your alert message', { exact: true }).fill('Move to higher ground now: flood warning for Riverside until 6 PM.');
+  await page.getByLabel('Formatted for your alerting system: files').setInputFiles({
+    name: 'alert-v2.pdf', mimeType: 'application/pdf', buffer: Buffer.from('draft two'),
+  });
   await page.getByRole('button', { name: 'Submit for review' }).click();
   await expect(page.getByTestId('attempt-2')).toBeVisible();
   await signOut(page);
@@ -216,7 +245,7 @@ test('grading and gating: submit, return with feedback, resubmit, approve, unloc
   expectClean(watch);
 });
 
-test('instructor scope and rubric editing; admins see every course', async ({ page }) => {
+test('instructor scope and assignment building; admins see every course', async ({ page }) => {
   const watch = watchErrors(page);
   await page.goto('/');
 
@@ -226,19 +255,28 @@ test('instructor scope and rubric editing; admins see every course', async ({ pa
   await courseCard(page, 'PWC Emergency Operations Plan').getByRole('button', { name: 'Enroll' }).click();
   await expect(courseCard(page, 'PWC Emergency Operations Plan').locator(':text-is("Enrolled")')).toBeVisible();
 
-  // ...and edits the rubric of the course they do teach
+  // ...and builds the assignment of the course they do teach: a new field
+  // with its own rubric criterion
   await tab(page, 'Teaching').click();
   await expect(page.getByRole('button', { name: 'Open' })).toHaveCount(1);
   await page.getByRole('button', { name: 'Open' }).click();
-  await page.getByRole('tab', { name: 'Rubrics' }).click();
-  await expect(page.getByTestId('rubric-criterion')).toHaveCount(3);
-  await page.getByLabel('Rubric title').fill('Alert message rubric');
-  await page.getByRole('button', { name: 'Add criterion' }).click();
-  await page.getByLabel('Criterion 4 title').fill('Timing');
-  await page.getByLabel('Criterion 4 Competent').fill('Says when to act.');
-  await page.getByRole('button', { name: 'Save rubric' }).click();
-  await expect(page.locator(':text-is("Saved.")')).toBeVisible();
-  await expect(page.getByTestId('rubric-criterion')).toHaveCount(4);
+  await page.getByRole('tab', { name: 'Assignments' }).click();
+  await expect(page.getByTestId('assignment-field')).toHaveCount(2);
+  await expect(page.getByTestId('field-criterion')).toHaveCount(3);
+  await page.getByRole('button', { name: 'Add field' }).click();
+  await page.getByLabel('Field 3 label').fill('When should people act?');
+  await page.getByLabel('Field 3 answer type').selectOption('text');
+  await page.getByRole('button', { name: 'Add criterion to field 3' }).click();
+  await page.getByLabel('Field 3 criterion 1 title').fill('Timing');
+  await page.getByLabel('Field 3 criterion 1 Competent').fill('Says when to act.');
+  await page.getByRole('button', { name: 'Save assignment' }).click();
+  await expect(page.locator(':text-is("Saved. New submissions use this version.")')).toBeVisible();
+  // Saved for real: it survives leaving the tab
+  await page.getByRole('tab', { name: 'Roster' }).click();
+  await page.getByRole('tab', { name: 'Assignments' }).click();
+  await expect(page.getByTestId('assignment-field')).toHaveCount(3);
+  await expect(page.getByTestId('field-criterion')).toHaveCount(4);
+  await expect(page.getByLabel('Field 3 label')).toHaveValue('When should people act?');
   await signOut(page);
 
   // Admin: every course in Teaching, including the instructor's enrollment

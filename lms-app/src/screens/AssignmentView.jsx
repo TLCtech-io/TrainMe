@@ -1,10 +1,12 @@
 /* ============================================================================
    ASSIGNMENT VIEW  (learner)
-   Instructions, due date, the rubric the work is evaluated against, every
-   attempt with the instructor's evaluation (outcome, per-criterion ratings,
-   comments), and the submit / resubmit form. Files upload through
-   api.uploadFile (a presigned S3 PUT in the real build) before the
-   submission references them.
+   Instructions and due date, then the assignment form: one block per field
+   (a written answer, or files with a comment), each with its evaluation
+   criteria in a collapsed "How this is evaluated" under it. Below, every
+   attempt with the instructor's evaluation laid out field by field.
+   Files upload through api.uploadFile (a presigned S3 PUT in the real
+   build) before the submission references them. On a resubmission the
+   written answers start from the previous attempt.
    ============================================================================ */
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -18,126 +20,38 @@ import {
   BackLink,
   ErrorText,
   ItemStatusPill,
-  Pill,
   fmtDate,
   fieldStyle,
 } from '../components/primitives.jsx';
-
-const LEVELS = LMS_CONFIG.evaluation.levels;
-const levelLabel = (id) => LEVELS.find((l) => l.id === id)?.label || id;
+import { LEVELS, AttemptCard, CriteriaDetails, FieldHead } from '../components/assignment.jsx';
 
 const h3 = { margin: '0 0 10px', fontFamily: F.heading, fontSize: 19, color: T.neutral900 };
+const small = { display: 'block', fontSize: 12.5, fontWeight: 600, color: T.neutral700, marginTop: 8 };
 
-// Rubric criteria with the descriptor for each level (what is expected).
-export function RubricTable({ rubric }) {
-  if (!rubric) return null;
-  return (
-    <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5, minWidth: 560 }}>
-        <thead>
-          <tr>
-            <th style={{ textAlign: 'left', padding: 8, color: T.neutral500 }}>Criterion</th>
-            {LEVELS.map((l) => (
-              <th key={l.id} style={{ textAlign: 'left', padding: 8, color: T.neutral500 }}>
-                {l.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rubric.criteria.map((c) => (
-            <tr key={c.criterionId} style={{ borderTop: `1px solid ${T.neutral100}`, verticalAlign: 'top' }}>
-              <td style={{ padding: 8, color: T.neutral900 }}>
-                <strong>{c.title}</strong>
-                {c.description && <div style={{ color: T.neutral500, marginTop: 2 }}>{c.description}</div>}
-              </td>
-              {LEVELS.map((l) => (
-                <td key={l.id} style={{ padding: 8, color: T.neutral700 }}>
-                  {c.levels?.[l.id] || ''}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-// One attempt: files, note, and the evaluation if there is one.
-export function AttemptCard({ api, attempt }) {
-  const [err, setErr] = useState(null);
-  const ev = attempt.evaluation;
-  const openFile = async (f) => {
-    setErr(null);
-    try {
-      window.open(await api.getFileUrl(f.fileKey), '_blank', 'noopener');
-    } catch (e) {
-      setErr(e.message);
-    }
-  };
-  return (
-    <div
-      data-testid={`attempt-${attempt.attempt}`}
-      style={{ borderTop: `1px solid ${T.neutral100}`, padding: '14px 0', fontSize: 13.5, color: T.neutral800 }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
-        <strong>Attempt {attempt.attempt}</strong>
-        <span style={{ color: T.neutral500 }}>submitted {fmtDate(attempt.submittedAt)}</span>
-        {attempt.late && <Pill tone="accent">Late</Pill>}
-        <ItemStatusPill
-          status={attempt.status === 'approved' ? 'complete' : attempt.status === 'returned' ? 'returned' : 'submitted'}
-        />
-      </div>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        {attempt.files.map((f) => (
-          <Btn key={f.fileKey} kind="ghost" style={{ padding: '6px 10px', fontSize: 12.5 }} onClick={() => openFile(f)}>
-            📎 {f.name}
-          </Btn>
-        ))}
-      </div>
-      {attempt.note && <p style={{ margin: '8px 0 0', color: T.neutral700 }}>Note: {attempt.note}</p>}
-      <ErrorText>{err}</ErrorText>
-      {ev && (
-        <div style={{ marginTop: 10, background: T.neutral50, borderRadius: 10, padding: '12px 14px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <strong>Outcome:</strong>
-            <Pill tone={ev.passing ? 'success' : 'accent'}>{ev.outcomeLabel}</Pill>
-            <span style={{ color: T.neutral500, fontSize: 12 }}>
-              {ev.evaluatorName} - {fmtDate(ev.evaluatedAt)}
-            </span>
-          </div>
-          <ul style={{ margin: '8px 0 0', paddingLeft: 18 }}>
-            {ev.rubric.criteria.map((c) => (
-              <li key={c.criterionId}>
-                {c.title}: <strong>{levelLabel(ev.ratings[c.criterionId])}</strong>
-              </li>
-            ))}
-          </ul>
-          {ev.comments && <p style={{ margin: '8px 0 0', whiteSpace: 'pre-wrap' }}>{ev.comments}</p>}
-        </div>
-      )}
-    </div>
+// Empty answers for a form, with written answers carried over from an
+// earlier attempt when there is one.
+function startingAnswers(fields, previous) {
+  return Object.fromEntries(
+    fields.map((f) => [
+      f.fieldId,
+      f.type === 'text' ? { text: previous?.responses?.[f.fieldId]?.text || '' } : { files: [], comment: '' },
+    ])
   );
 }
 
 export default function AssignmentView({ api, course, item, onExit }) {
+  const fields = item.fields || [];
   const [attempts, setAttempts] = useState(null);
-  const [rubric, setRubric] = useState(null);
-  const [files, setFiles] = useState([]);
-  const [note, setNote] = useState('');
+  const [answers, setAnswers] = useState({});
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
-  const [inputKey, setInputKey] = useState(0); // resets the file input after a submit
+  const [inputKey, setInputKey] = useState(0); // resets the file inputs after a submit
 
   const load = useCallback(async () => {
-    const [subs, r] = await Promise.all([
-      api.listSubmissions(course.courseId, item.itemId),
-      item.rubricId ? api.getRubric(course.courseId, item.rubricId) : null,
-    ]);
+    const subs = await api.listSubmissions(course.courseId, item.itemId);
     setAttempts(subs);
-    setRubric(r);
-  }, [api, course.courseId, item.itemId, item.rubricId]);
+    setAnswers(startingAnswers(item.fields || [], subs[subs.length - 1]));
+  }, [api, course.courseId, item.itemId, item.fields]);
 
   useEffect(() => {
     load();
@@ -148,16 +62,24 @@ export default function AssignmentView({ api, course, item, onExit }) {
   const latest = attempts[attempts.length - 1];
   const status = !latest ? 'available' : latest.status === 'approved' ? 'complete' : latest.status;
   const canSubmit = status === 'available' || status === 'returned';
+  const setAnswer = (fieldId, patch) => setAnswers((a) => ({ ...a, [fieldId]: { ...a[fieldId], ...patch } }));
 
   const submit = async () => {
     setErr(null);
     setBusy(true);
     try {
-      const uploaded = [];
-      for (const f of files) uploaded.push(await api.uploadFile(course.courseId, item.itemId, f));
-      await api.submitAssignment(course.courseId, item.itemId, { note, files: uploaded });
-      setFiles([]);
-      setNote('');
+      const responses = {};
+      for (const f of fields) {
+        const a = answers[f.fieldId] || {};
+        if (f.type === 'text') {
+          responses[f.fieldId] = { text: a.text || '' };
+        } else {
+          const uploaded = [];
+          for (const file of a.files || []) uploaded.push(await api.uploadFile(course.courseId, item.itemId, file));
+          responses[f.fieldId] = { files: uploaded, comment: a.comment || '' };
+        }
+      }
+      await api.submitAssignment(course.courseId, item.itemId, { responses });
       setInputKey((k) => k + 1);
       await load();
     } catch (e) {
@@ -166,6 +88,9 @@ export default function AssignmentView({ api, course, item, onExit }) {
       setBusy(false);
     }
   };
+
+  const passing = LEVELS.filter((l) => l.passing).map((l) => l.label).join(' or ');
+  const failing = LEVELS.filter((l) => !l.passing).map((l) => l.label).join(' or ');
 
   return (
     <div>
@@ -177,46 +102,71 @@ export default function AssignmentView({ api, course, item, onExit }) {
           <ItemStatusPill status={status} />
           {item.state?.dueAt && <span style={{ fontSize: 13, color: T.neutral500 }}>Due {fmtDate(item.state.dueAt)}</span>}
         </div>
-        <p style={{ margin: 0, fontSize: 14, color: T.neutral700, lineHeight: 1.6 }}>{item.instructions}</p>
+        <p style={{ margin: 0, fontSize: 14, color: T.neutral700, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+          {item.instructions}
+        </p>
+        <p style={{ margin: '10px 0 0', fontSize: 12.5, color: T.neutral500 }}>
+          An overall outcome of {passing} completes the assignment. {failing} returns it for revision.
+        </p>
       </Card>
-
-      {rubric && (
-        <Card style={{ marginBottom: 16 }}>
-          <h3 style={h3}>How this is evaluated</h3>
-          <p style={{ margin: '0 0 8px', fontSize: 13, color: T.neutral500 }}>
-            {LEVELS.filter((l) => l.passing).map((l) => l.label).join(' or ')} completes the assignment.{' '}
-            {LEVELS.filter((l) => !l.passing).map((l) => l.label).join(' or ')} returns it for revision.
-          </p>
-          <RubricTable rubric={rubric} />
-        </Card>
-      )}
 
       {canSubmit && (
         <Card style={{ marginBottom: 16 }}>
-          <h3 style={h3}>{status === 'returned' ? 'Resubmit your work' : 'Submit your work'}</h3>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: T.neutral700 }}>
-            Files (up to {LMS_CONFIG.uploads.maxFiles}, {Math.round(LMS_CONFIG.uploads.maxBytes / 1048576)} MB each)
-            <input
-              key={inputKey}
-              type="file"
-              multiple
-              aria-label="Files"
-              onChange={(e) => setFiles([...e.target.files])}
-              style={{ display: 'block', marginTop: 6, fontFamily: F.body, fontSize: 13 }}
-            />
-          </label>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: T.neutral700, marginTop: 14 }}>
-            Note to your instructor (optional)
-            <textarea
-              aria-label="Note to your instructor"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              rows={3}
-              style={{ ...fieldStyle, marginTop: 6, resize: 'vertical' }}
-            />
-          </label>
-          <div style={{ marginTop: 14 }}>
-            <Btn onClick={submit} disabled={busy || files.length === 0}>
+          <h3 style={h3}>{status === 'returned' ? 'Revise and resubmit' : 'Your answers'}</h3>
+          {status === 'returned' && (
+            <p style={{ margin: '0 0 12px', fontSize: 13, color: T.neutral500 }}>
+              Your written answers are filled in from your last attempt.
+              {fields.some((f) => f.type === 'file') ? ' Attach your files again.' : ''}
+            </p>
+          )}
+          {fields.map((f, i) => {
+            const a = answers[f.fieldId] || {};
+            return (
+              <div
+                key={f.fieldId}
+                data-testid={`field-${f.fieldId}`}
+                style={{ borderTop: i ? `1px solid ${T.neutral100}` : 'none', padding: i ? '14px 0 4px' : '0 0 4px' }}
+              >
+                <FieldHead field={f} index={i} />
+                {f.type === 'text' ? (
+                  <textarea
+                    aria-label={f.label}
+                    value={a.text || ''}
+                    onChange={(e) => setAnswer(f.fieldId, { text: e.target.value })}
+                    rows={5}
+                    style={{ ...fieldStyle, resize: 'vertical' }}
+                  />
+                ) : (
+                  <>
+                    <label style={{ ...small, marginTop: 0 }}>
+                      Files (up to {LMS_CONFIG.uploads.maxFiles}, {Math.round(LMS_CONFIG.uploads.maxBytes / 1048576)} MB each)
+                      <input
+                        key={inputKey}
+                        type="file"
+                        multiple
+                        aria-label={`${f.label}: files`}
+                        onChange={(e) => setAnswer(f.fieldId, { files: [...e.target.files] })}
+                        style={{ display: 'block', marginTop: 6, fontFamily: F.body, fontSize: 13 }}
+                      />
+                    </label>
+                    <label style={small}>
+                      Comments (optional)
+                      <textarea
+                        aria-label={`${f.label}: comments`}
+                        value={a.comment || ''}
+                        onChange={(e) => setAnswer(f.fieldId, { comment: e.target.value })}
+                        rows={3}
+                        style={{ ...fieldStyle, marginTop: 6, resize: 'vertical' }}
+                      />
+                    </label>
+                  </>
+                )}
+                <CriteriaDetails criteria={f.criteria} />
+              </div>
+            );
+          })}
+          <div style={{ marginTop: 16 }}>
+            <Btn onClick={submit} disabled={busy}>
               {busy ? 'Submitting...' : 'Submit for review'}
             </Btn>
           </div>

@@ -1,6 +1,7 @@
-// Headless tests for Sprint 2: per-item gating, assignment submission and
-// resubmission, rubric evaluation with the four-level scale, instructor
-// scope, file access, rubric authoring, due dates, and the grading queue.
+// Headless tests for Sprint 2: per-item gating, assignment forms (fields
+// with per-field rubrics), submission and resubmission, evaluation with the
+// four-level scale and per-criterion comments, instructor scope, file
+// access, assignment authoring, due dates, and the grading queue.
 // Run with: npm test
 
 import { test } from 'node:test';
@@ -27,10 +28,13 @@ function harness() {
     new File([new Uint8Array(size)], name, { type: 'application/pdf' });
   const statusOf = async (itemId) =>
     (await api.getCourseProgress(C)).items.find((i) => i.itemId === itemId).state;
-  // Learner finishes the lessons and submits a draft.
-  const submitDraft = async (note = 'first draft') => {
+  // Learner answers both fields of the draft form: the written message
+  // (f-message) and the formatted file with a comment (f-formatted).
+  const submitDraft = async (text = 'first draft') => {
     const f = await api.uploadFile(C, DRAFT, fileFor());
-    return api.submitAssignment(C, DRAFT, { note, files: [f] });
+    return api.submitAssignment(C, DRAFT, {
+      responses: { 'f-message': { text }, 'f-formatted': { files: [f], comment: 'WEA version' } },
+    });
   };
   return { store, api, as, fileFor, statusOf, submitDraft };
 }
@@ -85,6 +89,7 @@ test('full loop: submit, return with feedback, resubmit, approve, unlock, comple
   );
   const back = await h.api.evaluateSubmission(C, learner.sub, DRAFT, 1, {
     ratings: { ...ALL('competent'), 'crit-action': 'approaching' },
+    criterionComments: { 'crit-action': 'Move "Evacuate now" to the first line.', 'crit-plain': '   ' },
     outcome: 'approaching',
     comments: 'Lead with the protective action.',
   });
@@ -100,6 +105,13 @@ test('full loop: submit, return with feedback, resubmit, approve, unlock, comple
   assert.equal(history[0].evaluation.comments, 'Lead with the protective action.');
   assert.equal(history[0].evaluation.ratings['crit-action'], 'approaching');
   assert.equal(history[0].evaluation.evaluatorName, 'Sam Rivera');
+  assert.deepEqual(
+    history[0].evaluation.criterionComments,
+    { 'crit-action': 'Move "Evacuate now" to the first line.' },
+    'criterion comments are kept per criterion; blank ones are dropped'
+  );
+  assert.equal(history[0].responses['f-message'].text, 'v1');
+  assert.equal(history[0].responses['f-formatted'].comment, 'WEA version');
   const mail = await h.api._outbox();
   assert.equal(mail.at(-1).subject, 'Returned for revision: Draft an alert message');
   const second = await h.submitDraft('v2');
@@ -232,12 +244,13 @@ test('files: size limit, owner and instructors may open, other learners may not'
   assert.equal(typeof (await h.api.getFileUrl(f.fileKey)), 'string');
 
   // A submission may only reference the learner's own uploads for this item
+  const answer = (files) => ({ responses: { 'f-message': { text: 'Msg' }, 'f-formatted': { files } } });
   await assert.rejects(
-    () => h.api.submitAssignment(C, DRAFT, { files: [{ ...f, fileKey: 'uploads/u-admin-001/c-msg-101/i-msg-101-draft/x/a.pdf' }] }),
+    () => h.api.submitAssignment(C, DRAFT, answer([{ ...f, fileKey: 'uploads/u-admin-001/c-msg-101/i-msg-101-draft/x/a.pdf' }])),
     /not uploaded/
   );
-  await assert.rejects(() => h.api.submitAssignment(C, DRAFT, { files: [] }), /at least one file/);
-  await h.api.submitAssignment(C, DRAFT, { files: [f] });
+  await assert.rejects(() => h.api.submitAssignment(C, DRAFT, answer([])), /Attach a file for "Formatted for your alerting system"/);
+  await h.api.submitAssignment(C, DRAFT, answer([f]));
 
   await h.as('instructor@demo.test');
   assert.equal(typeof (await h.api.getFileUrl(f.fileKey)), 'string');
@@ -250,39 +263,110 @@ test('files: size limit, owner and instructors may open, other learners may not'
   await assert.rejects(() => h.api.getFileUrl('uploads/u-student-001/c-eop-pwc/x/y/z.pdf'), /Not authorized/);
 });
 
-test('rubrics: instructors of the course edit them; evaluations keep their snapshot', async () => {
+test('assignment form: required fields, text limits, unknown fields ignored', async () => {
+  const h = harness();
+  await learnerReadyToSubmit(h);
+  const draft = (await h.api.getCourseProgress(C)).items.find((i) => i.itemId === DRAFT);
+  assert.deepEqual(draft.fields.map((f) => [f.fieldId, f.type]), [['f-message', 'text'], ['f-formatted', 'file']]);
+  assert.deepEqual(draft.fields[0].criteria.map((c) => c.title), ['Five elements', 'Leads with the protective action']);
+
+  await assert.rejects(() => h.api.submitAssignment(C, DRAFT, { responses: {} }), /Answer "Your alert message"/);
+  await assert.rejects(
+    () => h.api.submitAssignment(C, DRAFT, { responses: { 'f-message': { text: '   ' } } }),
+    /Answer "Your alert message"/
+  );
+  await assert.rejects(
+    () => h.api.submitAssignment(C, DRAFT, { responses: { 'f-message': { text: 'x'.repeat(20001) } } }),
+    /too long/
+  );
+  const f = await h.api.uploadFile(C, DRAFT, h.fileFor());
+  const sub = await h.api.submitAssignment(C, DRAFT, {
+    responses: { 'f-message': { text: '  Evacuate now.  ' }, 'f-formatted': { files: [f] }, 'f-bogus': { text: 'x' } },
+  });
+  assert.deepEqual(Object.keys(sub.responses), ['f-message', 'f-formatted']);
+  assert.equal(sub.responses['f-message'].text, 'Evacuate now.');
+  assert.equal(sub.form.fields.length, 2, 'the attempt keeps a snapshot of the form it answered');
+});
+
+test('evaluation: criterion comments alone are enough feedback to return work', async () => {
+  const h = harness();
+  const learner = await learnerReadyToSubmit(h);
+  await h.submitDraft();
+  await h.as('instructor@demo.test');
+  const res = await h.api.evaluateSubmission(C, learner.sub, DRAFT, 1, {
+    ratings: ALL('approaching'),
+    criterionComments: { 'crit-elements': 'Say where the flooding is.' },
+    outcome: 'approaching',
+  });
+  assert.equal(res.submission.status, 'returned');
+  assert.equal(res.submission.evaluation.comments, '');
+  assert.equal(res.submission.evaluation.criterionComments['crit-elements'], 'Say where the flooding is.');
+});
+
+test('assignments: instructors of the course build them; attempts and evaluations keep their snapshot', async () => {
   const h = harness();
   const learner = await learnerReadyToSubmit(h);
   await h.submitDraft();
 
-  // Learners can read the rubric of a course they are enrolled in, not edit it
-  const rubric = await h.api.getRubric(C, 'r-msg-101-draft');
-  assert.equal(rubric.criteria.length, 3);
-  await assert.rejects(() => h.api.saveRubric(C, rubric), /Not authorized/);
+  // Learners cannot edit assignments
+  const item = (await h.api.getCourseOutline(C)).items.find((i) => i.itemId === DRAFT);
+  await assert.rejects(() => h.api.saveAssignment(C, DRAFT, item), /Not authorized/);
 
   await h.as('instructor@demo.test');
-  await h.api.evaluateSubmission(C, learner.sub, DRAFT, 1, {
-    ratings: ALL('approaching'),
-    outcome: 'approaching',
-    comments: 'Revise.',
-  });
-  await assert.rejects(() => h.api.saveRubric(C, { ...rubric, title: '' }), /title/);
-  await assert.rejects(() => h.api.saveRubric(C, { ...rubric, criteria: [] }), /at least one criterion/);
-  const saved = await h.api.saveRubric(C, {
-    ...rubric,
-    title: 'Alert message rubric v2',
-    criteria: [...rubric.criteria.slice(0, 2), { title: 'Timing', description: 'Says when.', levels: {} }],
-  });
-  assert.equal(saved.criteria.length, 3);
-  assert.match(saved.criteria[2].criterionId, /^crit-/);
-  assert.deepEqual(Object.keys(saved.criteria[2].levels), ['advanced', 'competent', 'approaching', 'additional_learning']);
-  await assert.rejects(() => h.api.saveRubric('c-eop-pwc', { ...saved, rubricId: 'r-x' }), /Not authorized/);
+  await assert.rejects(() => h.api.saveAssignment(C, DRAFT, { ...item, instructions: ' ' }), /instructions/);
+  await assert.rejects(() => h.api.saveAssignment(C, DRAFT, { ...item, fields: [] }), /at least one field/);
+  await assert.rejects(
+    () => h.api.saveAssignment(C, DRAFT, { ...item, fields: [{ label: '', type: 'text' }] }),
+    /Field 1 needs a label/
+  );
+  await assert.rejects(
+    () => h.api.saveAssignment(C, DRAFT, { ...item, fields: [{ label: 'Q', type: 'video' }] }),
+    /type/
+  );
+  await assert.rejects(
+    () => h.api.saveAssignment(C, DRAFT, { ...item, fields: [{ label: 'Q', type: 'text', criteria: [{ title: '' }] }] }),
+    /needs a title/
+  );
+  await assert.rejects(() => h.api.saveAssignment(C, LESSONS, item), /not an assignment/);
+  await assert.rejects(() => h.api.saveAssignment('c-eop-pwc', 'i-eop-pwc-scorm', item), /Not authorized/);
 
-  // The recorded evaluation still names the criteria it was scored against
+  const saved = await h.api.saveAssignment(C, DRAFT, {
+    instructions: 'Version 2.',
+    fields: [
+      ...item.fields,
+      { label: 'Timing', type: 'text', required: false, criteria: [{ title: 'Says when', levels: { competent: 'Gives a time.' } }] },
+    ],
+  });
+  assert.equal(saved.fields.length, 3);
+  assert.match(saved.fields[2].fieldId, /^f-/);
+  assert.match(saved.fields[2].criteria[0].criterionId, /^crit-/);
+  assert.deepEqual(Object.keys(saved.fields[2].criteria[0].levels), ['advanced', 'competent', 'approaching', 'additional_learning']);
+  assert.equal(saved.fields[2].required, false);
+
+  // The pending attempt still answers, and is rated against, the old form:
+  // three criteria, not four
   const review = await h.api.getReview(C, learner.sub, DRAFT);
-  assert.equal(review.attempts[0].evaluation.rubric.title, 'PLACEHOLDER rubric: Draft an alert message');
-  assert.equal(review.attempts[0].evaluation.rubric.criteria[2].title, 'Plain language');
-  assert.equal(review.rubric.title, 'Alert message rubric v2');
+  assert.equal(review.attempts[0].form.fields.length, 2);
+  assert.equal(review.attempts[0].form.instructions.startsWith('Sandbox sample'), true);
+  assert.equal(review.item.instructions, 'Version 2.');
+  const res = await h.api.evaluateSubmission(C, learner.sub, DRAFT, 1, { ratings: ALL('competent'), outcome: 'competent' });
+  assert.deepEqual(Object.keys(res.submission.evaluation.ratings), ['crit-elements', 'crit-action', 'crit-plain']);
+});
+
+test('an assignment with no rubric criteria is evaluated on the overall outcome alone', async () => {
+  const h = harness();
+  await h.as('admin@demo.test');
+  await h.api.saveAssignment(C, DRAFT, {
+    instructions: 'Reflect on the lessons.',
+    fields: [{ label: 'Reflection', type: 'text' }],
+  });
+  const learner = await learnerReadyToSubmit(h);
+  const draft = (await h.api.getCourseProgress(C)).items.find((i) => i.itemId === DRAFT);
+  await h.api.submitAssignment(C, DRAFT, { responses: { [draft.fields[0].fieldId]: { text: 'I learned a lot.' } } });
+  await h.as('instructor@demo.test');
+  const res = await h.api.evaluateSubmission(C, learner.sub, DRAFT, 1, { outcome: 'advanced' });
+  assert.equal(res.submission.status, 'approved');
+  assert.deepEqual(res.submission.evaluation.ratings, {});
 });
 
 test('due dates count from enrollment; overdue and late are flagged', async () => {
