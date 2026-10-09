@@ -154,7 +154,63 @@ Folder `IMP - RIck`:
 
 ---
 
-## 8. Open items
+## 8. Reference: "The Claude Edit Playbook" (Mr. Paid Social)
+
+13-page PDF by Caleb Kruse (Mr. Paid Social), shared by the user on 2026-10-09. It is the method behind the social media videos about Claude editing video. The PDF itself is not committed (third-party, gated content).
+
+**What it does:** turns one raw talking-head take into a branded 9:16 motion-graphics ad: a designed card for every spoken line, word-synced karaoke captions, about 40 sound-effect hits, a music bed, and A/B hook variants. Claude Code runs every step.
+
+**Stack:**
+- Claude Code (runs the whole playbook)
+- HyperFrames (npm `hyperframes`, HeyGen, Apache-2.0): renders video from one HTML file driven by a paused GSAP timeline. It also transcribes (Whisper), lints, and snapshots.
+- ffmpeg / ffprobe: probe, crop, cut, verify
+- ElevenLabs API: SFX kit and music bed (needs an API key)
+- Puppeteer: scripted screen capture of a website for B-roll
+- GSAP, bundled locally
+
+**Phases:**
+1. Probe and crop (a wide "band" crop plus a tight 9:16 crop from a 4K 16:9 source).
+2. Transcribe with word timestamps. The transcript drives everything.
+3. Pull brand tokens (palette, logo, real screenshots) into one CSS token block.
+4. Record site B-roll.
+5. Storyboard one card per spoken line, written as a file. Framing modes: split, solo, fullhim, full. Card archetypes: count-up, stamp, before/after, strike-through list, one-word takeover, social proof, guarantee, CTA.
+6. Build: hand-design about 18 cards and generate the repetitive 90% (captions, SFX markup) from the transcript.
+7. Sound design: a 12-sound kit reused across about 40 hits. Music bed 18 to 20 dB under the voice.
+8. QA with snapshot contact sheets, render, verify the file with ffprobe. Hook A/B variants are cut from one master.
+
+**Gotchas worth keeping:**
+- Re-encode all media with a keyframe every second (`-g 30 -keyint_min 30`).
+- Every video and audio element needs a unique id.
+- End each caption chunk at the next chunk's start minus 0.04 s.
+- All assets local, no CDN.
+- About a third of generated SFX come back near-silent. Audit them.
+- Verify duration and audio on the rendered file, not the render log.
+- Never overwrite an approved cut.
+
+**Fit for TMA (draft, not yet decided):**
+- **PREPARE "Two-Minute Tuesday":** a near-direct fit. Short, vertical, and the team already cuts Hook A/B variants.
+- **IMP lessons:** adapt rather than copy. Lessons are 12 to 18 minutes, 16:9 4K, and teaching rather than selling.
+  - Use "one visual per idea", not one card per sentence, and keep the TMA look from section 2.
+  - **Option A:** Claude builds the concept cards as rendered clips and they are imported into the VISUAL composition. Descript keeps cuts, stock cutaways, captions, and the intro and outro layouts.
+  - **Option B:** Claude renders the whole visual pass with HyperFrames, and the finished MP4 is imported back into Descript.
+- **Candidate training card archetypes:**
+  - hierarchy tree (Objectives > Strategies > Tactics)
+  - numbered build list
+  - side-by-side comparison
+  - equation card ("Training + Exercise = Prepared")
+  - scenario dialogue card (radio call)
+  - section title
+  - cross-reference callout ("Future Unit")
+  - key-term definition
+  - recap list
+- **Unknowns:**
+  - whether Descript keeps transparency on imported video
+  - ElevenLabs key and budget
+  - stock footage sourcing outside Descript
+
+---
+
+## 9. Open items
 
 - [ ] Add notes from the Cowork "tool stack" session and the "TMA IMP visual development" session when the user provides them.
 - [ ] Span of Control: duplicate WORKING into "IMP - Span of Control VISUAL", map the transcript, propose an overlay plan for approval, then build.
