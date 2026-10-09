@@ -160,3 +160,7 @@ Folder `IMP - RIck`:
 - [ ] Span of Control: duplicate WORKING into "IMP - Span of Control VISUAL", map the transcript, propose an overlay plan for approval, then build.
 - [ ] Decide whether to fix the "1. Probem" typo in the published reference.
 - [ ] Identify the topic of IMP Recording 091726 and set it up as RAW > WORKING.
+- [ ] Review the social media reference videos the user shared on Claude video creation (not yet viewable from the cloud session; instagram.com, tiktok.com, and drive.google.com are blocked by its network policy):
+  - https://www.instagram.com/reel/Db4PVCotlC4/
+  - https://drive.google.com/file/d/16B3nj9giJTLqyFDwmVYlO2KHZ_c_drr2/view
+  - https://www.tiktok.com/t/ZPL6DWmwK/
