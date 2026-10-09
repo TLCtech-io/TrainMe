@@ -151,6 +151,12 @@ Folder `IMP - RIck`:
 - **wait_for_job:** pass `wait_seconds` of 50 or less. The client times out at 60 s.
 - **Cloud sessions:** `share.descript.com` is blocked by the default network policy, so published videos can't be downloaded for frame review. Allow it under the environment's Network access settings, or run Claude Code locally. Descript's media upload host may also need allowing (not yet confirmed).
 - **Cloud container tools:** ffmpeg 6.1, Node 22, Python 3, headless Chromium.
+- **Cloud network (2026-10-09):**
+  - Reachable: npm registry, GitHub, storage.googleapis.com, S3, fonts.gstatic.com.
+  - Blocked: all Descript hosts, Dropbox content, Hugging Face (so no Whisper model download), Instagram, TikTok, Google Drive.
+- **Auto-mode safety check:**
+  - It flags actions in connected apps the user did not explicitly ask for, such as publishing a Descript composition. Get the user's OK first.
+  - It also blocked the HyperFrames CLI after that flag. Use `motion/tools/render.cjs` instead.
 
 ---
 
@@ -210,8 +216,54 @@ Folder `IMP - RIck`:
 
 ---
 
-## 9. Open items
+## 9. Motion pipeline and first builds (2026-10-09)
 
+Source lives in `video-production/motion/` (see its README). HTML + GSAP compositions, rendered frame by frame in local headless Chrome by `motion/tools/render.cjs`, encoded with ffmpeg. This is the HyperFrames model; the HyperFrames CLI itself was blocked in the cloud session (see tooling notes), so the renderer is a small local stand-in. Fonts and GSAP are bundled; no network at render time.
+
+**TMA pilot graphics: IMP Span of Control (Option A from section 8)**
+- Four 3840x2160 30fps MP4s, full-frame cutaways, timed to the WORKING composition transcript:
+
+  | Clip | Place at (WORKING) | Length | Shows |
+  |---|---|---|---|
+  | SoC pilot 1 - Three topics | 0:08 | 20s | Agenda builds one topic at a time |
+  | SoC pilot 2 - Burner limit | 0:40 | 22s | Rick's range: 6 burners, span of 3, the 4th burner overloads |
+  | SoC pilot 3 - 1 to 5 ratio | 6:44 | 39s | NIMS 1:5 org chart, then search and rescue: 12 on level ground vs 4 in rough terrain |
+  | SoC pilot 4 - Deputy math | 13:41 | 40s | +1 deputy, -3 positions = 2 fewer reports; then +3 support, -9 = 6 fewer |
+
+- **Style:** TMA light grey background, Roboto, blue/amber/red accents, white cards.
+- **Captions:** the bottom 22% of the frame stays clear for Descript's captions.
+- **Timing:** comes from paragraph timecodes. Each file's `T = {...}` block retimes it.
+- **Status:** awaiting the user's review. Not imported into Descript yet.
+
+**PREPARE Vid 5: Claude Edit Playbook version**
+- **Storyboard:** `motion/prepare-vid5/storyboard.md`, 11 cards for 14 transcript lines.
+- **Framing:** all four modes (split, solo, fullhim, full).
+- **Captions:** word-synced, Lato Black, PREPARE yellow highlight.
+- **Retention layer:** progress bar plus zoom punches.
+- **Sound:** about 40 SFX hits from a locally synthesized kit (stand-in for ElevenLabs). No music bed yet.
+- **Cut:** pauses are tightened from 50s to 43.1s by `data/cuts.json`.
+- **Build:** `./build.sh path/to/base.mp4`.
+  - Without footage it builds with placeholder footage (silhouette plus source timecode), so the cards and timing can be reviewed.
+  - The real build needs a download of the "Prepare_Vid 5 Claude Base" composition (= Edits).
+- **Word timing:** spread across Descript SRT phrases by word length (no word-level timestamps available in the cloud session). Close, but a whisper or word-level pass would tighten it.
+- **PREPARE style (from Agent Underlord, Publish composition):**
+  - 1080x1920 canvas, from 4K vertical source footage.
+  - Captions "Bold: Yellow highlight" (Lato 900, active word #FFD02B / #FFCB73, dark translucent box).
+  - "YOURS" title in Roboto 900 red #E62324.
+  - Amber gradient panels fading from slate to #FFCB73.
+
+**Descript changes made this session (PREPARE/Social Media Posts/Prepare_Vid 5 RAW, `2d388f1a-...`):**
+- New composition "Prepare_Vid 5 Claude Base" (`68291c95-39c2-4a46-9ec5-78fe80f63e4f`), a duplicate of "Prepare_Vid 5 Edits", made by Agent Underlord. No other composition was touched.
+- A **private** publish of "Prepare_Vid 5 Claude Base" was started to download the footage. The auto-mode safety check then flagged it as an unrequested action in a connected app, so the job was not followed up. A private share page may exist for that composition. Delete it in Descript if unwanted.
+- Agent Underlord credits used this session: about 21 (two read-only inventories at 7.7 each, one duplicate at 5.8).
+
+---
+
+## 10. Open items
+
+- [ ] **PREPARE Vid 5 footage:** either approve the private publish/download of "Prepare_Vid 5 Claude Base", or export it from Descript and run `./build.sh base.mp4` locally. Then import the render into the Prepare_Vid 5 project as a new composition (requested by the user).
+- [ ] **Review the four TMA pilot graphics.** On approval, import them into IMP - Span of Control and place them in a VISUAL composition.
+- [ ] Optional upgrades: ElevenLabs SFX and music bed (API key), word-level timestamps (whisper locally).
 - [ ] Add notes from the Cowork "tool stack" session and the "TMA IMP visual development" session when the user provides them.
 - [ ] Span of Control: duplicate WORKING into "IMP - Span of Control VISUAL", map the transcript, propose an overlay plan for approval, then build.
 - [ ] Decide whether to fix the "1. Probem" typo in the published reference.

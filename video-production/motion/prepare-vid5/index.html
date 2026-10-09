@@ -1,0 +1,383 @@
+<!doctype html>
+<!-- PREPARE Vid 5 ("Where's your water shut-off?"), Claude Edit Playbook version. 1080x1920.
+     One card per spoken line, word-synced captions, four framing modes (split / solo / fullhim / full).
+     Footage frames come from assets/frames (tools/prep-footage.sh); timing from data/timing.js (tools/timing.mjs). -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<style>
+  @font-face { font-family: "Lato"; font-weight: 400; src: url("../shared/fonts/lato-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Lato"; font-weight: 700; src: url("../shared/fonts/lato-latin-700-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Lato"; font-weight: 900; src: url("../shared/fonts/lato-latin-900-normal.woff2") format("woff2"); }
+  :root {
+    --bg: #13202b; --panel: #1c2b38; --panel2: #24384a; --line: #3a5063; --text: #ffffff; --muted: #a9b6c3;
+    --amber: #ffcb73; --yellow: #ffd02b; --red: #e62324; --water: #3ba7f0; --green: #3ccb7f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; font-family: "Lato", sans-serif; color: var(--text); }
+  .abs { position: absolute; }
+  #top { position: absolute; left: 0; top: 0; width: 1080px; height: 1080px;
+         background: radial-gradient(120% 90% at 50% 30%, #1f3344 0%, var(--bg) 70%); }
+  #fullbg { position: absolute; inset: 0; background: radial-gradient(90% 60% at 50% 45%, #22384b 0%, var(--bg) 70%); }
+  #foot { position: absolute; left: 0; width: 1080px; overflow: hidden; background: #000; }
+  #fimg { position: absolute; left: 0; width: 1080px; height: 1920px; transform-origin: 50% 32%; }
+  #scrim { position: absolute; left: 0; right: 0; bottom: 0; height: 760px; background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.65)); }
+  #progress { position: absolute; left: 0; top: 0; height: 10px; width: 1080px; background: var(--amber); transform-origin: 0 50%; }
+
+  .scene { position: absolute; inset: 0; }
+  .kick { position: absolute; left: 72px; top: 96px; font: 900 28px/1 "Lato"; letter-spacing: 0.2em; color: var(--amber); display: flex; align-items: center; gap: 14px; }
+  .kick::before { content: ""; width: 40px; height: 6px; border-radius: 3px; background: var(--amber); }
+  .h1 { font: 900 84px/1.02 "Lato"; letter-spacing: -0.01em; text-align: center; }
+  .h2 { font: 900 44px/1.1 "Lato"; color: var(--muted); text-align: center; letter-spacing: 0.04em; }
+  .panel { position: absolute; background: var(--panel); border: 3px solid var(--line); border-radius: 28px; }
+  .center { display: flex; align-items: center; justify-content: center; }
+  .icon { stroke: #cfd9e3; fill: none; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
+
+  #cap { position: absolute; left: 60px; width: 960px; text-align: center; font: 900 76px/1.08 "Lato";
+         text-shadow: 0 4px 0 rgba(0,0,0,0.55), 0 0 24px rgba(0,0,0,0.35); }
+  #cap .on { color: var(--yellow); }
+</style>
+</head>
+<body>
+  <div id="fullbg"></div>
+  <div id="top"></div>
+  <div id="foot"><img id="fimg" alt="" /></div>
+  <div id="scrim"></div>
+
+  <!-- A: Where's your water shut-off? -->
+  <div class="scene" id="sA">
+    <div class="kick">Prepare · Water</div>
+    <svg class="abs" id="pipe" style="left:90px; top:330px" width="900" height="120" viewBox="0 0 900 120">
+      <rect x="0" y="30" width="900" height="60" rx="14" fill="#3a5063" /><rect x="360" y="14" width="180" height="92" rx="16" fill="#4a6177" />
+    </svg>
+    <svg class="abs" id="wheel" style="left:390px; top:190px" width="300" height="300" viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="76" fill="none" stroke="#ffcb73" stroke-width="16" />
+      <g stroke="#ffcb73" stroke-width="12" stroke-linecap="round"><line x1="100" y1="30" x2="100" y2="170" /><line x1="30" y1="100" x2="170" y2="100" /></g>
+      <circle cx="100" cy="100" r="22" fill="#ffcb73" />
+    </svg>
+    <div class="abs h2" style="left:0; width:1080px; top:600px" id="aSub">WHERE'S YOUR</div>
+    <div class="abs h1" style="left:0; width:1080px; top:665px" id="aTitle">WATER <span style="color:var(--amber)">SHUT-OFF?</span></div>
+  </div>
+
+  <!-- B: Not your building's. -->
+  <div class="scene" id="sB">
+    <div class="kick">Not this one</div>
+    <svg class="abs" id="bldg" style="left:390px; top:200px" width="300" height="520" viewBox="0 0 150 260">
+      <rect class="icon" x="10" y="10" width="130" height="240" rx="8" />
+      <g fill="#3a5063"><rect x="30" y="34" width="26" height="26" rx="4"/><rect x="62" y="34" width="26" height="26" rx="4"/><rect x="94" y="34" width="26" height="26" rx="4"/>
+        <rect x="30" y="76" width="26" height="26" rx="4"/><rect x="62" y="76" width="26" height="26" rx="4"/><rect x="94" y="76" width="26" height="26" rx="4"/>
+        <rect x="30" y="118" width="26" height="26" rx="4"/><rect x="62" y="118" width="26" height="26" rx="4"/><rect x="94" y="118" width="26" height="26" rx="4"/>
+        <rect x="30" y="160" width="26" height="26" rx="4"/><rect x="62" y="160" width="26" height="26" rx="4"/><rect x="94" y="160" width="26" height="26" rx="4"/></g>
+      <rect x="58" y="204" width="34" height="46" rx="4" fill="#4a6177" />
+    </svg>
+    <div class="abs h2" style="left:0; width:1080px; top:760px">BUILDING MAIN</div>
+    <div class="abs center" id="stampB" style="left:90px; top:380px; width:900px; height:150px; border:10px solid var(--red); border-radius:18px;
+         color:var(--red); font:900 68px/1 'Lato'; letter-spacing:0.02em; white-space:nowrap; background:rgba(19,32,43,0.85)">NOT THE BUILDING'S</div>
+  </div>
+
+  <!-- C: YOURS. (full takeover) -->
+  <div class="scene" id="sC">
+    <div class="abs center" id="cWord" style="left:0; top:640px; width:1080px; height:340px; font:900 290px/1 'Lato'; color:var(--amber);
+         text-shadow:0 0 60px rgba(255,203,115,0.45)">YOURS.</div>
+    <div class="abs" id="cBar" style="left:290px; top:1000px; width:500px; height:16px; border-radius:8px; background:var(--red)"></div>
+    <div class="abs h2" id="cSub" style="left:0; width:1080px; top:1060px">YOUR APARTMENT'S OWN SHUT-OFF</div>
+  </div>
+
+  <!-- D: In the laundry room? A hall closet? Do you even have one? -->
+  <div class="scene" id="sD">
+    <div class="kick">Where is it?</div>
+    <div class="panel" id="d1" style="left:90px; top:200px; width:900px; height:190px"></div>
+    <div class="panel" id="d2" style="left:90px; top:420px; width:900px; height:190px"></div>
+    <div class="panel" id="d3" style="left:90px; top:640px; width:900px; height:190px"></div>
+  </div>
+
+  <!-- E: individual shut-offs to sinks, toilets, appliances -->
+  <div class="scene" id="sE">
+    <div class="kick">Go further</div>
+    <div class="abs h1" id="eTitle" style="left:0; width:1080px; top:180px; font-size:72px">INDIVIDUAL SHUT-OFFS</div>
+    <div class="panel" id="e1" style="left:72px; top:330px; width:290px; height:470px"></div>
+    <div class="panel" id="e2" style="left:395px; top:330px; width:290px; height:470px"></div>
+    <div class="panel" id="e3" style="left:718px; top:330px; width:290px; height:470px"></div>
+  </div>
+
+  <!-- F: a leak or overflow at 2:00 in the morning (floating chips over full-bleed footage) -->
+  <div class="scene" id="sF">
+    <div class="abs center" id="fClock" style="left:190px; top:110px; width:700px; height:210px; border-radius:36px; background:rgba(19,32,43,0.9);
+         border:4px solid var(--line); gap:36px">
+      <svg width="110" height="110" viewBox="0 0 100 100"><path d="M64 10 A40 40 0 1 0 90 66 A32 32 0 1 1 64 10 Z" fill="#ffcb73" /></svg>
+      <div style="font:900 130px/1 'Lato'; letter-spacing:-0.01em"><span id="clock">12:00</span><span style="font-size:56px; color:var(--amber); margin-left:14px">AM</span></div>
+    </div>
+    <div class="abs center" id="fLeak" style="left:250px; top:1300px; width:580px; height:110px; border-radius:55px; background:var(--water);
+         font:900 52px/1 'Lato'; gap:20px; color:#0b1a26">
+      <svg width="54" height="64" viewBox="0 0 100 120"><path d="M50 4 C50 4 90 58 90 80 A40 40 0 0 1 10 80 C10 58 50 4 50 4 Z" fill="#0b1a26" /></svg>LEAK OR OVERFLOW
+    </div>
+  </div>
+
+  <!-- G: wet floor vs destroyed apartment; the difference is the valve -->
+  <div class="scene" id="sG">
+    <div class="kick">The difference</div>
+    <div class="panel" id="g1" style="left:72px; top:180px; width:450px; height:500px; border-color:var(--water)"></div>
+    <div class="panel" id="g2" style="left:558px; top:180px; width:450px; height:500px; border-color:var(--red)"></div>
+    <div class="abs center" id="gBanner" style="left:72px; top:715px; width:936px; height:150px; border-radius:28px; background:var(--amber);
+         color:#13202b; font:900 52px/1.05 'Lato'; text-align:center; gap:24px">
+      <svg width="86" height="86" viewBox="0 0 200 200"><circle cx="100" cy="100" r="76" fill="none" stroke="#13202b" stroke-width="18" />
+        <g stroke="#13202b" stroke-width="14" stroke-linecap="round"><line x1="100" y1="30" x2="100" y2="170" /><line x1="30" y1="100" x2="170" y2="100" /></g></svg>
+      <div>KNOWING WHERE<br />THE VALVE IS</div>
+    </div>
+  </div>
+
+  <!-- H: a leak may hit your downstairs neighbor even more than you -->
+  <div class="scene" id="sH">
+    <div class="kick">Remember</div>
+    <div class="panel" id="h1" style="left:72px; top:170px; width:936px; height:320px"></div>
+    <div class="panel" id="h2" style="left:72px; top:520px; width:936px; height:320px"></div>
+  </div>
+
+  <!-- J: share a space, a wall, someone else in your life -->
+  <div class="scene" id="sJ">
+    <div class="kick">Share it with</div>
+    <div class="panel" id="j1" style="left:140px; top:210px; width:800px; height:170px"></div>
+    <div class="panel" id="j2" style="left:140px; top:410px; width:800px; height:170px"></div>
+    <div class="panel" id="j3" style="left:140px; top:610px; width:800px; height:170px"></div>
+  </div>
+
+  <!-- K: CTA (full takeover, last ~2.5s) -->
+  <div class="scene" id="sK">
+    <div class="abs h2" id="kLine" style="left:0; width:1080px; top:560px">KNOW SOMEONE WHO SHARES A WALL?</div>
+    <div class="abs center" id="kBtn" style="left:160px; top:660px; width:760px; height:180px; border-radius:90px; background:var(--amber);
+         color:#13202b; font:900 92px/1 'Lato'; gap:30px; box-shadow:0 20px 60px rgba(255,203,115,0.35)">
+      <svg width="96" height="96" viewBox="0 0 100 100"><g fill="#13202b"><circle cx="76" cy="20" r="14"/><circle cx="24" cy="50" r="14"/><circle cx="76" cy="80" r="14"/></g>
+        <g stroke="#13202b" stroke-width="9"><line x1="30" y1="45" x2="70" y2="24"/><line x1="30" y1="55" x2="70" y2="76"/></g></svg>SHARE THIS
+    </div>
+    <svg class="abs" id="kArrow" style="left:480px; top:900px" width="120" height="140" viewBox="0 0 120 140">
+      <path d="M60 10 V110 M20 74 L60 116 L100 74" fill="none" stroke="#ffffff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" /></svg>
+    <div class="abs h2" id="kTag" style="left:0; width:1080px; top:1700px; font-size:34px; color:var(--amber)">TWO-MINUTE TUESDAY · PREPARE</div>
+  </div>
+
+  <div id="progress"></div>
+  <div id="cap"></div>
+
+<script src="../shared/gsap.min.js"></script>
+<script src="data/timing.js"></script>
+<script>
+  const T = window.TIMING, D = T.duration, FPS = T.fps, W = T.words;
+  const FRAMES = "assets/frames/f_%05d.jpg";
+  const FACE_Y = 0.36; // where the face sits in the source frame (0 top, 1 bottom); drives the split-band crop
+
+  // ---------- cues ----------
+  const norm = (s) => s.toLowerCase().replace(/[^a-z0-9:' ]/g, "");
+  function cue(phrase, n = 1) {
+    const p = norm(phrase).split(" ");
+    let c = 0;
+    for (let i = 0; i < W.length; i++) {
+      if (p.every((x, j) => W[i + j] && norm(W[i + j].w) === x) && ++c === n) return W[i].s;
+    }
+    throw new Error("cue not found: " + phrase);
+  }
+  const keepOff = (() => { let acc = 0; return T.keep.map(([a, b]) => { const o = acc; acc += b - a; return { a, b, o }; }); })();
+  const PHOTO_END = keepOff[5].o + (keepOff[5].b - keepOff[5].a); // end of the kept range holding the ceiling-leak photo
+
+  const S = [
+    { id: "sA", mode: "split", a: 0, b: cue("not") },
+    { id: "sB", mode: "split", a: cue("not"), b: cue("yours") - 0.12 },
+    { id: "sC", mode: "full", a: cue("yours") - 0.12, b: cue("in the laundry") - 0.15 },
+    { id: "sD", mode: "split", a: cue("in the laundry") - 0.15, b: cue("what about") - 0.15 },
+    { id: "sE", mode: "split", a: cue("what about") - 0.15, b: cue("if a leak") - 0.15 },
+    { id: "sF", mode: "fullhim", a: cue("if a leak") - 0.15, b: cue("the difference") - 0.1 },
+    { id: "sG", mode: "split", a: cue("the difference") - 0.1, b: cue("and remember") - 0.15 },
+    { id: "sH", mode: "split", a: cue("and remember") - 0.15, b: cue("ask me") - 0.1 },
+    { id: null, mode: "solo", a: cue("ask me") - 0.1, b: PHOTO_END },
+    { id: "sJ", mode: "split", a: PHOTO_END, b: cue("share this with") - 0.1 },
+    { id: "sK", mode: "full", a: cue("share this with") - 0.1, b: D },
+  ];
+  const sceneAt = (t) => S.find((s) => t >= s.a && t < s.b) || S[S.length - 1];
+  window.SFX = []; // [{t, kind}] consumed by tools/mix.mjs
+  const sfx = (t, kind) => window.SFX.push({ t: Math.round(t * 1000) / 1000, kind });
+
+  // ---------- small builders ----------
+  const icons = {
+    washer: '<svg width="120" height="120" viewBox="0 0 100 100"><rect class="icon" x="12" y="8" width="76" height="84" rx="8"/><circle class="icon" cx="50" cy="56" r="22"/><line class="icon" x1="24" y1="22" x2="40" y2="22"/></svg>',
+    door: '<svg width="120" height="120" viewBox="0 0 100 100"><rect class="icon" x="24" y="6" width="52" height="88" rx="4"/><circle cx="64" cy="52" r="5" fill="#cfd9e3"/></svg>',
+    ask: '<svg width="120" height="120" viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="#ffcb73"/><text x="50" y="70" text-anchor="middle" font-family="Lato" font-weight="900" font-size="58" fill="#13202b">?</text></svg>',
+    sink: '<svg width="170" height="170" viewBox="0 0 100 100"><path class="icon" d="M10 50 H90 L80 82 H20 Z"/><path class="icon" d="M50 50 V22 Q50 14 60 14 H70 V24"/></svg>',
+    toilet: '<svg width="170" height="170" viewBox="0 0 100 100"><rect class="icon" x="22" y="8" width="56" height="30" rx="6"/><path class="icon" d="M16 44 H84 Q84 74 56 78 L60 92 H40 L44 78 Q16 74 16 44 Z"/></svg>',
+    appliance: '<svg width="170" height="170" viewBox="0 0 100 100"><rect class="icon" x="16" y="8" width="68" height="84" rx="6"/><line class="icon" x1="16" y1="30" x2="84" y2="30"/><line class="icon" x1="36" y1="42" x2="64" y2="42"/></svg>',
+    badge: '<svg width="86" height="86" viewBox="0 0 200 200"><circle cx="100" cy="100" r="96" fill="#ffcb73"/><circle cx="100" cy="100" r="56" fill="none" stroke="#13202b" stroke-width="16"/><g stroke="#13202b" stroke-width="12" stroke-linecap="round"><line x1="100" y1="44" x2="100" y2="156"/><line x1="44" y1="100" x2="156" y2="100"/></g></svg>',
+    puddle: '<svg width="240" height="200" viewBox="0 0 120 100"><path d="M60 6 C60 6 82 36 82 50 A22 22 0 0 1 38 50 C38 36 60 6 60 6 Z" fill="#3ba7f0"/><ellipse cx="60" cy="88" rx="54" ry="9" fill="#3ba7f0" opacity="0.6"/></svg>',
+    wreck: '<svg width="240" height="200" viewBox="0 0 120 100"><path class="icon" style="stroke:#e62324" d="M14 50 L60 12 L106 50 V92 H14 Z"/><path d="M14 70 H106 V92 H14 Z" fill="#3ba7f0" opacity="0.85"/><path class="icon" style="stroke:#e62324" d="M58 22 L50 40 L62 50 L54 66"/></svg>',
+    people: '<svg width="110" height="110" viewBox="0 0 100 100"><circle cx="34" cy="30" r="14" fill="#ffcb73"/><circle cx="68" cy="34" r="12" fill="#ffcb73" opacity="0.7"/><path d="M12 86 Q12 54 34 54 Q56 54 56 86 Z" fill="#ffcb73"/><path d="M50 86 Q52 60 68 60 Q88 60 88 86 Z" fill="#ffcb73" opacity="0.7"/></svg>',
+    wall: '<svg width="110" height="110" viewBox="0 0 100 100"><g fill="#ffcb73"><rect x="6" y="14" width="40" height="20" rx="3"/><rect x="52" y="14" width="42" height="20" rx="3"/><rect x="6" y="40" width="20" height="20" rx="3"/><rect x="32" y="40" width="40" height="20" rx="3"/><rect x="78" y="40" width="16" height="20" rx="3"/><rect x="6" y="66" width="40" height="20" rx="3"/><rect x="52" y="66" width="42" height="20" rx="3"/></g></svg>',
+    heart: '<svg width="110" height="110" viewBox="0 0 100 100"><path d="M50 86 C20 64 8 48 8 32 A20 20 0 0 1 50 24 A20 20 0 0 1 92 32 C92 48 80 64 50 86 Z" fill="#ffcb73"/></svg>',
+  };
+  const fill = (id, html) => { document.getElementById(id).innerHTML = html; };
+  const row = (icon, text, color = "#fff") => `<div class="abs center" style="inset:0; justify-content:flex-start; gap:40px; padding-left:48px">${icon}<div style="font:900 64px/1 Lato; color:${color}">${text}</div></div>`;
+  fill("d1", row(icons.washer, "Laundry room?"));
+  fill("d2", row(icons.door, "Hall closet?"));
+  fill("d3", row(icons.ask, "Have one at all?", "var(--amber)"));
+  const tile = (icon, label, n) => `<div class="abs center" style="inset:0; flex-direction:column; gap:30px">${icon}<div style="font:900 50px/1 Lato">${label}</div></div>
+    <div class="abs" id="badge${n}" style="right:-26px; top:-26px">${icons.badge}</div>`;
+  fill("e1", tile(icons.sink, "SINKS", 1));
+  fill("e2", tile(icons.toilet, "TOILETS", 2));
+  fill("e3", tile(icons.appliance, "APPLIANCES", 3));
+  const half = (icon, top, bottom, color) => `<div class="abs center" style="inset:0; flex-direction:column; gap:26px">${icon}
+    <div style="font:900 40px/1 Lato; color:var(--muted)">${top}</div><div style="font:900 58px/1.02 Lato; color:${color}; text-align:center">${bottom}</div></div>`;
+  fill("g1", half(icons.puddle, "A", "WET<br />FLOOR", "var(--water)"));
+  fill("g2", half(icons.wreck, "A", "DESTROYED<br />APARTMENT", "var(--red)"));
+  const unit = (label, sub, barId, barColor, drips) => `
+    <div class="abs" style="left:48px; top:46px; font:900 54px/1 Lato">${label}</div>
+    <div class="abs" style="left:48px; top:116px; font:700 34px/1 Lato; color:var(--muted)">${sub}</div>
+    <div class="abs" style="left:48px; top:200px; width:560px; height:40px; border-radius:20px; background:#13202b"></div>
+    <div class="abs" id="${barId}" style="left:48px; top:200px; width:560px; height:40px; border-radius:20px; background:${barColor}; transform-origin:0 50%"></div>
+    <div class="abs" style="left:48px; top:256px; font:700 26px/1 Lato; letter-spacing:0.14em; color:var(--muted)">WATER DAMAGE</div>
+    ${drips}`;
+  const drip = (id, x) => `<svg class="abs" id="${id}" style="left:${x}px; top:20px" width="44" height="56" viewBox="0 0 100 120"><path d="M50 4 C50 4 90 58 90 80 A40 40 0 0 1 10 80 C10 58 50 4 50 4 Z" fill="#3ba7f0"/></svg>`;
+  fill("h1", unit("YOUR UNIT", "Where the leak starts", "bar1", "var(--amber)", ""));
+  fill("h2", unit("DOWNSTAIRS NEIGHBOR", "Where the water ends up", "bar2", "var(--red)", drip("dr1", 700) + drip("dr2", 790) + drip("dr3", 870)));
+  const chip = (icon, text) => `<div class="abs center" style="inset:0; justify-content:flex-start; gap:40px; padding-left:52px">${icon}<div style="font:900 66px/1 Lato">${text}</div></div>`;
+  fill("j1", chip(icons.people, "Roommates"));
+  fill("j2", chip(icons.wall, "Neighbors"));
+  fill("j3", chip(icons.heart, "Family & friends"));
+
+  // ---------- timeline ----------
+  const tl = gsap.timeline({ paused: true });
+  const popIn = (sel, t, from = {}) => tl.fromTo(sel, { opacity: 0, scale: 0.7, ...from }, { opacity: 1, scale: 1, x: 0, y: 0, duration: 0.45, ease: "back.out(1.8)" }, t);
+  const slideUp = (sel, t) => tl.fromTo(sel, { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, t);
+  S.forEach((s) => { if (!s.id) return; tl.set("#" + s.id, { opacity: 0 }, 0); tl.set("#" + s.id, { opacity: 1 }, s.a); tl.set("#" + s.id, { opacity: 0 }, s.b); });
+  tl.fromTo("#progress", { scaleX: 0 }, { scaleX: 1, duration: D, ease: "none" }, 0);
+
+  // A
+  slideUp("#pipe", 0.05); sfx(0.05, "whoosh");
+  tl.fromTo("#wheel", { opacity: 0, rotation: -140, scale: 0.6 }, { opacity: 1, rotation: 0, scale: 1, duration: 0.8, ease: "back.out(1.6)" }, 0.15);
+  slideUp("#aSub", cue("where's") - 0.05);
+  slideUp("#aTitle", cue("water") - 0.1); sfx(cue("water"), "pop");
+  tl.to("#wheel", { rotation: 90, duration: 0.6, ease: "power2.inOut" }, cue("shut") + 0.05); sfx(cue("shut"), "whip");
+  // B
+  tl.fromTo("#bldg", { opacity: 0, y: 40 }, { opacity: 0.45, y: 0, duration: 0.35 }, cue("not") - 0.05);
+  tl.fromTo("#stampB", { opacity: 0, scale: 2.2, rotation: -4 }, { opacity: 1, scale: 1, rotation: -10, duration: 0.28, ease: "power4.in" }, cue("not"));
+  sfx(cue("not") + 0.26, "stamp");
+  // C
+  tl.fromTo("#cWord", { opacity: 0, scale: 0.55 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2.2)" }, cue("yours") - 0.05);
+  tl.fromTo("#cBar", { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: "power3.out" }, cue("yours") + 0.25);
+  slideUp("#cSub", cue("yours") + 0.45);
+  sfx(cue("yours"), "impact");
+  // D
+  [["#d1", "in the laundry"], ["#d2", "a hall"], ["#d3", "do you"]].forEach(([sel, p], i) => {
+    tl.fromTo(sel, { opacity: 0, x: -80 }, { opacity: 1, x: 0, duration: 0.4, ease: "power3.out" }, cue(p) - 0.08); sfx(cue(p) - 0.05, "pop");
+  });
+  tl.to(["#d1", "#d2"], { opacity: 0.45, duration: 0.3 }, cue("do you"));
+  tl.to("#d3", { borderColor: "#ffcb73", scale: 1.04, duration: 0.3 }, cue("do you"));
+  // E
+  slideUp("#eTitle", cue("individual") - 0.1); sfx(cue("individual"), "whoosh");
+  [["#e1", "sinks", 1], ["#e2", "toilets", 2], ["#e3", "appliances", 3]].forEach(([sel, p, n]) => {
+    tl.fromTo(sel, { opacity: 0, y: 70 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, cue(p) - 0.12); sfx(cue(p) - 0.08, "pop");
+    tl.fromTo("#badge" + n, { opacity: 0, scale: 0.2, rotation: -90 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.45, ease: "back.out(2.4)" }, cue(p) + 0.18);
+    sfx(cue(p) + 0.2, "tick");
+  });
+  // F
+  popIn("#fLeak", cue("leak") - 0.05); sfx(cue("leak"), "drip");
+  popIn("#fClock", cue("happens") - 0.1); sfx(cue("happens"), "whoosh");
+  const clockA = cue("happens") + 0.1, clockB = cue("2:00") + 0.15;
+  for (let k = 1; k <= 8; k++) sfx(clockA + ((clockB - clockA) * k) / 8, "tick");
+  // G
+  tl.fromTo("#g1", { opacity: 0, x: -120 }, { opacity: 1, x: 0, duration: 0.45, ease: "power3.out" }, cue("wet") - 0.1); sfx(cue("wet") - 0.05, "whoosh");
+  tl.fromTo("#g2", { opacity: 0, x: 120 }, { opacity: 1, x: 0, duration: 0.45, ease: "power3.out" }, cue("destroyed") - 0.1); sfx(cue("destroyed"), "stamp");
+  tl.to("#g2", { scale: 1.04, duration: 0.15, yoyo: true, repeat: 1 }, cue("destroyed") + 0.25);
+  tl.fromTo("#gBanner", { opacity: 0, y: 50, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.8)" }, cue("valve") - 0.3);
+  sfx(cue("valve") - 0.2, "ding");
+  // H
+  slideUp("#h1", cue("and remember") - 0.1); sfx(cue("and remember"), "whoosh");
+  slideUp("#h2", cue("downstairs") - 0.1); sfx(cue("downstairs"), "whoosh");
+  tl.fromTo("#bar1", { scaleX: 0 }, { scaleX: 0.35, duration: 0.7, ease: "power2.out" }, cue("hit"));
+  tl.fromTo("#bar2", { scaleX: 0 }, { scaleX: 0.9, duration: 1.2, ease: "power2.out" }, cue("even"));
+  sfx(cue("even"), "impact");
+  ["#dr1", "#dr2", "#dr3"].forEach((sel, i) => {
+    tl.fromTo(sel, { opacity: 0, y: -10 }, { opacity: 1, y: 230, duration: 0.9, ease: "power1.in", repeat: 3, repeatDelay: 0.15 }, cue("leak", 2) + i * 0.3);
+  });
+  sfx(cue("leak", 2) + 0.2, "drip"); sfx(cue("downstairs") + 0.6, "drip");
+  // J
+  [["#j1", "share a space"], ["#j2", "a wall"], ["#j3", "someone else"]].forEach(([sel, p]) => {
+    tl.fromTo(sel, { opacity: 0, x: 90 }, { opacity: 1, x: 0, duration: 0.4, ease: "power3.out" }, cue(p) - 0.1); sfx(cue(p) - 0.05, "pop");
+  });
+  // K
+  slideUp("#kLine", S[10].a + 0.05);
+  popIn("#kBtn", cue("share this with")); sfx(cue("share this with") + 0.05, "ding");
+  tl.to("#kBtn", { scale: 1.06, duration: 0.35, yoyo: true, repeat: 5, ease: "sine.inOut" }, cue("share this with") + 0.5);
+  tl.fromTo("#kArrow", { opacity: 0, y: -20 }, { opacity: 1, y: 20, duration: 0.4, yoyo: true, repeat: 5, ease: "sine.inOut" }, cue("share this with") + 0.3);
+  slideUp("#kTag", cue("share this with") + 0.2);
+
+  // ---------- captions: 1-3 word chunks, new chunk at a 0.45s gap or punctuation ----------
+  const chunks = [];
+  W.forEach((w, i) => {
+    const prev = W[i - 1];
+    const cur = chunks[chunks.length - 1];
+    const brk = !cur || cur.words.length >= 3 || w.s - prev.e > 0.45 || /[,.?!]$/.test(prev.w);
+    if (brk) chunks.push({ words: [i] }); else cur.words.push(i);
+  });
+  chunks.forEach((c) => { c.s = W[c.words[0]].s - 0.04; });
+  chunks.forEach((c, k) => {
+    const next = chunks[k + 1];
+    c.e = Math.min(next ? next.s - 0.04 : D, W[c.words[c.words.length - 1]].e + 0.6);
+  });
+  const cap = document.getElementById("cap");
+  const CAP_Y = { split: 935, full: 1440, fullhim: 1480, solo: 1480 };
+  let lastCap = "";
+  function captions(t, mode) {
+    const c = chunks.find((x) => t >= x.s && t < x.e);
+    let html = "";
+    if (c) html = c.words.map((i) => {
+      const on = t >= W[i].s - 0.04 && (i === W.length - 1 || t < W[i + 1].s - 0.04);
+      return `<span class="${on ? "on" : ""}">${W[i].w.replace(/[,.]$/, "")}</span>`;
+    }).join(" ");
+    if (html !== lastCap) { cap.innerHTML = html; lastCap = html; }
+    cap.style.top = CAP_Y[mode] + "px";
+  }
+
+  // ---------- footage framing per mode, with zoom punches ----------
+  const foot = document.getElementById("foot"), fimg = document.getElementById("fimg");
+  const scrim = document.getElementById("scrim"), topEl = document.getElementById("top"), fullbg = document.getElementById("fullbg");
+  const PUNCH = [cue("destroyed"), cue("neighbor"), cue("ask me")].map((t) => [t, t + 0.12]);
+  function framing(t, s) {
+    const m = s.mode;
+    foot.style.display = m === "full" ? "none" : "block";
+    topEl.style.display = m === "split" ? "block" : "none";
+    fullbg.style.display = m === "full" ? "block" : "none";
+    scrim.style.display = m === "solo" || m === "fullhim" ? "block" : "none";
+    let scale = 1, y = 0;
+    if (m === "split") { foot.style.top = "1080px"; foot.style.height = "840px"; y = 420 - FACE_Y * 1920; }
+    else { foot.style.top = "0px"; foot.style.height = "1920px"; }
+    if (m === "fullhim") scale = 1.22;
+    if (m === "solo") scale = 1 + 0.08 * Math.min(1, (t - s.a) / (s.b - s.a)); // slow push on the photo beat
+    const enter = Math.min(1, (t - s.a) / 0.25); scale *= 1 + 0.04 * (1 - enter); // settle on each cut
+    for (const [a, b] of PUNCH) if (t >= a && t < s.b && a >= s.a) scale *= 1 + 0.07 * Math.min(1, (t - a) / (b - a));
+    fimg.style.top = y + "px";
+    fimg.style.transform = `scale(${scale})`;
+  }
+
+  // 2:00 AM count-up: midnight to 2:00 in step with "happens at 2:00".
+  const clock = document.getElementById("clock");
+  function clockAt(t) {
+    const mins = Math.round(gsap.utils.clamp(0, 120, ((t - clockA) / (clockB - clockA)) * 120));
+    const h = Math.floor(mins / 60), m = mins % 60;
+    clock.textContent = `${h === 0 ? 12 : h}:${String(m).padStart(2, "0")}`;
+  }
+
+  let lastSrc = "";
+  async function seek(t) {
+    tl.seek(t, false);
+    const s = sceneAt(t);
+    framing(t, s);
+    captions(t, s.mode);
+    clockAt(t);
+    if (s.mode !== "full") {
+      const n = Math.min(Math.round(D * FPS), Math.floor(t * FPS + 1e-6) + 1);
+      const src = FRAMES.replace("%05d", String(n).padStart(5, "0"));
+      if (src !== lastSrc) { fimg.src = src; lastSrc = src; try { await fimg.decode(); } catch (e) {} }
+    }
+  }
+  window.__tl = tl;
+  window.__meta = { duration: D, width: 1080, height: 1920 };
+  window.__seek = seek;
+  seek(0);
+</script>
+</body>
+</html>
