@@ -272,3 +272,5 @@ Source lives in `video-production/motion/` (see its README). HTML + GSAP composi
   - https://www.instagram.com/reel/Db4PVCotlC4/
   - https://drive.google.com/file/d/16B3nj9giJTLqyFDwmVYlO2KHZ_c_drr2/view
   - https://www.tiktok.com/t/ZPL6DWmwK/
+  - https://www.instagram.com/p/Ded-wGdmOio/ (@claudetipsandtricks; the user flagged it for its motion graphic examples, 2026-10-15)
+  - The Google Drive connector failed to connect on 2026-10-15 ("incompatible auth server"), so the Drive link could not be read that way either.
