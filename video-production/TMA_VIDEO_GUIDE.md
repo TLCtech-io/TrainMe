@@ -273,4 +273,11 @@ Source lives in `video-production/motion/` (see its README). HTML + GSAP composi
   - https://drive.google.com/file/d/16B3nj9giJTLqyFDwmVYlO2KHZ_c_drr2/view
   - https://www.tiktok.com/t/ZPL6DWmwK/
   - https://www.instagram.com/p/Ded-wGdmOio/ (@claudetipsandtricks; the user flagged it for its motion graphic examples, 2026-10-15)
-  - The Google Drive connector failed to connect on 2026-10-15 ("incompatible auth server"), so the Drive link could not be read that way either.
+- **Status (2026-10-15, after the environment was set to Full network access):**
+  - **Instagram (both posts):** still not viewable. Instagram returns no media without a logged-in account. Workaround: the user screen-records or saves the clip to Dropbox, which can now be downloaded.
+  - **Google Drive link:** an 8-page short version of the Mr. Paid Social Claude Edit Playbook (section 8). Nothing new. The user does not use Google Drive; Dropbox and OneDrive are their file connectors.
+  - **TikTok (@dominiccapaci, 43s):** "Claude edited this whole video and every layer is still mine in CapCut."
+    - Raw footage with bad takes goes in, and an edited video comes out about 20 minutes later.
+    - The style switches with one sentence ("aesthetic": warm grade, floating thumbnails, magazine-cover titles; "moody": darker grade, big titles).
+    - His key point: most people get a flat video back. His system delivers a fully editable project in CapCut, so small tweaks are done by hand. The skill itself is gated behind "comment EDIT."
+    - **Takeaway for TMA:** the same principle applies to Descript. Deliver editable layers (separate graphic clips placed on the timeline, captions as Descript captions) rather than only a baked MP4, so the user can nudge timing and text without re-rendering. Named style presets map to swapping a token set (see `motion/shared/tma.css`).
