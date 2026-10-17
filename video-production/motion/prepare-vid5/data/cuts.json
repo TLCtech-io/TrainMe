@@ -1,0 +1,13 @@
+{
+  "_note": "Keep ranges (seconds) on the 'Prepare_Vid 5 Claude Base' timeline (= Prepare_Vid 5 Edits, 50s). Long pauses are tightened; the ceiling-leak photo (37.0-39.64) is kept whole.",
+  "source_duration": 50.0,
+  "keep": [
+    [1.30, 4.82],
+    [5.55, 7.00],
+    [7.95, 12.45],
+    [13.62, 18.85],
+    [19.35, 36.50],
+    [36.85, 39.64],
+    [41.40, 49.90]
+  ]
+}
