@@ -58,6 +58,9 @@
   #date { position: absolute; left: 240px; width: 600px; display: flex; justify-content: center; white-space: nowrap; }
   #end { position: absolute; inset: 0; }
   .end-line { position: absolute; left: 0; width: 1080px; text-align: center; }
+  /* Queen City Performing Arts mark (one-colour knockout, shared/brand), presenting the end card */
+  #eLogo { position: absolute; left: 0; width: 1080px; top: 190px; display: flex; justify-content: center; }
+  #eLogo img { height: 300px; width: auto; filter: drop-shadow(0 6px 18px rgba(0,0,0,0.7)); }
 </style>
 </head>
 <body>
@@ -83,6 +86,7 @@
   <div id="date"></div>
 
   <div id="end">
+    <div id="eLogo"><img src="../shared/brand/qcpa-logo-white.svg" alt="Queen City Performing Arts" /></div>
     <div class="end-line" id="eUp" style="top:1095px; font:400 104px/1 'Anton'; letter-spacing:0.08em; color:#fff; text-shadow:0 6px 0 rgba(0,0,0,0.55)">UPTOWN SOUND</div>
     <div class="ransom" id="eTitle1" style="top:1225px"></div>
     <div class="ransom" id="eTitle2" style="top:1330px"></div>
@@ -186,8 +190,9 @@
   tl.to("#date", { opacity: 0, duration: 0.3 }, T.dateOut);
   tl.fromTo("#wyp", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)" }, T.wyp);
   tl.to("#wyp", { opacity: 0, duration: 0.3 }, T.wypOut);
-  // End card
+  // End card: QCPA logo first (on the dark wall above the group), then the show lockup
   tl.to("#badge", { opacity: 0, duration: 0.3 }, T.end);
+  tl.fromTo("#eLogo", { opacity: 0, y: -24, scale: 0.92 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "power2.out" }, T.end + 0.35);
   tl.fromTo("#eUp", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, T.end + 0.55);
   document.querySelectorAll("#eTitle1 .rl, #eTitle2 .rl").forEach((el, i) => {
     tl.fromTo(el, { opacity: 0, scale: 2.2 }, { opacity: 1, scale: 1, duration: 0.16, ease: "power4.in" }, T.end + 0.8 + i * 0.05);
@@ -324,6 +329,9 @@
     document.body.appendChild(document.getElementById("grain"));
     document.body.appendChild(document.getElementById("flash"));
     sv.height = H / 2; sv.style.height = H + "px"; SPOT_Y = 170;
+    // the wall above the group is cropped off here, so the logo moves into the dark slime under the ticket line
+    document.getElementById("eLogo").style.top = 1186 + OFF + "px";
+    document.querySelector("#eLogo img").style.height = "224px";
     document.getElementById("grain").style.height = H + "px";
     const w = document.getElementById("webs");
     w.setAttribute("height", H); w.setAttribute("viewBox", `0 0 1080 ${H}`);
