@@ -19,16 +19,17 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; color: #fff; }
   .abs { position: absolute; }
-  #foot { position: absolute; inset: 0; overflow: hidden; }
+  #foot { position: absolute; inset: 0; overflow: hidden; background: #000; }
   #fimg { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-origin: 50% 42%;
           filter: saturate(0.82) contrast(1.08) brightness(0.9); }
   #tint { position: absolute; inset: 0; background: rgba(70, 255, 60, 0.2); mix-blend-mode: soft-light; }
+  /* Black gradient fades top and bottom (the smoky shadow border is drawn per frame on #smoke) */
   #shade { position: absolute; inset: 0;
-           background: linear-gradient(to bottom, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.15) 24%, rgba(0,0,0,0) 40%, rgba(0,0,0,0) 62%, rgba(0,20,0,0.35) 100%),
-                       radial-gradient(110% 75% at 50% 42%, rgba(0,0,0,0) 48%, rgba(0,10,0,0.68) 100%); }
+           background: linear-gradient(to bottom, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.45) 18%, rgba(0,0,0,0) 38%, rgba(0,0,0,0) 58%, rgba(0,0,0,0.55) 100%); }
+  #smoke { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
   #flash { position: absolute; inset: 0; background: var(--toxic); mix-blend-mode: screen; opacity: 0; }
   #liquid { position: absolute; inset: 0; }
-  #grain { position: absolute; inset: 0; opacity: 0.07; mix-blend-mode: overlay; }
+  #grain { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; opacity: 0.07; mix-blend-mode: overlay; }
   #webs { position: absolute; inset: 0; }
 
   /* Ransom-note lettering */
@@ -56,7 +57,7 @@
 </style>
 </head>
 <body>
-  <div id="foot"><img id="fimg" alt="" /><div id="tint"></div><div id="shade"></div></div>
+  <div id="foot"><img id="fimg" alt="" /><div id="tint"></div><canvas id="smoke" width="540" height="960"></canvas><div id="shade"></div></div>
   <svg id="webs" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
   <canvas id="liquid" width="1080" height="1920"></canvas>
   <canvas id="grain" width="540" height="960"></canvas>
@@ -144,7 +145,9 @@
     }
     return `<path d="${d}" fill="none" stroke="rgba(255,255,255,0.42)" stroke-width="2.2"/>`;
   }
-  document.getElementById("webs").innerHTML = web(0, 0, 330, 0.02, 1.55, 7, 6) + web(1080, 0, 290, Math.PI - 1.55, Math.PI - 0.02, 6, 5);
+  document.getElementById("webs").innerHTML =
+    web(0, 0, 440, 0.02, 1.55, 8, 7) + web(1080, 0, 400, Math.PI - 1.55, Math.PI - 0.02, 8, 7) +
+    web(0, 1170, 210, -1.2, 1.2, 7, 5) + web(1080, 1130, 200, Math.PI - 1.2, Math.PI + 1.2, 7, 5);
 
   // ---------- timeline (text and title choreography) ----------
   const tl = gsap.timeline({ paused: true });
@@ -255,6 +258,23 @@
       }
     }
   }
+  // Smoky shadow border: a dark spotlight vignette on the soloist plus drifting black smoke blobs around the edges.
+  const sv = document.getElementById("smoke"), sx = sv.getContext("2d");
+  function drawSmoke(t) {
+    sx.clearRect(0, 0, 540, 960);
+    const v = sx.createRadialGradient(270, 400, 70, 270, 420, 560);
+    v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(0.45, "rgba(0,0,0,0.22)"); v.addColorStop(0.8, "rgba(0,0,0,0.7)"); v.addColorStop(1, "rgba(0,0,0,0.92)");
+    sx.fillStyle = v; sx.fillRect(0, 0, 540, 960);
+    for (let i = 0; i < 26; i++) {
+      const a = (i / 26) * Math.PI * 2 + Math.sin(t * 0.25 + i) * 0.08;
+      const ex = 270 + Math.cos(a) * 330, ey = 480 + Math.sin(a) * 560;          // just outside the frame edge
+      const x = clamp(ex, -40, 580) + Math.sin(t * 0.4 + i * 1.7) * 18, y = clamp(ey, -40, 1000) + Math.cos(t * 0.35 + i) * 18;
+      const r = 120 + rnd(i + 70) * 140, al = 0.35 + rnd(i + 90) * 0.3;
+      const g = sx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, `rgba(0,0,0,${al})`); g.addColorStop(1, "rgba(0,0,0,0)");
+      sx.fillStyle = g; sx.fillRect(x - r, y - r, 2 * r, 2 * r);
+    }
+  }
   function drawGrain(t) {
     const img = gx.createImageData(540, 960), d = img.data, seed = Math.floor(t * FPS) * 7919;
     for (let p = 0; p < d.length; p += 4) { const v = (rnd(seed + p * 0.25) * 255) | 0; d[p] = d[p + 1] = d[p + 2] = v; d[p + 3] = 255; }
@@ -266,12 +286,15 @@
   async function seek(t) {
     tl.seek(t, false);
     drawLiquid(t);
+    drawSmoke(t);
     drawGrain(t);
     // footage punch-ins on the TOXIC hits, plus a slight darkening under the end card
     let s = 1;
     for (const h of hits) if (t >= h) s += 0.07 * Math.exp(-(t - h) * 2.5) * Math.min(1, (t - h) / 0.06);
     fimg.style.transform = `scale(${s})`;
-    fimg.style.filter = `saturate(0.74) contrast(1.12) brightness(${0.84 - 0.16 * ease(clamp((t - T.end) / 1, 0, 1))})`;
+    // Footage sits on black at 74% (darker still under the end card), slightly desaturated
+    fimg.style.filter = "saturate(0.68) contrast(1.14) brightness(0.96)";
+    fimg.style.opacity = String(0.74 - 0.16 * ease(clamp((t - T.end) / 1, 0, 1)));
     dateEl.style.top = `${surface(540, t) - 120 + Math.sin(t * 3.1) * 8}px`;
     dateEl.style.transform = `rotate(${Math.sin(t * 2.3) * 4}deg)`;
     const n = Math.min(F.env.length, Math.floor(t * FPS + 1e-6) + 1);
