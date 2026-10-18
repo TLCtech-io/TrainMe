@@ -63,7 +63,7 @@ async function main() {
   page.on("console", (m) => { if (m.type() === "error") console.error("[console]", m.text()); });
 
   await page.setViewport({ width: 1920, height: 1080 });
-  await page.goto("file://" + input, { waitUntil: "load" });
+  await page.goto("file://" + input + (args.query ? "?" + args.query : ""), { waitUntil: "load" });
   await page.evaluate(() => document.fonts.ready);
   await page.waitForFunction(() => window.__meta && (window.__seek || window.__tl), { timeout: 15000 });
   const meta = await page.evaluate(() => window.__meta);

@@ -51,6 +51,10 @@
   .label .no { font: 400 30px/1 "Special Elite", monospace; letter-spacing: 0.06em; }
   .label .tx { font: 400 46px/1 "Nosifer", sans-serif; color: #1f8f10; }
 
+  #badge .label { padding: 14px 32px 18px; gap: 22px; border-width: 6px; border-radius: 14px; }
+  #badge .no { font-size: 42px; }
+  #badge .tx { font-size: 72px; }
+
   #date { position: absolute; left: 240px; width: 600px; display: flex; justify-content: center; white-space: nowrap; }
   #end { position: absolute; inset: 0; }
   .end-line { position: absolute; left: 0; width: 1080px; text-align: center; }
@@ -68,7 +72,7 @@
     <div class="ransom" id="t1" style="top:300px"></div>
     <div class="ransom" id="t2" style="top:430px"></div>
   </div>
-  <div id="badge"><div class="label"><span class="no">POISON No.1</span><span class="tx">TOXIC</span></div></div>
+  <div id="badge"><div class="label"><span class="no">POISON PREVIEW:</span><span class="tx">TOXIC</span></div></div>
 
   <div class="lyric" id="paradise" style="top:600px"><span class="creep">paradise</span></div>
   <div class="lyric" id="dyk1" style="top:330px"></div>
@@ -260,15 +264,17 @@
   }
   // Smoky shadow border: a dark spotlight vignette on the soloist plus drifting black smoke blobs around the edges.
   const sv = document.getElementById("smoke"), sx = sv.getContext("2d");
+  let SPOT_Y = 420; // spotlight centre on the smoke canvas (half-resolution)
   function drawSmoke(t) {
-    sx.clearRect(0, 0, 540, 960);
-    const v = sx.createRadialGradient(270, 400, 70, 270, 420, 560);
+    const H2 = sv.height;
+    sx.clearRect(0, 0, 540, H2);
+    const v = sx.createRadialGradient(270, SPOT_Y - 20, 70, 270, SPOT_Y, 560);
     v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(0.45, "rgba(0,0,0,0.22)"); v.addColorStop(0.8, "rgba(0,0,0,0.7)"); v.addColorStop(1, "rgba(0,0,0,0.92)");
-    sx.fillStyle = v; sx.fillRect(0, 0, 540, 960);
+    sx.fillStyle = v; sx.fillRect(0, 0, 540, H2);
     for (let i = 0; i < 26; i++) {
       const a = (i / 26) * Math.PI * 2 + Math.sin(t * 0.25 + i) * 0.08;
-      const ex = 270 + Math.cos(a) * 330, ey = 480 + Math.sin(a) * 560;          // just outside the frame edge
-      const x = clamp(ex, -40, 580) + Math.sin(t * 0.4 + i * 1.7) * 18, y = clamp(ey, -40, 1000) + Math.cos(t * 0.35 + i) * 18;
+      const ex = 270 + Math.cos(a) * 330, ey = H2 / 2 + Math.sin(a) * H2 * 0.583;    // just outside the frame edge
+      const x = clamp(ex, -40, 580) + Math.sin(t * 0.4 + i * 1.7) * 18, y = clamp(ey, -40, H2 + 40) + Math.cos(t * 0.35 + i) * 18;
       const r = 120 + rnd(i + 70) * 140, al = 0.35 + rnd(i + 90) * 0.3;
       const g = sx.createRadialGradient(x, y, 0, x, y, r);
       g.addColorStop(0, `rgba(0,0,0,${al})`); g.addColorStop(1, "rgba(0,0,0,0)");
@@ -301,8 +307,30 @@
     const src = FRAMES.replace("%05d", String(n).padStart(5, "0"));
     if (src !== lastSrc) { fimg.src = src; lastSrc = src; try { await fimg.decode(); } catch (e) {} }
   }
+  // ?bare: no webs, smoke border, fades or grain (thumb.html re-applies them for its own 3:4 frame)
+  if (location.search.includes("bare")) ["webs", "smoke", "shade", "grain"].forEach((id) => (document.getElementById(id).style.display = "none"));
+
+  // ?thumb: 3:4 cover (1080x1440) cut from the bottom of the frame. Footage, slime and text move up by 480px;
+  // the webs, smoky vignette, fades and grain are redrawn for the 3:4 frame instead of being cropped off.
+  let H = 1920;
+  if (location.search.includes("thumb")) {
+    H = 1440; const OFF = 1920 - H;
+    document.documentElement.style.height = document.body.style.height = H + "px";
+    fimg.style.top = -OFF + "px";
+    const shift = document.createElement("div");
+    Object.assign(shift.style, { position: "absolute", left: "0px", top: -OFF + "px", width: "1080px", height: "1920px" });
+    document.getElementById("liquid").before(shift);
+    ["liquid", "title", "badge", "paradise", "dyk1", "tox1", "dyk2", "tox2", "wyp", "date", "end"].forEach((id) => shift.appendChild(document.getElementById(id)));
+    document.body.appendChild(document.getElementById("grain"));
+    document.body.appendChild(document.getElementById("flash"));
+    sv.height = H / 2; sv.style.height = H + "px"; SPOT_Y = 170;
+    document.getElementById("grain").style.height = H + "px";
+    const w = document.getElementById("webs");
+    w.setAttribute("height", H); w.setAttribute("viewBox", `0 0 1080 ${H}`);
+    w.innerHTML = web(0, 0, 440, 0.02, 1.55, 8, 7) + web(1080, 0, 400, Math.PI - 1.55, Math.PI - 0.02, 8, 7);
+  }
   window.__tl = tl;
-  window.__meta = { duration: D, width: 1080, height: 1920 };
+  window.__meta = { duration: D, width: 1080, height: H };
   window.__seek = seek;
   seek(0);
 </script>
