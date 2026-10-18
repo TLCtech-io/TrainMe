@@ -17,7 +17,10 @@ tma-pilots/        IMP Span of Control concept graphics (16:9, rendered at 3840x
 prepare-vid5/      PREPARE Vid 5 recut per the Claude Edit Playbook (9:16) - see its storyboard.md and build.sh
 uptown-toxic/      Uptown Sound "Pick Your Poison" show reel, "Poison Preview: Toxic" (9:16, phone footage at 24000/1001 fps).
                    Toxic liquid layer driven by the vocal loudness (data/features.js); lyric hits from a whisper pass.
-                   End card: QCPA logo on the dark wall at the top (clear of the Reels header), then the show lockup.
+                   QCPA logo (logoState in index.html): surfaces in the slime at 1.5s and floats under the surface
+                   (rides the surges, bubbles pass in front, dips under the date label); at the end card it pops out
+                   to the dark wall, then from 17.5s zooms (ease-in) to fill the space above the slime as the
+                   footage fades to black (the source clip itself ends on black).
                    Build: ./build.sh path/to/clip.mp4
                    3:4 cover: render.cjs --in index.html --query thumb --stills 19.00 (bottom 1440px of the frame, webs
                    and vignette redrawn for 3:4, QCPA logo moved into the slime under the ticket line)
