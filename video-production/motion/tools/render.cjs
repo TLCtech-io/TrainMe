@@ -44,7 +44,9 @@ async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (!args.in) throw new Error("--in is required");
   const input = path.resolve(args.in);
-  const fps = Number(args.fps || 30);
+  // fps may be a ratio such as 24000/1001 (to match phone footage).
+  const fpsArg = String(args.fps || 30);
+  const fps = fpsArg.includes("/") ? fpsArg.split("/").map(Number).reduce((a, b) => a / b) : Number(fpsArg);
   const chrome = CHROME_CANDIDATES.find((p) => fs.existsSync(p));
   if (!chrome) throw new Error("No Chrome binary found");
 
@@ -97,8 +99,8 @@ async function main() {
   const out = path.resolve(args.out);
   const enc = alpha
     ? ["-c:v", "prores_ks", "-profile:v", "4444", "-pix_fmt", "yuva444p10le", "-vendor", "apl0"]
-    : ["-c:v", "libx264", "-preset", "medium", "-crf", "16", "-pix_fmt", "yuv420p", "-g", String(fps), "-keyint_min", String(fps), "-movflags", "+faststart"];
-  const ff = spawn("ffmpeg", ["-y", "-loglevel", "error", "-f", "image2pipe", "-framerate", String(fps), "-c:v", "png", "-i", "-", ...enc, "-r", String(fps), out], { stdio: ["pipe", "inherit", "inherit"] });
+    : ["-c:v", "libx264", "-preset", "medium", "-crf", "16", "-pix_fmt", "yuv420p", "-g", String(Math.round(fps)), "-keyint_min", String(Math.round(fps)), "-movflags", "+faststart"];
+  const ff = spawn("ffmpeg", ["-y", "-loglevel", "error", "-f", "image2pipe", "-framerate", fpsArg, "-c:v", "png", "-i", "-", ...enc, "-r", fpsArg, out], { stdio: ["pipe", "inherit", "inherit"] });
   const started = Date.now();
   for (let i = 0; i < frames; i++) {
     await seek(from + i / fps);

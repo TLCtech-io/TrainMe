@@ -10,6 +10,9 @@ shared/            fonts (Roboto, Lato), gsap.min.js, tma.css (TMA tokens), moti
 tools/render.cjs   renderer: --in page.html --out clip.mp4 [--out-width 3840] [--stills t1,t2 --stills-dir dir] [--alpha]
 tma-pilots/        IMP Span of Control concept graphics (16:9, rendered at 3840x2160)
 prepare-vid5/      PREPARE Vid 5 recut per the Claude Edit Playbook (9:16) - see its storyboard.md and build.sh
+uptown-toxic/      Uptown Sound "Pick Your Poison" show reel, Poison No. 1: TOXIC (9:16, phone footage at 24000/1001 fps).
+                   Toxic liquid layer driven by the vocal loudness (data/features.js); lyric hits from a whisper pass.
+                   Build: ./build.sh path/to/clip.mp4
 ```
 
 Setup (once per machine): `npm install puppeteer-core@24 gsap` somewhere and point `NODE_PATH` at its `node_modules`;
