@@ -5,7 +5,9 @@ Turns the 2-5.5 kHz presence band down only while it spikes above its usual leve
 sound (hard consonants, a vocal mic coming through a room speaker), and leaves everything else alone. A dynamic EQ
 with a measured threshold: the threshold is the clip's own median presence-to-body ratio plus --over-db.
 
-  python3 deharsh.py in.wav out.wav [--ratio 3] [--max-db 8] [--over-db 3]
+  python3 deharsh.py in.wav out.wav [--ratio 3] [--max-db 8] [--over-db 3] [--band 2200,5000]
+
+--band is the flat part of the cut (Hz); it is detected over 10% either side and faded out over shoulders.
 
 16-bit PCM WAV in and out, any channel count; numpy only.
 """
@@ -19,6 +21,7 @@ def opt(name, default):
 
 src, dst = sys.argv[1], sys.argv[2]
 ratio, max_db, over_db = opt("--ratio", 3.0), opt("--max-db", 8.0), opt("--over-db", 3.0)
+B_LO, B_HI = map(float, sys.argv[sys.argv.index("--band") + 1].split(",")) if "--band" in sys.argv else (2200.0, 5000.0)
 
 with wave.open(src) as w:
     sr, ch, n = w.getframerate(), w.getnchannels(), w.getnframes()
@@ -35,9 +38,9 @@ def stft(sig):
     return np.fft.rfft(np.stack([sig[s:s + N] * win for s in starts]), axis=1)
 
 
-# Detection on the mono mix: presence (2-5.5 kHz) against body (200-1500 Hz), per frame
+# Detection on the mono mix: the band (widened 10% either side) against the body below it, per frame
 M = np.abs(stft(xp.mean(1))) ** 2
-pres, body = M[:, (f >= 2000) & (f < 5500)].sum(1), M[:, (f >= 200) & (f < 1500)].sum(1)
+pres, body = M[:, (f >= B_LO / 1.1) & (f < B_HI * 1.1)].sum(1), M[:, (f >= 200) & (f < min(1500, B_LO * 0.7))].sum(1)
 rd = 10 * np.log10((pres + 1e-12) / (body + 1e-12))
 level = 10 * np.log10(M.sum(1) + 1e-12)
 active = level > np.percentile(level, 20)            # ignore near-silent frames when setting the threshold
@@ -50,12 +53,13 @@ gs = np.zeros_like(gr)
 for i in range(len(gr)):
     gs[i] = gr[i] if i == 0 or gr[i] >= gs[i - 1] else gs[i - 1] * rel + gr[i] * (1 - rel)
 
-# Gain curve over frequency: flat 2.2-5 kHz, raised-cosine shoulders out to 1.6 and 7 kHz
+# Gain curve over frequency: flat across the band, raised-cosine shoulders (about half an octave) either side
 lf = np.log2(np.maximum(f, 1))
+S_LO, S_HI = B_LO / 1.375, B_HI * 1.4
 shape = np.zeros_like(f)
-shape[(f >= 2200) & (f <= 5000)] = 1
-lo = (f >= 1600) & (f < 2200); shape[lo] = 0.5 - 0.5 * np.cos(np.pi * (lf[lo] - np.log2(1600)) / (np.log2(2200) - np.log2(1600)))
-hi = (f > 5000) & (f <= 7000); shape[hi] = 0.5 + 0.5 * np.cos(np.pi * (lf[hi] - np.log2(5000)) / (np.log2(7000) - np.log2(5000)))
+shape[(f >= B_LO) & (f <= B_HI)] = 1
+lo = (f >= S_LO) & (f < B_LO); shape[lo] = 0.5 - 0.5 * np.cos(np.pi * (lf[lo] - np.log2(S_LO)) / (np.log2(B_LO) - np.log2(S_LO)))
+hi = (f > B_HI) & (f <= S_HI); shape[hi] = 0.5 + 0.5 * np.cos(np.pi * (lf[hi] - np.log2(B_HI)) / (np.log2(S_HI) - np.log2(B_HI)))
 G = 10 ** (-(gs[:, None] * shape[None, :]) / 20)
 
 # Apply per channel, overlap-add back
