@@ -53,7 +53,9 @@ async function main() {
   const browser = await puppeteer.launch({
     executablePath: chrome,
     headless: true,
-    args: ["--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--font-render-hinting=none", "--force-color-profile=srgb"],
+    // --allow-file-access-from-files: local images count as same-origin, so WebGL can use footage frames as textures
+    // (network requests stay blocked by the interception below)
+    args: ["--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--font-render-hinting=none", "--force-color-profile=srgb", "--allow-file-access-from-files"],
   });
   const page = await browser.newPage();
   // Block anything that is not a local file: compositions must be self-contained.

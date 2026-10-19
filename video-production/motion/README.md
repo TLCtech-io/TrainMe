@@ -11,6 +11,8 @@ shared/brand/      qcpa-logo-white.svg: Queen City Performing Arts (Uptown Sound
                    The diamonds and ball dots are knockouts (holes), so it reads on black, toxic green or footage.
 tools/render.cjs   renderer: --in page.html --out clip.mp4 [--out-width 3840] [--stills t1,t2 --stills-dir dir] [--alpha]
                    [--query thumb] (passes ?thumb etc. to the page)
+tools/audio_features.py   per-frame loudness envelope + onsets from a 16 kHz wav (drives audio-reactive layers)
+tools/transcribe_words.py whisper word timestamps (needs faster-whisper; the session venv has it)
 tools/logo_mono.py one-colour knockout logo from a flat vector logo: pdftocairo -svg logo.pdf in.svg, then
                    logo_mono.py in.svg out.svg [--color #FFFFFF]. White shapes become holes in the shape under them.
 tma-pilots/        IMP Span of Control concept graphics (16:9, rendered at 3840x2160)
@@ -24,6 +26,10 @@ uptown-toxic/      Uptown Sound "Pick Your Poison" show reel, "Poison Preview: T
                    Build: ./build.sh path/to/clip.mp4
                    3:4 cover: render.cjs --in index.html --query thumb --stills 19.00 (bottom 1440px of the frame, webs
                    and vignette redrawn for 3:4, QCPA logo moved into the slime under the ticket line)
+uptown-et/         Uptown Sound "Pick Your Poison" reel, "Poison Preview: E.T." (9:16, 24000/1001 fps). The ensemble band
+                   of the phone frame plays inside a flying-saucer window (WebGL shader: dreamy soft focus, ripple,
+                   colour fringing, scanlines, static on the sung accents); stars streak out from the centre; the QCPA
+                   logo floats in the tractor beam. Key words only. Build: ./build.sh path/to/clip.MOV
 ```
 
 Setup (once per machine): `npm install puppeteer-core@24 gsap` somewhere and point `NODE_PATH` at its `node_modules`;

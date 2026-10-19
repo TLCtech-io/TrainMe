@@ -1,0 +1,376 @@
+<!doctype html>
+<!-- Uptown Sound, "Pick Your Poison" show reel: Poison Preview E.T. 1080x1920 at 24000/1001 fps.
+     Footage: "ET 10.18.26" (17.8s). The ensemble is seen through the window of a flying saucer travelling through
+     space: everything else is black, with stars streaking out from the centre. The window plays the footage as a
+     dreamy, rippling TV channel (WebGL shader). On-screen text is key words only, timed from a whisper pass
+     (data/whisper-words.json). -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<style>
+  @font-face { font-family: "Orbitron"; font-weight: 700; src: url("../shared/fonts/orbitron-latin-700-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Orbitron"; font-weight: 900; src: url("../shared/fonts/orbitron-latin-900-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Special Elite"; src: url("../shared/fonts/special-elite-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Anton"; src: url("../shared/fonts/anton-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Rubik Mono One"; src: url("../shared/fonts/rubik-mono-one-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Bowlby One SC"; src: url("../shared/fonts/bowlby-one-sc-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Abril Fatface"; src: url("../shared/fonts/abril-fatface-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Permanent Marker"; src: url("../shared/fonts/permanent-marker-latin-400-normal.woff2") format("woff2"); }
+  :root { --alien: #8dff6a; --alien-hi: #c6ff9a; --cyan: #2be7ff; --pink: #ff3dd8; --paper: #f2ecdf; --ink: #111111; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; color: #fff; }
+  canvas, svg { position: absolute; left: 0; top: 0; }
+  #space, #beam { width: 1080px; height: 1920px; }
+  #ufo { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-origin: 540px 1000px; }
+  #tv { top: 700px; width: 1080px; height: 600px; }
+  #grain { width: 1080px; height: 1920px; opacity: 0.05; mix-blend-mode: overlay; }
+  #flash { position: absolute; inset: 0; background: var(--alien); mix-blend-mode: screen; opacity: 0; }
+  /* Queen City Performing Arts mark (shared/brand), floating in the tractor beam; sized and placed per frame */
+  #qcpa { position: absolute; left: 0; top: 0; opacity: 0; transform-origin: 50% 50%; }
+  #qcpa img { display: block; width: 100%; height: 100%; filter: drop-shadow(0 0 16px rgba(120, 255, 190, 0.55)); }
+
+  /* Ransom-note lettering (series look, shared with the Toxic reel) */
+  .ransom { position: absolute; left: 0; width: 1080px; display: flex; justify-content: center; flex-wrap: nowrap; gap: 6px; }
+  .rl { display: inline-flex; align-items: center; justify-content: center; padding: 2px 10px 4px; line-height: 1; box-shadow: 0 6px 14px rgba(0,0,0,0.45); }
+  .gap { width: 30px; }
+
+  #badge { position: absolute; left: 0; width: 1080px; top: 150px; display: flex; justify-content: center; opacity: 0; }
+  .label { background: var(--paper); color: var(--ink); border: 6px solid var(--ink); border-radius: 14px; padding: 14px 32px 18px;
+           display: flex; align-items: center; gap: 22px; box-shadow: 0 10px 24px rgba(0,0,0,0.5); }
+  .label .no { font: 400 42px/1 "Special Elite", monospace; letter-spacing: 0.06em; }
+  .label .tx { font: 900 66px/1 "Orbitron", sans-serif; color: #127a2a; letter-spacing: 0.04em; }
+
+  /* Key words: alien green with a cyan/magenta TV colour split */
+  .kw { position: absolute; left: 0; width: 1080px; top: 340px; display: flex; justify-content: center; white-space: nowrap; }
+  .kw .in { display: inline-flex; gap: 0.1em; font: 900 128px/1 "Orbitron", sans-serif; color: var(--alien); letter-spacing: 0.02em;
+            text-shadow: -5px 0 rgba(255,61,216,0.85), 5px 0 rgba(43,231,255,0.85), 0 0 30px rgba(124,255,107,0.7), 0 8px 0 rgba(0,0,0,0.6); }
+  .kw .in span { display: inline-block; opacity: 0; }
+  #alien { top: 1075px; }
+  #alien .in { font-size: 180px; }
+
+  .end-line { position: absolute; left: 0; width: 1080px; text-align: center; opacity: 0; }
+</style>
+</head>
+<body>
+  <canvas id="space" width="1080" height="1920"></canvas>
+  <canvas id="beam" width="1080" height="1920"></canvas>
+  <div id="qcpa"><img src="../shared/brand/qcpa-logo-white.svg" alt="Queen City Performing Arts" /></div>
+  <div id="ufo">
+    <canvas id="tv" width="1080" height="600"></canvas>
+    <svg id="hull" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+  </div>
+  <canvas id="grain" width="540" height="960"></canvas>
+  <div id="flash"></div>
+
+  <!-- Title: PICK YOUR / POISON (ransom note), then compacts into the badge -->
+  <div id="title" style="position:absolute; left:0; top:0; width:1080px; height:1920px">
+    <div class="ransom" id="t1" style="top:300px"></div>
+    <div class="ransom" id="t2" style="top:430px"></div>
+  </div>
+  <div id="badge"><div class="label"><span class="no">POISON PREVIEW:</span><span class="tx">E.T.</span></div></div>
+  <div id="words"></div>
+  <div class="ransom" id="poisonWord" style="top:360px"></div>
+
+  <!-- End card, in the dark above the saucer -->
+  <div id="end">
+    <div class="end-line" id="eUp" style="top:165px; font:400 92px/1 'Anton'; letter-spacing:0.08em; color:#fff; text-shadow:0 6px 0 rgba(0,0,0,0.55)">UPTOWN SOUND</div>
+    <div class="ransom" id="eTitle1" style="top:270px"></div>
+    <div class="ransom" id="eTitle2" style="top:342px"></div>
+    <div class="end-line" id="eDate" style="top:440px; font:400 86px/1 'Bowlby One SC'; color:var(--alien); text-shadow:0 0 24px rgba(124,255,107,0.6), 0 5px 0 rgba(0,0,0,0.7)">OCT 24 &amp; 25</div>
+    <div class="end-line" id="eCta" style="top:540px"><span style="display:inline-block; background:#0a0a0a; color:var(--alien-hi); border:2px solid var(--alien); font:400 36px/1 'Special Elite'; padding:12px 24px; border-radius:8px; letter-spacing:0.06em">TICKETS &middot; LINK IN BIO</span></div>
+  </div>
+  <div class="kw" id="alien"><span class="in"><span>ALIEN</span></span></div>
+
+<script src="../shared/gsap.min.js"></script>
+<script src="data/features.js"></script>
+<script>
+  const F = window.FEATURES, FPS = F.fps, D = F.env.length / FPS;
+  const FRAMES = "assets/frames/f_%05d.jpg";
+  const rnd = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const ease = (p) => (p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
+  const span = (a, b, t) => clamp((t - a) / (b - a), 0, 1);
+  const env = (t) => F.env[clamp(Math.floor(t * FPS), 0, F.env.length - 1)];
+
+  // Cue times (seconds) from the transcript (data/whisper-words.json)
+  const T = { warp: 0.55, beamOn: 0.7, logoIn: 1.5, compact: 2.1, abduct: 12.42, end: 13.75, alien: 16.26 };
+  // Key words: each part appears on its syllable
+  const WORDS = [
+    { parts: ["K-", "K-", "KISS ME"], at: [2.66, 2.80, 2.94], out: 3.95 },
+    { parts: ["TAKE ME"], at: [7.32], out: 8.7 },
+    { parts: ["T-", "T-", "TAKE ME"], at: [9.0, 9.36, 9.72], out: 10.6 },
+    { parts: ["ABDUCTION"], at: [T.abduct], out: 13.55 },
+  ];
+  const POISON = { at: 6.62, out: 7.24 };
+  // Sung accents: the stars surge, the rim lights flash and the TV glitches on each
+  const HITS = [2.66, 2.80, 2.94, 4.08, 6.62, 7.32, 9.0, 9.36, 9.72, 11.32, T.abduct, T.alien];
+  const BIG = [2.94, 6.62, 7.32, 9.72, T.abduct, T.alien];   // these also flash the frame
+  const boost = (t) => HITS.reduce((s, h) => s + (t >= h ? Math.exp(-(t - h) * 3.2) : 0), 0);
+  const burst = (t) => HITS.reduce((s, h) => s + (t >= h ? 0.6 * Math.exp(-(t - h) * 10) : 0), 0);
+
+  // ---------- ransom-note lettering ----------
+  const FONTS = ["Anton", "Rubik Mono One", "Bowlby One SC", "Abril Fatface", "Special Elite", "Permanent Marker", "Orbitron"];
+  const SWATCH = [["#f2ecdf", "#111"], ["#111", "#f2ecdf"], ["#8dff6a", "#06210a"], ["#2be7ff", "#06121a"], ["#ff3dd8", "#fff"], ["#111", "#8dff6a"]];
+  function ransom(el, text, size, seed) {
+    el.innerHTML = [...text].map((ch, i) => {
+      if (ch === " ") return '<span class="gap"></span>';
+      const r = (k) => rnd(seed * 100 + i * 7 + k);
+      const [bg, fg] = SWATCH[Math.floor(r(1) * SWATCH.length)];
+      const font = FONTS[Math.floor(r(2) * FONTS.length)];
+      const s = Math.round(size * (0.86 + r(3) * 0.3));
+      const rot = (r(4) - 0.5) * 16;
+      const w = font === "Orbitron" ? 900 : 400;
+      return `<span class="rl" style="background:${bg}; color:${fg}; font:${w} ${s}px/1 '${font}'; transform:rotate(${rot.toFixed(1)}deg)">${ch}</span>`;
+    }).join("");
+  }
+  ransom(document.getElementById("t1"), "PICK YOUR", 92, 3);
+  ransom(document.getElementById("t2"), "POISON", 128, 7);
+  ransom(document.getElementById("poisonWord"), "POISON", 140, 21);
+  ransom(document.getElementById("eTitle1"), "PICK YOUR", 60, 11);
+  ransom(document.getElementById("eTitle2"), "POISON", 74, 13);
+  const wordsEl = document.getElementById("words");
+  wordsEl.innerHTML = WORDS.map((w, i) => `<div class="kw" id="kw${i}"><span class="in">${w.parts.map((p) => `<span>${p}</span>`).join("")}</span></div>`).join("");
+
+  // ---------- the saucer: lens-shaped window, chrome rim, rim lights, glass dome ----------
+  const CX = 540, LC = 1000;   // saucer centre; the stars stream out from here
+  const LENS = (oy = 0) => `M 20,${LC - oy} C 120,${LC - 360 - oy} 960,${LC - 360 - oy} 1060,${LC - oy} C 960,${LC + 360 - oy} 120,${LC + 360 - oy} 20,${LC - oy} Z`;
+  const tv = document.getElementById("tv");
+  tv.style.clipPath = `path("${LENS(700)}")`;
+  const bez = (t, p0, p1, p2, p3) => { const u = 1 - t; return u*u*u*p0 + 3*u*u*t*p1 + 3*u*t*t*p2 + t*t*t*p3; };
+  const LIGHTS = [...Array(11)].map((_, k) => { const s = 0.12 + (0.76 * k) / 10; return [bez(s, 1060, 960, 120, 20), bez(s, LC, LC + 360, LC + 360, LC) + 4]; });
+  document.getElementById("hull").innerHTML = `
+    <defs>
+      <clipPath id="lensClip"><path d="${LENS()}"/></clipPath>
+      <filter id="soft" x="-20%" y="-30%" width="140%" height="160%"><feGaussianBlur stdDeviation="26"/></filter>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="8"/></filter>
+      <linearGradient id="chrome" x1="0" y1="${LC - 270}" x2="0" y2="${LC + 270}" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#f4f7ff"/><stop offset="0.2" stop-color="#8b95a8"/><stop offset="0.48" stop-color="#e9eef6"/>
+        <stop offset="0.52" stop-color="#4a5262"/><stop offset="0.8" stop-color="#aab3c2"/><stop offset="1" stop-color="#3a404c"/>
+      </linearGradient>
+      <radialGradient id="glass" cx="0.42" cy="0.3" r="0.8">
+        <stop offset="0" stop-color="rgb(190,245,255)" stop-opacity="0.38"/><stop offset="0.7" stop-color="rgb(60,140,220)" stop-opacity="0.12"/>
+        <stop offset="1" stop-color="rgb(40,90,180)" stop-opacity="0.3"/>
+      </radialGradient>
+      <radialGradient id="domeLight"><stop offset="0" stop-color="#8dff6a" stop-opacity="0.9"/><stop offset="1" stop-color="#8dff6a" stop-opacity="0"/></radialGradient>
+    </defs>
+    <g clip-path="url(#lensClip)"><path d="${LENS()}" fill="none" stroke="#000" stroke-width="150" filter="url(#soft)" opacity="0.9"/></g>
+    <path d="${LENS()}" fill="none" stroke="#2be7ff" stroke-width="30" opacity="0.35" filter="url(#glow)"/>
+    <path d="${LENS()}" fill="none" stroke="url(#chrome)" stroke-width="16"/>
+    <ellipse id="domeGlow" cx="540" cy="716" rx="100" ry="58" fill="url(#domeLight)" opacity="0.4"/>
+    <path d="M 400,742 A 140,96 0 0 1 680,742 Z" fill="url(#glass)" stroke="rgba(210,245,255,0.75)" stroke-width="3"/>
+    <path d="M 432,716 A 112,74 0 0 1 516,664" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="5" stroke-linecap="round"/>
+    <path d="M 392,743 L 688,743" stroke="url(#chrome)" stroke-width="9" stroke-linecap="round"/>
+    ${LIGHTS.map(([x, y], k) => `<circle id="lg${k}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="17" filter="url(#glow)"/><circle id="lc${k}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="8"/>`).join("")}`;
+  const lightEls = LIGHTS.map((_, k) => [document.getElementById(`lg${k}`), document.getElementById(`lc${k}`)]);
+  const domeGlow = document.getElementById("domeGlow");
+  const PAL = ["#8dff6a", "#2be7ff", "#ff3dd8", "#ffe14d"];
+  function drawHull(t) {
+    const flash = boost(t) > 0.75, chase = Math.floor(t * 8);
+    lightEls.forEach(([g, c], k) => {
+      const col = flash ? "#ffffff" : PAL[(k + Math.floor(t * 2)) % 4], on = flash || (k + chase) % 3 === 0;
+      g.setAttribute("fill", col); c.setAttribute("fill", col);
+      g.setAttribute("opacity", on ? "0.95" : "0.3"); c.setAttribute("opacity", on ? "1" : "0.55");
+    });
+    domeGlow.setAttribute("opacity", clamp(0.3 + 0.5 * env(t) + 0.4 * boost(t), 0, 1).toFixed(3));
+  }
+
+  // ---------- space: stars streaking out from the centre ----------
+  const sp = document.getElementById("space"), sx = sp.getContext("2d");
+  const STARS = [...Array(460)].map((_, i) => ({
+    a: rnd(i + 1) * Math.PI * 2, k: 0.55 + rnd(i + 101) * 0.9, ph: rnd(i + 201),
+    c: rnd(i + 301) < 0.12 ? "43,231,255" : rnd(i + 301) < 0.2 ? "255,130,235" : "225,236,255",
+  }));
+  const warpIn = (t) => Math.pow(clamp(1 - t / 0.9, 0, 1), 2);           // arriving out of hyperspace
+  const speed = (t) => 0.16 * (1 + 9 * warpIn(t) + 1.6 * boost(t) + 0.8 * env(t));
+  // distance travelled, summed per frame up front so any frame renders on its own
+  const CUM = [0];
+  for (let i = 0; i <= F.env.length + 1; i++) CUM.push(CUM[i] + speed(i / FPS) / FPS);
+  const travel = (t) => { const f = clamp(t * FPS, 0, CUM.length - 2), i = Math.floor(f); return CUM[i] + (CUM[i + 1] - CUM[i]) * (f - i); };
+  const LN = Math.log(1500 / 6);
+  function drawSpace(t, dy) {
+    sx.fillStyle = "#020108"; sx.fillRect(0, 0, 1080, 1920);
+    for (let k = 0; k < 5; k++) {   // faint nebula haze
+      const a = rnd(k + 500) * 6.28 + t * 0.05 * (k % 2 ? 1 : -1), d = 380 + rnd(k + 510) * 420;
+      const x = CX + Math.cos(a) * d * 0.8, y = LC + Math.sin(a) * d * 1.3, r = 420 + rnd(k + 520) * 300, col = k % 2 ? "70,30,140" : "10,90,110";
+      const g = sx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, `rgba(${col},0.22)`); g.addColorStop(1, `rgba(${col},0)`);
+      sx.fillStyle = g; sx.fillRect(x - r, y - r, 2 * r, 2 * r);
+    }
+    const dist = travel(t), v = speed(t) / 0.16, L = Math.min(0.75, 0.08 + 0.05 * v);
+    sx.lineCap = "round";
+    for (const s of STARS) {
+      const u = (dist * s.k + s.ph) % 1, r = 6 * Math.exp(u * LN), r0 = r * Math.exp(-L);
+      const al = clamp(u / 0.2, 0, 1) * (0.25 + 0.75 * u), ca = Math.cos(s.a), sa = Math.sin(s.a);
+      sx.strokeStyle = `rgba(${s.c},${al.toFixed(3)})`; sx.lineWidth = 0.6 + 2.6 * u * u;
+      sx.beginPath(); sx.moveTo(CX + ca * r0, LC + dy + sa * r0); sx.lineTo(CX + ca * r, LC + dy + sa * r); sx.stroke();
+    }
+  }
+
+  // ---------- tractor beam under the saucer ----------
+  const bv = document.getElementById("beam"), bx = bv.getContext("2d");
+  const BY1 = 1780, BW0 = 80, BW1 = 330;
+  const flare = (t) => (t >= T.abduct ? Math.exp(-(t - T.abduct) * 1.4) * Math.min(1, (t - T.abduct) / 0.1) : 0);
+  function drawBeam(t, dy) {
+    bx.clearRect(0, 0, 1080, 1920);
+    const on = span(T.beamOn, T.beamOn + 0.5, t), flick = on < 1 && rnd(Math.floor(t * 24)) < 0.35 ? 0.3 : 1;
+    const I = on * flick * (0.7 + 0.3 * env(t) + 0.8 * flare(t));
+    if (I <= 0) return;
+    const y0 = LC + 262 + dy;
+    const cone = (w0, w1, a0, a1) => {
+      bx.beginPath(); bx.moveTo(CX - w0, y0); bx.lineTo(CX + w0, y0); bx.lineTo(CX + w1, BY1); bx.lineTo(CX - w1, BY1); bx.closePath();
+      const g = bx.createLinearGradient(0, y0, 0, BY1);
+      g.addColorStop(0, `rgba(150,255,210,${a0 * I})`); g.addColorStop(0.6, `rgba(90,255,190,${a1 * I})`); g.addColorStop(1, "rgba(90,255,190,0)");
+      bx.fillStyle = g; bx.fill();
+    };
+    cone(BW0, BW1, 0.4, 0.14); cone(BW0 * 0.45, BW1 * 0.35, 0.3, 0.08);
+    for (let k = 0; k < 4; k++) {   // scan rings travelling down the beam
+      const p = (t * 0.55 + k / 4) % 1, y = y0 + p * (BY1 - y0), w = BW0 + (BW1 - BW0) * p;
+      bx.strokeStyle = `rgba(190,255,220,${(0.55 * I * (1 - p)).toFixed(3)})`; bx.lineWidth = 3;
+      bx.beginPath(); bx.ellipse(CX, y, w, w * 0.11, 0, 0, Math.PI * 2); bx.stroke();
+    }
+    for (let i = 0; i < 46; i++) {  // sparkles rising up the beam
+      const p = 1 - ((t * (0.25 + rnd(i + 700) * 0.35) + rnd(i + 710)) % 1), y = y0 + p * (BY1 - y0), w = BW0 + (BW1 - BW0) * p;
+      bx.fillStyle = `rgba(220,255,235,${(0.8 * I * Math.sin(Math.PI * (1 - p))).toFixed(3)})`;
+      bx.beginPath(); bx.arc(CX + (rnd(i + 720) * 2 - 1) * w * 0.85, y, 1.5 + rnd(i + 730) * 2.5, 0, 7); bx.fill();
+    }
+    const g = bx.createRadialGradient(CX, y0, 0, CX, y0, 170);
+    g.addColorStop(0, `rgba(190,255,225,${0.6 * I})`); g.addColorStop(1, "rgba(190,255,225,0)");
+    bx.fillStyle = g; bx.fillRect(CX - 170, y0 - 170, 340, 340);
+  }
+
+  // ---------- QCPA logo: floats in the beam, gets pulled up into the saucer on "abduction", drifts back down ----------
+  const qcpa = document.getElementById("qcpa"), ASPECT = 253.262 / 340.77;
+  function drawLogo(t) {
+    const fin = 1 - Math.pow(1 - span(T.logoIn, T.logoIn + 0.8, t), 2);
+    const up = ease(span(T.abduct, T.abduct + 0.7, t)) * (1 - ease(span(T.abduct + 1.0, T.abduct + 2.0, t)));
+    const h = 250 * (1 - 0.18 * up), w = h * ASPECT;
+    const cx = CX + Math.sin(t * 0.8) * 12, cy = 1515 + Math.sin(t * 1.4) * 14 - up * 190 + (1 - fin) * 60;
+    const rot = Math.sin(t * 0.9) * 6 + up * Math.sin(t * 9) * 8;
+    qcpa.style.opacity = fin.toFixed(3);
+    qcpa.style.width = w.toFixed(2) + "px"; qcpa.style.height = h.toFixed(2) + "px";
+    qcpa.style.transform = `translate(${(cx - w / 2).toFixed(2)}px, ${(cy - h / 2).toFixed(2)}px) rotate(${rot.toFixed(2)}deg)`;
+  }
+
+  // ---------- the window: footage as a dreamy, rippling TV channel (WebGL) ----------
+  const gl = tv.getContext("webgl", { preserveDrawingBuffer: true, premultipliedAlpha: false, antialias: false });
+  const VS = "attribute vec2 p; void main() { gl_Position = vec4(p, 0.0, 1.0); }";
+  const FS = `precision highp float;
+    uniform sampler2D tex; uniform vec2 res; uniform float t, amp, band, ca, glitch, seed;
+    float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    vec3 tap(vec2 uv) { return texture2D(tex, clamp(uv, vec2(0.0), vec2(1.0))).rgb; }
+    void main() {
+      vec2 px = vec2(gl_FragCoord.x, res.y - gl_FragCoord.y);
+      float y = px.y;
+      float bd = (y - band) / 34.0, bw = exp(-bd * bd);                       // rolling interference band
+      float dx = amp * (sin(y * 0.047 + t * 3.1) + 1.4 * sin(y * 0.012 - t * 1.9))  // slow horizontal ripple
+               + bw * (7.0 + 20.0 * glitch) * sin(y * 0.8 + t * 37.0);
+      float row = floor(y / 7.0), fr = floor(seed);                             // line tearing on the hits
+      dx += step(1.0 - 0.1 * glitch, hash(vec2(row, fr))) * (hash(vec2(row + 7.0, fr)) - 0.5) * 120.0;
+      vec2 uv = (px + vec2(dx, 0.0)) / res;
+      vec2 c = vec2((ca + bw * 5.0 + glitch * 10.0) / res.x, 0.0);           // colour fringing
+      vec3 sharp = vec3(tap(uv + c).r, tap(uv).g, tap(uv - c).b);
+      vec3 soft = vec3(0.0);
+      for (int i = 0; i < 8; i++) { float a = float(i) * 0.785398; soft += tap(uv + vec2(cos(a), sin(a)) * 4.5 / res); }
+      soft /= 8.0;
+      vec3 col = mix(sharp, soft, 0.38) + max(soft - 0.55, 0.0) * 0.9;        // dreamy: soft focus and glow
+      float lum = dot(col, vec3(0.299, 0.587, 0.114));
+      col = mix(vec3(lum), col, 1.25);                                       // a little more colour
+      col = (col * 0.9 + 0.035) * mix(vec3(0.82, 1.0, 1.12), vec3(1.0, 0.97, 1.04), lum);  // cool alien grade
+      col *= 0.9 + 0.1 * sin(y * 1.5708);                                    // scanlines
+      col += bw * 0.07;
+      col += (hash(px + fract(seed * 0.618) * 913.0) - 0.5) * (0.06 + 0.55 * glitch * glitch);  // static
+      gl_FragColor = vec4(col, 1.0);
+    }`;
+  function shader(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s)); return s; }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, shader(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog); gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW);
+  const pLoc = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(pLoc); gl.vertexAttribPointer(pLoc, 2, gl.FLOAT, false, 0, 0);
+  gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+  [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]].forEach(([k, v]) => gl.texParameteri(gl.TEXTURE_2D, k, v));
+  const U = Object.fromEntries(["res", "t", "amp", "band", "ca", "glitch", "seed"].map((n) => [n, gl.getUniformLocation(prog, n)]));
+  gl.viewport(0, 0, 1080, 600);
+  function drawTV(t) {
+    const tune = clamp(1 - t / 0.6, 0, 1);                                      // channel tunes in as the saucer arrives
+    const al = t >= T.alien ? 0.45 * Math.exp(-(t - T.alien) * 4) + 0.1 * rnd(Math.floor(t * FPS) + 9) : 0;
+    gl.uniform2f(U.res, 1080, 600); gl.uniform1f(U.t, t);
+    gl.uniform1f(U.amp, 1.8 + 2.5 * env(t) + 5 * boost(t));
+    gl.uniform1f(U.band, ((t / 2.4) % 1) * 760 - 80);
+    gl.uniform1f(U.ca, 2 + 3 * boost(t));
+    gl.uniform1f(U.glitch, clamp(Math.max(tune, burst(t), al), 0, 1));
+    gl.uniform1f(U.seed, Math.floor(t * FPS));
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+  }
+
+  function drawGrain(t) {
+    const gx = document.getElementById("grain").getContext("2d"), img = gx.createImageData(540, 960), d = img.data, seed = Math.floor(t * FPS) * 7919;
+    for (let p = 0; p < d.length; p += 4) { const v = (rnd(seed + p * 0.25) * 255) | 0; d[p] = d[p + 1] = d[p + 2] = v; d[p + 3] = 255; }
+    gx.putImageData(img, 0, 0);
+  }
+
+  // ---------- timeline (text) ----------
+  const tl = gsap.timeline({ paused: true });
+  document.querySelectorAll("#t1 .rl, #t2 .rl").forEach((el, i) => {
+    tl.fromTo(el, { opacity: 0, scale: 2.4 }, { opacity: 1, scale: 1, duration: 0.18, ease: "power4.in" }, 0.25 + i * 0.075);
+  });
+  tl.to("#title", { opacity: 0, y: -160, scale: 0.6, duration: 0.4, ease: "power3.in", transformOrigin: "50% 15%" }, T.compact);
+  tl.fromTo("#badge", { opacity: 0, y: -40 }, { opacity: 1, y: 0, duration: 0.45, ease: "back.out(2)" }, T.compact + 0.25);
+  const glitchIn = (el, at) => tl.fromTo(el, { opacity: 0, scale: 1.4, x: -26 }, { opacity: 1, scale: 1, x: 0, duration: 0.12, ease: "steps(3)" }, at - 0.03);
+  WORDS.forEach((w, i) => {
+    document.querySelectorAll(`#kw${i} .in span`).forEach((el, j) => glitchIn(el, w.at[j]));
+    tl.to(`#kw${i}`, { opacity: 0, x: 18, duration: 0.18, ease: "steps(3)" }, w.out);
+  });
+  document.querySelectorAll("#poisonWord .rl").forEach((el, i) => {
+    tl.fromTo(el, { opacity: 0, scale: 2.2 }, { opacity: 1, scale: 1, duration: 0.14, ease: "power4.in" }, POISON.at - 0.08 + i * 0.035);
+  });
+  tl.fromTo("#poisonWord", { filter: "drop-shadow(0 0 0px rgba(124,255,107,0))" }, { filter: "drop-shadow(0 0 30px rgba(124,255,107,0.95))", duration: 0.2 }, POISON.at);
+  tl.to("#poisonWord", { opacity: 0, duration: 0.15 }, POISON.out);
+  BIG.forEach((h) => { tl.fromTo("#flash", { opacity: 0 }, { opacity: 0.28, duration: 0.04 }, h - 0.02); tl.to("#flash", { opacity: 0, duration: 0.3 }, h + 0.03); });
+  // End card
+  tl.to("#badge", { opacity: 0, duration: 0.25 }, T.end - 0.2);
+  tl.fromTo("#eUp", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, T.end);
+  document.querySelectorAll("#eTitle1 .rl, #eTitle2 .rl").forEach((el, i) => {
+    tl.fromTo(el, { opacity: 0, scale: 2.2 }, { opacity: 1, scale: 1, duration: 0.16, ease: "power4.in" }, T.end + 0.25 + i * 0.045);
+  });
+  tl.fromTo("#eDate", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2.2)" }, T.end + 1.05);
+  tl.fromTo("#eCta", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, T.end + 1.45);
+  tl.to("#eCta", { scale: 1.06, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, T.end + 2.0);
+  glitchIn("#alien .in span", T.alien);
+
+  // ---------- per frame ----------
+  const ufo = document.getElementById("ufo"), alienEl = document.getElementById("alien");
+  const fimg = new Image();
+  let lastSrc = "";
+  async function seek(t) {
+    tl.seek(t, false);
+    const arrive = 1 - Math.pow(1 - span(0, T.warp, t), 3), hov = Math.sin(t * 1.6) * 6;
+    ufo.style.opacity = span(0, 0.12, t).toFixed(3);
+    ufo.style.transform = `translateY(${hov.toFixed(2)}px) rotate(${(Math.sin(t * 1.1) * 0.5).toFixed(3)}deg) scale(${(0.05 + 0.95 * arrive).toFixed(4)})`;
+    drawSpace(t, hov); drawBeam(t, hov); drawLogo(t); drawHull(t); drawGrain(t);
+    if (t >= T.alien) alienEl.style.translate = `${((rnd(Math.floor(t * FPS)) - 0.5) * 14).toFixed(1)}px 0`;
+    const n = Math.min(F.env.length, Math.floor(t * FPS + 1e-6) + 1);
+    const src = FRAMES.replace("%05d", String(n).padStart(5, "0"));
+    if (src !== lastSrc) {
+      fimg.src = src; lastSrc = src;
+      try { await fimg.decode(); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, fimg); } catch (e) { console.error("frame", n, e.message); }
+    }
+    drawTV(t);
+  }
+
+  (async () => {
+    await Promise.all(["900 100px Orbitron", "700 100px Orbitron", "400 100px Anton"].map((f) => document.fonts.load(f)));
+    await document.fonts.ready;
+    // fit each key word to the frame width
+    document.querySelectorAll(".kw .in").forEach((el) => {
+      const base = parseFloat(getComputedStyle(el).fontSize), w = el.getBoundingClientRect().width;
+      if (w > 1000) el.style.fontSize = (base * 1000 / w).toFixed(1) + "px";
+    });
+    window.__tl = tl;
+    window.__meta = { duration: D, width: 1080, height: 1920 };
+    window.__seek = seek;
+    await seek(0);
+  })();
+</script>
+</body>
+</html>

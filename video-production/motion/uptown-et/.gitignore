@@ -1,0 +1,3 @@
+# Footage, frames, renders stay out of git; rebuild with ./build.sh
+assets/
+out/
