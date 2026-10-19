@@ -12,7 +12,9 @@ rm -rf assets/frames && mkdir -p assets/frames
 # Only the band the UFO window shows: the phone frame scaled to 1080x1920, rows 675-1275 (the ensemble)
 ffmpeg -v error -y -i assets/clip.mov -vf "fps=24000/1001,scale=1080:1920,crop=1080:600:0:675" -q:v 2 -start_number 1 assets/frames/f_%05d.jpg
 node ../tools/render.cjs --in index.html --out "$OUT_DIR/picture.mp4" --out-width 1080 --fps 24000/1001
+# Audio: edge taken off (EQ, de-harsh, gentle compression, -14 LUFS), see ../tools/soften_audio.sh
+PYTHON="${PYTHON:-/tmp/claude-0/-home-user-TrainMe/c833cb12-34f4-587e-bb3c-3be71c4f3073/scratchpad/venv/bin/python}" ../tools/soften_audio.sh assets/clip.mov assets/audio-soft.wav
 # The clip cuts mid-note; a 0.15s fade avoids a click at the loop point
-ffmpeg -v error -y -i "$OUT_DIR/picture.mp4" -i assets/clip.mov -map 0:v -map 1:a:0 -c:v copy -c:a aac -b:a 192k \
+ffmpeg -v error -y -i "$OUT_DIR/picture.mp4" -i assets/audio-soft.wav -map 0:v -map 1:a:0 -c:v copy -c:a aac -b:a 192k \
   -af "afade=t=out:st=17.62:d=0.15" -shortest -movflags +faststart "$OUT_DIR/uptown-et-reel.mp4"
 ffprobe -v error -show_entries format=duration -show_entries stream=codec_type,width,height,r_frame_rate -of compact "$OUT_DIR/uptown-et-reel.mp4"

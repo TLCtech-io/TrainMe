@@ -13,6 +13,9 @@ tools/render.cjs   renderer: --in page.html --out clip.mp4 [--out-width 3840] [-
                    [--query thumb] (passes ?thumb etc. to the page)
 tools/audio_features.py   per-frame loudness envelope + onsets from a 16 kHz wav (drives audio-reactive layers)
 tools/transcribe_words.py whisper word timestamps (needs faster-whisper; the session venv has it)
+tools/soften_audio.sh     takes the edge off a phone recording of singing (music-safe stand-in for Studio Sound):
+                          EQ, deharsh.py, gentle compression, -14 LUFS. ./soften_audio.sh in.mov out.wav
+tools/deharsh.py          dynamic EQ: turns 2-5.5 kHz down only while it spikes above the clip's own norm
 tools/logo_mono.py one-colour knockout logo from a flat vector logo: pdftocairo -svg logo.pdf in.svg, then
                    logo_mono.py in.svg out.svg [--color #FFFFFF]. White shapes become holes in the shape under them.
 tma-pilots/        IMP Span of Control concept graphics (16:9, rendered at 3840x2160)
