@@ -13,12 +13,10 @@ tools/render.cjs   renderer: --in page.html --out clip.mp4 [--out-width 3840] [-
                    [--query thumb] (passes ?thumb etc. to the page)
 tools/audio_features.py   per-frame loudness envelope + onsets from a 16 kHz wav (drives audio-reactive layers)
 tools/transcribe_words.py whisper word timestamps (needs faster-whisper; the session venv has it)
-tools/soften_audio.sh     takes the edge off a phone recording of singing (music-safe stand-in for Studio Sound):
-                          [DEREVERB=1: AI room/echo removal, UVR-DeEcho-DeReverb via audio-separator] EQ (fixed, or
-                          CURVE=file from fit_eq.py), deharsh.py, compression, -14 LUFS. ./soften_audio.sh in.mov out.wav
+tools/soften_audio.sh     gentle edge-off for a phone recording of singing: small EQ moves, deharsh.py, light
+                          compression, -14 LUFS. ./soften_audio.sh in.mov out.wav. This is the ceiling for audio work:
+                          no AI dereverb/separation and no big EQ moves (see TMA_VIDEO_GUIDE.md, tooling notes)
 tools/deharsh.py          dynamic EQ: turns a band (default 2.2-5 kHz) down only while it spikes above the clip's norm
-tools/fit_eq.py           fits an EQ curve so the finished audio hits target tonal changes (e.g. +10 dB bass, -5 dB box)
-                          versus the original at equal loudness. Phone + room speakers behind the phone: see uptown-et
 tools/logo_mono.py one-colour knockout logo from a flat vector logo: pdftocairo -svg logo.pdf in.svg, then
                    logo_mono.py in.svg out.svg [--color #FFFFFF]. White shapes become holes in the shape under them.
 tma-pilots/        IMP Span of Control concept graphics (16:9, rendered at 3840x2160)

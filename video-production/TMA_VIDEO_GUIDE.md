@@ -157,6 +157,11 @@ Folder `IMP - RIck`:
 - **Auto-mode safety check:**
   - It flags actions in connected apps the user did not explicitly ask for, such as publishing a Descript composition. Get the user's OK first.
   - It also blocked the HyperFrames CLI after that flag. Use `motion/tools/render.cjs` instead.
+- **Audio: Claude cannot listen. Do not repeat the E.T. "draft 3" approach (user verdict 2026-10-19: "terrible, don't ever do that again").**
+  - That pass ran AI dereverb (UVR-DeEcho-DeReverb via audio-separator) and a large fitted EQ (+10 dB bass, deep mid scoop) on a phone recording of a cappella. The measurements looked right; the result sounded terrible.
+  - Never run AI separation or dereverb models, or make big EQ moves, on performance audio again.
+  - The most Claude does unprompted is the gentle `motion/tools/soften_audio.sh` chain (E.T. draft 2): small EQ moves, dynamic de-harsh, light compression, -14 LUFS.
+  - For anything stronger ("studio sound", less room, more bass), the user processes the audio where they can hear it (for example Descript Studio Sound with its intensity slider) and Claude swaps the exported audio into the reel.
 
 ---
 
