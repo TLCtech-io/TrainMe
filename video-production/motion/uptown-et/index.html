@@ -92,6 +92,16 @@
   const span = (a, b, t) => clamp((t - a) / (b - a), 0, 1);
   const env = (t) => F.env[clamp(Math.floor(t * FPS), 0, F.env.length - 1)];
 
+  // Output: the 9:16 reel, or a still re-laid out for another shape (?thumb = 3:4 cover, ?fb = 4:5 Facebook post).
+  // LC is the saucer centre, S its scale; textT is the moment the text is taken from, frameT the footage/stars moment.
+  const MODE = location.search.includes("thumb") ? "thumb" : location.search.includes("fb") ? "fb" : "video";
+  const LAY = {
+    video: { H: 1920, LC: 1000, S: 1, BY1: 1780 },
+    thumb: { H: 1440, LC: 846, S: 0.88, BY1: 1440, logo: [1262, 210], textT: 17.2, frameT: 4.2 },
+    fb:    { H: 1350, LC: 736, S: 0.72, BY1: 1180, logo: [1028, 140], textT: 17.2, frameT: 4.2 },
+  }[MODE];
+  const POSTER = MODE !== "video";
+
   // Cue times (seconds) from the transcript (data/whisper-words.json)
   const T = { warp: 0.55, beamOn: 0.7, logoIn: 1.5, compact: 2.1, abduct: 12.42, end: 13.75, alien: 16.26 };
   // Key words: each part appears on its syllable
@@ -132,10 +142,12 @@
   wordsEl.innerHTML = WORDS.map((w, i) => `<div class="kw" id="kw${i}"><span class="in">${w.parts.map((p) => `<span>${p}</span>`).join("")}</span></div>`).join("");
 
   // ---------- the saucer: lens-shaped window, chrome rim, rim lights, glass dome ----------
-  const CX = 540, LC = 1000;   // saucer centre; the stars stream out from here
+  const CX = 540, LC = LAY.LC, S = LAY.S;   // saucer centre and scale; the stars stream out from here
   const LENS = (oy = 0) => `M 20,${LC - oy} C 120,${LC - 360 - oy} 960,${LC - 360 - oy} 1060,${LC - oy} C 960,${LC + 360 - oy} 120,${LC + 360 - oy} 20,${LC - oy} Z`;
   const tv = document.getElementById("tv");
-  tv.style.clipPath = `path("${LENS(700)}")`;
+  tv.style.top = LC - 300 + "px";
+  tv.style.clipPath = `path("${LENS(LC - 300)}")`;
+  document.getElementById("ufo").style.transformOrigin = `${CX}px ${LC}px`;
   const bez = (t, p0, p1, p2, p3) => { const u = 1 - t; return u*u*u*p0 + 3*u*u*t*p1 + 3*u*t*t*p2 + t*t*t*p3; };
   const LIGHTS = [...Array(11)].map((_, k) => { const s = 0.12 + (0.76 * k) / 10; return [bez(s, 1060, 960, 120, 20), bez(s, LC, LC + 360, LC + 360, LC) + 4]; });
   document.getElementById("hull").innerHTML = `
@@ -156,10 +168,10 @@
     <g clip-path="url(#lensClip)"><path d="${LENS()}" fill="none" stroke="#000" stroke-width="150" filter="url(#soft)" opacity="0.9"/></g>
     <path d="${LENS()}" fill="none" stroke="#2be7ff" stroke-width="30" opacity="0.35" filter="url(#glow)"/>
     <path d="${LENS()}" fill="none" stroke="url(#chrome)" stroke-width="16"/>
-    <ellipse id="domeGlow" cx="540" cy="716" rx="100" ry="58" fill="url(#domeLight)" opacity="0.4"/>
-    <path d="M 400,742 A 140,96 0 0 1 680,742 Z" fill="url(#glass)" stroke="rgba(210,245,255,0.75)" stroke-width="3"/>
-    <path d="M 432,716 A 112,74 0 0 1 516,664" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="5" stroke-linecap="round"/>
-    <path d="M 392,743 L 688,743" stroke="url(#chrome)" stroke-width="9" stroke-linecap="round"/>
+    <ellipse id="domeGlow" cx="540" cy="${LC - 284}" rx="100" ry="58" fill="url(#domeLight)" opacity="0.4"/>
+    <path d="M 400,${LC - 258} A 140,96 0 0 1 680,${LC - 258} Z" fill="url(#glass)" stroke="rgba(210,245,255,0.75)" stroke-width="3"/>
+    <path d="M 432,${LC - 284} A 112,74 0 0 1 516,${LC - 336}" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="5" stroke-linecap="round"/>
+    <path d="M 392,${LC - 257} L 688,${LC - 257}" stroke="url(#chrome)" stroke-width="9" stroke-linecap="round"/>
     ${LIGHTS.map(([x, y], k) => `<circle id="lg${k}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="17" filter="url(#glow)"/><circle id="lc${k}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="8"/>`).join("")}`;
   const lightEls = LIGHTS.map((_, k) => [document.getElementById(`lg${k}`), document.getElementById(`lc${k}`)]);
   const domeGlow = document.getElementById("domeGlow");
@@ -196,7 +208,7 @@
       g.addColorStop(0, `rgba(${col},0.22)`); g.addColorStop(1, `rgba(${col},0)`);
       sx.fillStyle = g; sx.fillRect(x - r, y - r, 2 * r, 2 * r);
     }
-    const dist = travel(t), v = speed(t) / 0.16, L = Math.min(0.75, 0.08 + 0.05 * v);
+    const dist = travel(t), v = speed(t) / 0.16, L = POSTER ? 0.3 : Math.min(0.75, 0.08 + 0.05 * v);   // stills: long streaks read as motion
     sx.lineCap = "round";
     for (const s of STARS) {
       const u = (dist * s.k + s.ph) % 1, r = 6 * Math.exp(u * LN), r0 = r * Math.exp(-L);
@@ -208,14 +220,14 @@
 
   // ---------- tractor beam under the saucer ----------
   const bv = document.getElementById("beam"), bx = bv.getContext("2d");
-  const BY1 = 1780, BW0 = 80, BW1 = 330;
+  const BY1 = LAY.BY1, BW0 = 80 * S, BW1 = 330 * S;
   const flare = (t) => (t >= T.abduct ? Math.exp(-(t - T.abduct) * 1.4) * Math.min(1, (t - T.abduct) / 0.1) : 0);
   function drawBeam(t, dy) {
     bx.clearRect(0, 0, 1080, 1920);
     const on = span(T.beamOn, T.beamOn + 0.5, t), flick = on < 1 && rnd(Math.floor(t * 24)) < 0.35 ? 0.3 : 1;
     const I = on * flick * (0.7 + 0.3 * env(t) + 0.8 * flare(t));
     if (I <= 0) return;
-    const y0 = LC + 262 + dy;
+    const y0 = LC + 262 * S + dy;
     const cone = (w0, w1, a0, a1) => {
       bx.beginPath(); bx.moveTo(CX - w0, y0); bx.lineTo(CX + w0, y0); bx.lineTo(CX + w1, BY1); bx.lineTo(CX - w1, BY1); bx.closePath();
       const g = bx.createLinearGradient(0, y0, 0, BY1);
@@ -241,6 +253,12 @@
   // ---------- QCPA logo: floats in the beam, gets pulled up into the saucer on "abduction", drifts back down ----------
   const qcpa = document.getElementById("qcpa"), ASPECT = 253.262 / 340.77;
   function drawLogo(t) {
+    if (POSTER) {
+      const [cy, h] = LAY.logo, w = h * ASPECT;
+      qcpa.style.opacity = "1"; qcpa.style.width = w + "px"; qcpa.style.height = h + "px";
+      qcpa.style.transform = `translate(${CX - w / 2}px, ${cy - h / 2}px)`;
+      return;
+    }
     const fin = 1 - Math.pow(1 - span(T.logoIn, T.logoIn + 0.8, t), 2);
     const up = ease(span(T.abduct, T.abduct + 0.7, t)) * (1 - ease(span(T.abduct + 1.0, T.abduct + 2.0, t)));
     const h = 250 * (1 - 0.18 * up), w = h * ASPECT;
@@ -295,10 +313,11 @@
     const tune = clamp(1 - t / 0.6, 0, 1);                                      // channel tunes in as the saucer arrives
     const al = t >= T.alien ? 0.45 * Math.exp(-(t - T.alien) * 4) + 0.1 * rnd(Math.floor(t * FPS) + 9) : 0;
     gl.uniform2f(U.res, 1080, 600); gl.uniform1f(U.t, t);
-    gl.uniform1f(U.amp, 1.8 + 2.5 * env(t) + 5 * boost(t));
-    gl.uniform1f(U.band, ((t / 2.4) % 1) * 760 - 80);
-    gl.uniform1f(U.ca, 2 + 3 * boost(t));
-    gl.uniform1f(U.glitch, clamp(Math.max(tune, burst(t), al), 0, 1));
+    // stills: the same dreamy TV look, but no interference band or static across the faces
+    gl.uniform1f(U.amp, POSTER ? 2.2 : 1.8 + 2.5 * env(t) + 5 * boost(t));
+    gl.uniform1f(U.band, POSTER ? -400 : ((t / 2.4) % 1) * 760 - 80);
+    gl.uniform1f(U.ca, POSTER ? 2.5 : 2 + 3 * boost(t));
+    gl.uniform1f(U.glitch, POSTER ? 0 : clamp(Math.max(tune, burst(t), al), 0, 1));
     gl.uniform1f(U.seed, Math.floor(t * FPS));
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
@@ -340,22 +359,44 @@
 
   // ---------- per frame ----------
   const ufo = document.getElementById("ufo"), alienEl = document.getElementById("alien");
+  alienEl.style.top = LC + 75 * S + "px";
+  alienEl.querySelector(".in").style.fontSize = 180 * S + "px";
   const fimg = new Image();
   let lastSrc = "";
+  const byId = (id) => document.getElementById(id);
+  // Stills: which text shows and where it sits in the new shape (after the timeline has set the end-card state)
+  function posterText() {
+    byId("flash").style.opacity = "0"; alienEl.style.translate = "0px 0";
+    byId("words").style.display = byId("poisonWord").style.display = "none";
+    if (MODE === "thumb") {
+      [["eUp", 50], ["eTitle1", 160], ["eTitle2", 236], ["eDate", 344], ["eCta", 446]].forEach(([id, y]) => (byId(id).style.top = y + "px"));
+      gsap.set("#eCta", { scale: 1 });
+    } else {
+      gsap.set("#title", { opacity: 1, y: 0, scale: 1 });
+      byId("t1").style.top = "124px"; byId("t2").style.top = "222px";
+      gsap.set("#badge", { opacity: 1, y: 0, top: 372, scale: 0.78, transformOrigin: "50% 0%" });
+      gsap.set(["#eTitle1", "#eTitle2", "#alien"], { opacity: 0 });
+      Object.assign(byId("eUp").style, { top: "36px", fontSize: "72px" });
+      byId("eDate").style.top = "1124px"; byId("eCta").style.top = "1226px";
+      gsap.set("#eCta", { scale: 1 });
+    }
+  }
   async function seek(t) {
-    tl.seek(t, false);
-    const arrive = 1 - Math.pow(1 - span(0, T.warp, t), 3), hov = Math.sin(t * 1.6) * 6;
-    ufo.style.opacity = span(0, 0.12, t).toFixed(3);
-    ufo.style.transform = `translateY(${hov.toFixed(2)}px) rotate(${(Math.sin(t * 1.1) * 0.5).toFixed(3)}deg) scale(${(0.05 + 0.95 * arrive).toFixed(4)})`;
-    drawSpace(t, hov); drawBeam(t, hov); drawLogo(t); drawHull(t); drawGrain(t);
-    if (t >= T.alien) alienEl.style.translate = `${((rnd(Math.floor(t * FPS)) - 0.5) * 14).toFixed(1)}px 0`;
-    const n = Math.min(F.env.length, Math.floor(t * FPS + 1e-6) + 1);
+    const ft = POSTER ? LAY.frameT : t;   // footage, stars and lights moment
+    tl.seek(POSTER ? LAY.textT : t, false);
+    const arrive = 1 - Math.pow(1 - span(0, T.warp, t), 3), hov = POSTER ? 0 : Math.sin(t * 1.6) * 6;
+    ufo.style.opacity = POSTER ? "1" : span(0, 0.12, t).toFixed(3);
+    ufo.style.transform = POSTER ? `scale(${S})` : `translateY(${hov.toFixed(2)}px) rotate(${(Math.sin(t * 1.1) * 0.5).toFixed(3)}deg) scale(${(0.05 + 0.95 * arrive).toFixed(4)})`;
+    drawSpace(ft, hov); drawBeam(ft, hov); drawLogo(t); drawHull(ft); drawGrain(ft);
+    if (POSTER) posterText();
+    else if (t >= T.alien) alienEl.style.translate = `${((rnd(Math.floor(t * FPS)) - 0.5) * 14).toFixed(1)}px 0`;
+    const n = Math.min(F.env.length, Math.floor(ft * FPS + 1e-6) + 1);
     const src = FRAMES.replace("%05d", String(n).padStart(5, "0"));
     if (src !== lastSrc) {
       fimg.src = src; lastSrc = src;
       try { await fimg.decode(); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, fimg); } catch (e) { console.error("frame", n, e.message); }
     }
-    drawTV(t);
+    drawTV(ft);
   }
 
   (async () => {
@@ -366,8 +407,17 @@
       const base = parseFloat(getComputedStyle(el).fontSize), w = el.getBoundingClientRect().width;
       if (w > 1000) el.style.fontSize = (base * 1000 / w).toFixed(1) + "px";
     });
+    if (POSTER) {
+      document.documentElement.style.height = document.body.style.height = LAY.H + "px";
+      ["space", "beam"].forEach((id) => { byId(id).height = LAY.H; byId(id).style.height = LAY.H + "px"; });
+      byId("grain").style.height = LAY.H + "px";
+      if (MODE === "fb") {
+        ransom(byId("t1"), "PICK YOUR", 80, 3); ransom(byId("t2"), "POISON", 110, 7);
+        byId("eCta").querySelector("span").innerHTML = "TICKETS &middot; LINK IN POST";
+      }
+    }
     window.__tl = tl;
-    window.__meta = { duration: D, width: 1080, height: 1920 };
+    window.__meta = { duration: D, width: 1080, height: LAY.H };
     window.__seek = seek;
     await seek(0);
   })();

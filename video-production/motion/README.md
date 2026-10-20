@@ -34,6 +34,9 @@ uptown-et/         Uptown Sound "Pick Your Poison" reel, "Poison Preview: E.T." 
                    of the phone frame plays inside a flying-saucer window (WebGL shader: dreamy soft focus, ripple,
                    colour fringing, scanlines, static on the sung accents); stars streak out from the centre; the QCPA
                    logo floats in the tractor beam. Key words only. Build: ./build.sh path/to/clip.MOV
+                   Stills, re-laid out per shape (LAY in index.html; the reel is unaffected):
+                     3:4 cover        render.cjs --in index.html --query thumb --stills 17.2   (1080x1440)
+                     Facebook 4:5     render.cjs --in index.html --query fb --stills 17.2      (1080x1350)
 ```
 
 Setup (once per machine): `npm install puppeteer-core@24 gsap` somewhere and point `NODE_PATH` at its `node_modules`;
