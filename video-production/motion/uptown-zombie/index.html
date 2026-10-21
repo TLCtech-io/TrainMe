@@ -1,0 +1,337 @@
+<!doctype html>
+<!-- Uptown Sound, "Pick Your Poison" show reel: Poison Preview ZOMBIE. 1080x1920 at 24 fps.
+     Footage: "5_UpS Zombie" (19.4s) used as delivered: it already starts on the chorus, and the grey grade, vignette and
+     audio fades are the user's. Theme: a 1960s B-movie zombie flick. Old-film grain, dust, scratches and projector
+     flicker; graveyard fog along the floor; a zombie hand bursts up out of the fog on each ZOMBIE; IN YOUR HEAD floats
+     at head height with echoes pulsing out; the QCPA logo lurks in the fog and is held up by a hand for the end card.
+     Phrase timing from the vocal onsets (data/features.js) and a prompted whisper pass (data/whisper-words.json). -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<style>
+  @font-face { font-family: "Nosifer"; src: url("../shared/fonts/nosifer-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Creepster"; src: url("../shared/fonts/creepster-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Special Elite"; src: url("../shared/fonts/special-elite-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Anton"; src: url("../shared/fonts/anton-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Rubik Mono One"; src: url("../shared/fonts/rubik-mono-one-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Bowlby One SC"; src: url("../shared/fonts/bowlby-one-sc-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Abril Fatface"; src: url("../shared/fonts/abril-fatface-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Permanent Marker"; src: url("../shared/fonts/permanent-marker-latin-400-normal.woff2") format("woff2"); }
+  :root { --blood: #e0242b; --blood-dk: #9e0f14; --bone: #ece6d6; --paper: #f2ecdf; --ink: #111111; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; color: #fff; }
+  canvas { position: absolute; left: 0; top: 0; }
+  #fimg { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+  #fogBack, #fogFront, #dirt { width: 1080px; height: 1920px; }
+  #film, #grain { width: 1080px; height: 1920px; }
+  #grain { opacity: 0.08; mix-blend-mode: overlay; }
+  #flick { position: absolute; inset: 0; background: #000; opacity: 0; }
+  .hwrap { position: absolute; width: 300px; height: 760px; transform-origin: 50% 100%; }   /* placement, scale, mirror */
+  .hand { position: absolute; left: 0; top: 0; width: 300px; height: 760px; transform-origin: 50% 85%; }   /* rise and sway */
+  .hand svg { width: 100%; height: 100%; overflow: visible; }
+  #qcpa { position: absolute; left: 0; top: 0; opacity: 0; transform-origin: 50% 50%; }
+  #qcpa img { display: block; width: 100%; height: 100%; filter: drop-shadow(0 4px 14px rgba(0,0,0,0.8)); }
+
+  /* Ransom-note lettering (series look) */
+  .ransom { position: absolute; left: 0; width: 1080px; display: flex; justify-content: center; flex-wrap: nowrap; gap: 6px; }
+  .rl { display: inline-flex; align-items: center; justify-content: center; padding: 2px 10px 4px; line-height: 1; box-shadow: 0 6px 14px rgba(0,0,0,0.45); }
+  .gap { width: 30px; }
+
+  #badge { position: absolute; left: 0; width: 1080px; top: 150px; display: flex; justify-content: center; opacity: 0; }
+  .label { background: var(--paper); color: var(--ink); border: 6px solid var(--ink); border-radius: 14px; padding: 14px 32px 18px;
+           display: flex; align-items: center; gap: 22px; box-shadow: 0 10px 24px rgba(0,0,0,0.5); }
+  .label .no { font: 400 42px/1 "Special Elite", monospace; letter-spacing: 0.06em; }
+  .label .tx { font: 400 60px/1 "Nosifer", sans-serif; color: var(--blood-dk); }
+
+  /* IN YOUR HEAD: bone-white horror lettering at head height, with echoes pulsing outward */
+  .head { position: absolute; left: 0; width: 1080px; top: 600px; height: 140px; opacity: 0; }
+  .head .w { position: absolute; left: 0; top: 0; width: 1080px; text-align: center; white-space: nowrap;
+             font: 400 112px/1 "Creepster", sans-serif; color: var(--bone); letter-spacing: 0.03em; }
+  .head .main { text-shadow: 0 5px 0 #000, 0 0 22px rgba(0,0,0,0.9); }
+  .head .echo { color: transparent; -webkit-text-stroke: 2px rgba(236,230,214,0.8); }
+
+  /* ZOMBIE: blood-red dripping letters, stacking up */
+  .z { position: absolute; left: 0; width: 1080px; text-align: center; white-space: nowrap; opacity: 0;
+       font: 400 160px/1 "Nosifer", sans-serif; color: var(--blood);
+       text-shadow: 0 0 2px #000, 0 6px 0 #000, 0 0 26px rgba(224,36,43,0.45); }
+
+  .end-line { position: absolute; left: 0; width: 1080px; text-align: center; opacity: 0; }
+</style>
+</head>
+<body>
+  <img id="fimg" alt="" />
+  <canvas id="fogBack" width="540" height="960"></canvas>
+  <div id="hands"></div>
+  <div id="qcpa"><img src="../shared/brand/qcpa-logo-white.svg" alt="Queen City Performing Arts" /></div>
+  <div id="handFront"></div>
+  <canvas id="dirt" width="1080" height="1920"></canvas>
+  <canvas id="fogFront" width="540" height="960"></canvas>
+  <div id="flick"></div>
+
+  <div id="title" style="position:absolute; left:0; top:0; width:1080px; height:1920px">
+    <div class="ransom" id="t1" style="top:300px"></div>
+    <div class="ransom" id="t2" style="top:430px"></div>
+  </div>
+  <div id="badge"><div class="label"><span class="no">POISON PREVIEW:</span><span class="tx">ZOMBIE</span></div></div>
+  <div class="head" id="head1"></div>
+  <div class="head" id="head2"></div>
+  <div id="zombies"></div>
+
+  <div id="end">
+    <div class="end-line" id="eUp" style="top:165px; font:400 92px/1 'Anton'; letter-spacing:0.08em; color:#fff; text-shadow:0 6px 0 rgba(0,0,0,0.7)">UPTOWN SOUND</div>
+    <div class="ransom" id="eTitle1" style="top:270px"></div>
+    <div class="ransom" id="eTitle2" style="top:342px"></div>
+    <div class="end-line" id="eDate" style="top:440px; font:400 86px/1 'Bowlby One SC'; color:var(--blood); text-shadow:0 5px 0 #000, 0 0 22px rgba(0,0,0,0.9)">OCT 24 &amp; 25</div>
+    <div class="end-line" id="eCta" style="top:540px"><span style="display:inline-block; background:#0a0a0a; color:var(--bone); border:2px solid var(--blood); font:400 36px/1 'Special Elite'; padding:12px 24px; border-radius:8px; letter-spacing:0.06em">TICKETS &middot; LINK IN BIO</span></div>
+  </div>
+
+  <canvas id="film" width="540" height="960"></canvas>
+  <canvas id="grain" width="540" height="960"></canvas>
+
+<script src="../shared/gsap.min.js"></script>
+<script src="data/features.js"></script>
+<script>
+  const F = window.FEATURES, FPS = F.fps, D = F.env.length / FPS;
+  const FRAMES = "assets/frames/f_%05d.jpg";
+  const rnd = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const span = (a, b, t) => clamp((t - a) / (b - a), 0, 1);
+  const ease = (p) => (p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
+  const env = (t) => F.env[clamp(Math.floor(t * FPS), 0, F.env.length - 1)];
+  const byId = (id) => document.getElementById(id);
+
+  // Phrase timing (seconds). The singing is sustained, so these come from the vocal onsets plus a prompted whisper pass.
+  const T = {
+    compact: 2.75, head1: [0.45, 2.85], head2: [8.05, 12.85],
+    z1: [3.15, 4.55, 6.25], z1out: 7.6, z2: [13.2, 14.3, 15.45], z2out: 16.05,
+    end: 16.25, logoIn: 1.5,
+  };
+  const ZH = [...T.z1, ...T.z2];
+
+  // ---------- ransom-note lettering ----------
+  const FONTS = ["Anton", "Rubik Mono One", "Bowlby One SC", "Abril Fatface", "Special Elite", "Permanent Marker", "Creepster"];
+  const SWATCH = [["#f2ecdf", "#111"], ["#111", "#f2ecdf"], ["#e0242b", "#fff"], ["#ece6d6", "#9e0f14"], ["#8a8a8a", "#111"], ["#111", "#e0242b"]];
+  function ransom(el, text, size, seed) {
+    el.innerHTML = [...text].map((ch, i) => {
+      if (ch === " ") return '<span class="gap"></span>';
+      const r = (k) => rnd(seed * 100 + i * 7 + k);
+      const [bg, fg] = SWATCH[Math.floor(r(1) * SWATCH.length)];
+      const font = FONTS[Math.floor(r(2) * FONTS.length)];
+      const s = Math.round(size * (0.86 + r(3) * 0.3)), rot = (r(4) - 0.5) * 16;
+      return `<span class="rl" style="background:${bg}; color:${fg}; font:400 ${s}px/1 '${font}'; transform:rotate(${rot.toFixed(1)}deg)">${ch}</span>`;
+    }).join("");
+  }
+  ransom(byId("t1"), "PICK YOUR", 92, 3);
+  ransom(byId("t2"), "POISON", 128, 7);
+  ransom(byId("eTitle1"), "PICK YOUR", 60, 11);
+  ransom(byId("eTitle2"), "POISON", 74, 13);
+
+  // IN YOUR HEAD lines: the word plus three outline echoes
+  [["head1", "IN YOUR HEAD"], ["head2", "WHAT'S IN YOUR HEAD?"]].forEach(([id, text]) => {
+    byId(id).innerHTML = [0, 1, 2].map((k) => `<div class="w echo" data-k="${k}">${text}</div>`).join("") + `<div class="w main">${text}</div>`;
+  });
+  // ZOMBIE x3, twice: stacked lines, each slightly tilted
+  const ZY = [290, 432, 574];
+  byId("zombies").innerHTML = ZH.map((_, i) => `<div class="z" id="z${i}" style="top:${ZY[i % 3]}px">ZOMBIE</div>`).join("");
+
+  // ---------- zombie hands ----------
+  // Drawn per hand from a seed: crooked three-joint fingers with claws, a knuckled palm, a long arm with a torn sleeve
+  // that runs off the bottom of the frame. Dark silhouette with a moonlit rim (an outline of the whole shape).
+  function makeHand(seed, grip = 0) {
+    const r = (k) => rnd(seed * 61 + k);
+    const P = (x, y) => `${x.toFixed(1)},${y.toFixed(1)}`;
+    const parts = [];
+    // arm and palm
+    parts.push(`M 112 760 L 116 600 L 108 500 C 96 470 90 440 92 400 L 104 360 L 196 362 L 208 404 C 210 444 200 478 188 504 L 184 600 L 192 760 Z`);
+    // fingers: [base x, base y, base angle (deg from up), segment lengths, base width]
+    const F4 = [[104, 372, -16, [62, 44, 34], 25], [132, 360, -4, [72, 50, 38], 26], [160, 362, 8, [66, 46, 34], 25], [188, 376, 22, [50, 34, 28], 21]];
+    F4.push([96, 440, -64 + grip * 30, [52, 40, 30], 30]);   // thumb
+    const knuckles = [];
+    F4.forEach(([bx, by, a0, segs, w0], fi) => {
+      let x = bx, y = by, a = a0 + (r(fi) - 0.5) * 10;
+      const pts = [[x, y, w0]];
+      segs.forEach((L, j) => {
+        // each joint bends a random way (crooked); grip curls them in toward the middle
+        a += (j ? (r(fi * 7 + j) - 0.5) * 30 : 0) + grip * (fi < 2 ? 22 : fi < 4 ? -22 : 30) * (j ? 1 : 0.4);
+        x += Math.sin(a * Math.PI / 180) * L; y -= Math.cos(a * Math.PI / 180) * L;
+        pts.push([x, y, w0 * (0.86 - j * 0.2)]);
+        if (j < segs.length - 1) knuckles.push([x, y, a]);
+      });
+      // claw: a thin hooked nail past the tip
+      const na = a + (r(fi + 20) - 0.5) * 30, nx = x + Math.sin(na * Math.PI / 180) * 14, ny = y - Math.cos(na * Math.PI / 180) * 14;
+      const L = [], R = [];
+      pts.forEach(([px, py, w], k) => {
+        const q = pts[Math.min(k + 1, pts.length - 1)], p0 = pts[Math.max(k - 1, 0)];
+        const dx = q[0] - p0[0], dy = q[1] - p0[1], len = Math.hypot(dx, dy) || 1, nx2 = -dy / len, ny2 = dx / len;
+        const bump = k > 0 && k < pts.length - 1 ? 1.18 : 1;      // bony knuckles
+        L.push(P(px + nx2 * w / 2 * bump, py + ny2 * w / 2 * bump)); R.unshift(P(px - nx2 * w / 2 * bump, py - ny2 * w / 2 * bump));
+      });
+      parts.push(`M ${L.join(" L ")} L ${P(nx, ny)} L ${R.join(" L ")} Z`);
+    });
+    const creases = knuckles.map(([x, y, a]) => {
+      const c = Math.cos(a * Math.PI / 180) * 7, s2 = Math.sin(a * Math.PI / 180) * 7;
+      return `M ${P(x - c, y - s2)} L ${P(x + c, y + s2)}`;
+    }).join(" ");
+    const sleeve = `M 96 760 L 100 610 L 112 626 L 118 596 L 132 618 L 142 590 L 154 614 L 166 588 L 178 612 L 190 594 L 200 622 L 204 760 Z`;
+    return `<svg viewBox="0 0 300 760" style="overflow:visible">
+      <defs><filter id="rim${seed}" x="-10%" y="-10%" width="120%" height="120%">
+        <feMorphology in="SourceAlpha" operator="dilate" radius="2.4" result="d"/>
+        <feComposite in="d" in2="SourceAlpha" operator="out" result="o"/>
+        <feFlood flood-color="rgb(208,214,198)" flood-opacity="0.75"/><feComposite in2="o" operator="in" result="rim"/>
+        <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="rim"/></feMerge></filter></defs>
+      <g filter="url(#rim${seed})"><path d="${parts.join(" ")}" fill="#0b0b0b"/><path d="${sleeve}" fill="#1b1b1b"/></g>
+      <path d="${creases}" stroke="rgba(208,214,198,0.28)" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </svg>`;
+  }
+  // [x centre, scale, base tilt, mirrored]; one hand per ZOMBIE, then the one that holds up the logo
+  const HANDS = [[175, 1.12, -12, false], [905, 1.1, 12, true], [345, 0.98, -5, false], [740, 1.04, 7, true], [210, 1.15, -9, false], [925, 1.05, 13, true]];
+  const hand = (id, seed, x, s, mirror, grip) =>
+    `<div class="hwrap" style="left:${x - 150}px; top:${1920 - 760 + 130}px; transform:scale(${mirror ? -s : s}, ${s})"><div class="hand" id="${id}">${makeHand(seed, grip)}</div></div>`;
+  byId("hands").innerHTML = HANDS.map(([x, s, , m], i) => hand(`h${i}`, i + 1, x, s, m, 0)).join("") + hand("hLogo", 9, 540, 1.0, false, 0.15);
+
+  // ---------- timeline ----------
+  const tl = gsap.timeline({ paused: true });
+  document.querySelectorAll("#t1 .rl, #t2 .rl").forEach((el, i) => {
+    tl.fromTo(el, { opacity: 0, scale: 2.4 }, { opacity: 1, scale: 1, duration: 0.18, ease: "power4.in" }, 0.2 + i * 0.075);
+  });
+  tl.to("#title", { opacity: 0, y: -160, scale: 0.6, duration: 0.35, ease: "power3.in", transformOrigin: "50% 15%" }, T.compact);
+  tl.fromTo("#badge", { opacity: 0, y: -40 }, { opacity: 1, y: 0, duration: 0.45, ease: "back.out(2)" }, T.compact + 0.2);
+  [["#head1", T.head1], ["#head2", T.head2]].forEach(([id, [a, b]]) => {
+    tl.fromTo(id, { opacity: 0, y: 24, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.5, ease: "power2.out" }, a);
+    tl.to(id, { opacity: 0, filter: "blur(10px)", duration: 0.35 }, b - 0.2);
+  });
+  ZH.forEach((h, i) => {
+    const tilt = (rnd(i + 40) - 0.5) * 8;
+    tl.fromTo(`#z${i}`, { opacity: 0, scale: 2.3, rotation: tilt * 3 }, { opacity: 1, scale: 1, rotation: tilt, duration: 0.14, ease: "power4.in" }, h - 0.1);
+    // the hand bursts up out of the fog
+    tl.fromTo(`#h${i}`, { y: 820 }, { y: 0, duration: 0.34, ease: "back.out(1.5)" }, h - 0.08);
+  });
+  tl.to(["#z0", "#z1", "#z2"], { opacity: 0, y: 40, duration: 0.3, ease: "power2.in" }, T.z1out);
+  tl.to(["#h0", "#h1", "#h2"], { y: 820, duration: 0.6, ease: "power2.in" }, T.z1out + 0.15);
+  tl.to(["#z3", "#z4", "#z5"], { opacity: 0, y: 40, duration: 0.25, ease: "power2.in" }, T.z2out);
+  // End card; a hand rises out of the ground holding up the logo
+  tl.to("#badge", { opacity: 0, duration: 0.25 }, T.end - 0.2);
+  tl.fromTo("#hLogo", { y: 820 }, { y: 0, duration: 0.7, ease: "back.out(1.3)" }, T.end + 0.05);
+  tl.fromTo("#eUp", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, T.end);
+  document.querySelectorAll("#eTitle1 .rl, #eTitle2 .rl").forEach((el, i) => {
+    tl.fromTo(el, { opacity: 0, scale: 2.2 }, { opacity: 1, scale: 1, duration: 0.16, ease: "power4.in" }, T.end + 0.25 + i * 0.045);
+  });
+  tl.fromTo("#eDate", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2.2)" }, T.end + 1.05);
+  tl.fromTo("#eCta", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, T.end + 1.45);
+
+  // ---------- per frame: fog, dirt, hands sway, head echoes, logo, old film ----------
+  const fb = byId("fogBack").getContext("2d"), ff = byId("fogFront").getContext("2d");
+  function drawFog(ctx, t, seed, n, alpha) {
+    ctx.clearRect(0, 0, 540, 960);
+    for (let i = 0; i < n; i++) {
+      const sp = 6 + rnd(seed + i) * 14, w = 540 + 400;
+      const x = ((rnd(seed + i + 50) * w + t * sp * (i % 2 ? 1 : -1)) % w + w) % w - 200;
+      const y = (seed > 100 ? 840 : 700) + rnd(seed + i + 80) * (seed > 100 ? 120 : 260) + Math.sin(t * 0.4 + i) * 8, r = 90 + rnd(seed + i + 110) * 90;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      const a = alpha * (0.6 + 0.4 * rnd(seed + i + 140));
+      g.addColorStop(0, `rgba(215,218,210,${a})`); g.addColorStop(1, "rgba(215,218,210,0)");
+      ctx.fillStyle = g; ctx.fillRect(x - r, y - r, 2 * r, 2 * r);
+    }
+  }
+  const dx = byId("dirt").getContext("2d");
+  function drawDirt(t) {
+    dx.clearRect(0, 0, 1080, 1920);
+    const bursts = ZH.map((h, i) => [h, HANDS[i][0]]).concat([[T.end + 0.1, 540]]);
+    for (const [h, x0] of bursts) {
+      const dt = t - h; if (dt < 0 || dt > 1.1) continue;
+      for (let k = 0; k < 28; k++) {
+        const vx = (rnd(h * 31 + k) - 0.5) * 520, vy = 500 + rnd(h * 17 + k) * 700, r = 2 + rnd(h * 7 + k) * 5;
+        const x = x0 + (rnd(h * 3 + k) - 0.5) * 120 + vx * dt, y = 1860 - vy * dt + 0.5 * 2200 * dt * dt;
+        if (y > 1930) continue;
+        dx.fillStyle = `rgba(${40 + (k % 3) * 18},${36 + (k % 3) * 15},${30 + (k % 3) * 12},${(1 - dt / 1.1).toFixed(3)})`;
+        dx.beginPath(); dx.arc(x, y, r, 0, 7); dx.fill();
+      }
+    }
+  }
+  function swayHands(t) {
+    HANDS.forEach(([, , tilt], i) => {
+      const el = byId(`h${i}`), hit = ZH[i];
+      const claw = t >= hit ? Math.exp(-(t - hit) * 3) * Math.sin((t - hit) * 18) * 6 : 0;   // a twitch as it lands
+      el.style.rotate = `${(tilt + Math.sin(t * 1.3 + i * 1.7) * 4 + claw).toFixed(2)}deg`;
+    });
+    byId("hLogo").style.rotate = `${(Math.sin(t * 1.1) * 3).toFixed(2)}deg`;
+  }
+  function drawHeads(t) {
+    // echoes ripple outward from the words, faster while the line is being sung
+    document.querySelectorAll(".head .echo").forEach((el) => {
+      const k = +el.dataset.k, ph = (t * 0.7 + k / 3) % 1;
+      el.style.transform = `scale(${(1 + 0.22 * ph).toFixed(3)})`; el.style.opacity = ((1 - ph) * 0.45).toFixed(3);
+    });
+    const bump = F.onsets.reduce((s, o) => s + (t >= o ? Math.exp(-(t - o) * 9) : 0), 0);
+    document.querySelectorAll(".head .main").forEach((el) => {
+      el.style.transform = `scale(${(1 + 0.035 * Math.min(1, bump)).toFixed(3)}) translateX(${(Math.sin(t * 2.2) * 6).toFixed(1)}px)`;
+    });
+  }
+  const qcpa = byId("qcpa"), ASPECT = 253.262 / 340.77;
+  function drawLogo(t) {
+    // lurks in the fog, then rides up on the hand for the end card
+    const fin = 1 - Math.pow(1 - span(T.logoIn, T.logoIn + 0.9, t), 2);
+    const up = gsap.parseEase("back.out(1.3)")(span(T.end + 0.05, T.end + 0.75, t));
+    const h = 220, w = h * ASPECT, cx = 540 + Math.sin(t * 0.7) * 10 * (1 - up);
+    const cy = 1590 + Math.sin(t * 1.2) * 10 * (1 - up) + (1 - fin) * 50 - up * 110;
+    qcpa.style.opacity = fin.toFixed(3); qcpa.style.width = w + "px"; qcpa.style.height = h + "px";
+    qcpa.style.transform = `translate(${(cx - w / 2).toFixed(1)}px, ${(cy - h / 2).toFixed(1)}px) rotate(${(Math.sin(t * 0.9) * 4 * (1 - up)).toFixed(2)}deg)`;
+  }
+  const fl = byId("film").getContext("2d"), flick = byId("flick");
+  function drawFilm(t) {
+    const fr = Math.floor(t * FPS);
+    fl.clearRect(0, 0, 540, 960);
+    for (let k = 0; k < 16; k++) {     // dust specks
+      const x = rnd(fr * 13 + k) * 540, y = rnd(fr * 29 + k) * 960, r = 0.6 + rnd(fr * 7 + k) * 1.8;
+      fl.fillStyle = rnd(fr * 3 + k) < 0.7 ? "rgba(0,0,0,0.55)" : "rgba(235,235,225,0.5)";
+      fl.beginPath(); fl.arc(x, y, r, 0, 7); fl.fill();
+    }
+    if (rnd(fr * 5 + 1) < 0.4) {       // a scratch down the frame
+      const x = rnd(fr * 11 + 2) * 540, b = (rnd(fr * 19 + 3) - 0.5) * 10;
+      fl.strokeStyle = `rgba(230,230,220,${(0.18 + rnd(fr) * 0.25).toFixed(2)})`; fl.lineWidth = 0.7;
+      fl.beginPath(); fl.moveTo(x, 0); fl.quadraticCurveTo(x + b, 480, x + b * 0.4, 960); fl.stroke();
+    }
+    if (rnd(fr * 41 + 5) < 0.06) {     // the odd hair in the gate
+      const x = rnd(fr * 43) * 540, y = rnd(fr * 47) * 960;
+      fl.strokeStyle = "rgba(0,0,0,0.5)"; fl.lineWidth = 0.8;
+      fl.beginPath(); fl.moveTo(x, y); fl.bezierCurveTo(x + 20, y - 15, x + 30, y + 25, x + 45, y + 5); fl.stroke();
+    }
+    // projector flicker; the reel starts like a film warming up in the gate
+    const start = Math.pow(1 - span(0, 0.6, t), 2);
+    flick.style.opacity = (0.03 + 0.05 * rnd(fr * 3 + 7) + start * 0.7 * rnd(fr * 17 + 3)).toFixed(3);
+  }
+  function drawGrain(t) {
+    const gx = byId("grain").getContext("2d"), img = gx.createImageData(540, 960), d = img.data, seed = Math.floor(t * FPS) * 7919;
+    for (let p = 0; p < d.length; p += 4) { const v = (rnd(seed + p * 0.25) * 255) | 0; d[p] = d[p + 1] = d[p + 2] = v; d[p + 3] = 255; }
+    gx.putImageData(img, 0, 0);
+  }
+
+  const fimg = byId("fimg");
+  let lastSrc = "";
+  async function seek(t) {
+    tl.seek(t, false);
+    const fr = Math.floor(t * FPS);
+    fimg.style.translate = `${((rnd(fr * 3 + 1) - 0.5) * 3).toFixed(1)}px ${((rnd(fr * 5 + 2) - 0.5) * 3).toFixed(1)}px`;  // gate weave
+    drawFog(fb, t, 1, 14, 0.2); drawFog(ff, t, 300, 10, 0.22);
+    drawDirt(t); swayHands(t); drawHeads(t); drawLogo(t); drawFilm(t); drawGrain(t);
+    const n = Math.min(F.env.length, fr + 1);
+    const src = FRAMES.replace("%05d", String(n).padStart(5, "0"));
+    if (src !== lastSrc) { fimg.src = src; lastSrc = src; try { await fimg.decode(); } catch (e) { console.error("frame", n, e.message); } }
+  }
+
+  (async () => {
+    await Promise.all(["400 100px Nosifer", "400 100px Creepster", "400 100px Anton"].map((f) => document.fonts.load(f)));
+    await document.fonts.ready;
+    document.querySelectorAll(".head .w, .z").forEach((el) => {   // fit lines to the frame width
+      const r = document.createRange(); r.selectNodeContents(el);
+      const w = r.getBoundingClientRect().width, base = parseFloat(getComputedStyle(el).fontSize);
+      if (w > 1000) el.style.fontSize = (base * 1000 / w).toFixed(1) + "px";
+    });
+    window.__tl = tl;
+    window.__meta = { duration: D, width: 1080, height: 1920 };
+    window.__seek = seek;
+    await seek(0);
+  })();
+</script>
+</body>
+</html>

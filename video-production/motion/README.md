@@ -37,6 +37,11 @@ uptown-et/         Uptown Sound "Pick Your Poison" reel, "Poison Preview: E.T." 
                    Stills, re-laid out per shape (LAY in index.html; the reel is unaffected):
                      3:4 cover        render.cjs --in index.html --query thumb --stills 17.2   (1080x1440)
                      Facebook 4:5     render.cjs --in index.html --query fb --stills 17.2      (1080x1350)
+uptown-zombie/     Uptown Sound "Pick Your Poison" reel, "Poison Preview: Zombie" (9:16, 24 fps). Clip used as delivered
+                   (starts on the chorus; grey grade, vignette and audio fades are the user's; audio stream copied).
+                   1960s B-movie zombie theme: old-film dust/scratches/flicker, floor fog, procedural zombie hands
+                   bursting up on each ZOMBIE, IN YOUR HEAD echoes at head height, logo held up by a hand at the end.
+                   Build: ./build.sh path/to/clip.MP4
 ```
 
 Setup (once per machine): `npm install puppeteer-core@24 gsap` somewhere and point `NODE_PATH` at its `node_modules`;
