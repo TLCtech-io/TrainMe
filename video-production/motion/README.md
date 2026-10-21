@@ -42,6 +42,9 @@ uptown-zombie/     Uptown Sound "Pick Your Poison" reel, "Poison Preview: Zombie
                    1960s B-movie zombie theme: old-film dust/scratches/flicker, floor fog, rigged decayed zombie hands
                    that climb out of the fog (one per ZOMBIE) and never leave, clawing and clenching on the hits;
                    IN YOUR HEAD echoes at head height; the last hand lifts the logo out of the fog for the end card.
+                   Stills (end-card graphics over the soloist's opening close-up, LAY in index.html):
+                     3:4 cover        render.cjs --in index.html --query thumb --stills 19   (1080x1440)
+                     Facebook 4:5     render.cjs --in index.html --query fb --stills 19      (1080x1350)
                    Build: ./build.sh path/to/clip.MP4
 ```
 
