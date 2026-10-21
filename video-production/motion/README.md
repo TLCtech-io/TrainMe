@@ -39,8 +39,9 @@ uptown-et/         Uptown Sound "Pick Your Poison" reel, "Poison Preview: E.T." 
                      Facebook 4:5     render.cjs --in index.html --query fb --stills 17.2      (1080x1350)
 uptown-zombie/     Uptown Sound "Pick Your Poison" reel, "Poison Preview: Zombie" (9:16, 24 fps). Clip used as delivered
                    (starts on the chorus; grey grade, vignette and audio fades are the user's; audio stream copied).
-                   1960s B-movie zombie theme: old-film dust/scratches/flicker, floor fog, procedural zombie hands
-                   bursting up on each ZOMBIE, IN YOUR HEAD echoes at head height, logo held up by a hand at the end.
+                   1960s B-movie zombie theme: old-film dust/scratches/flicker, floor fog, rigged decayed zombie hands
+                   that climb out of the fog (one per ZOMBIE) and never leave, clawing and clenching on the hits;
+                   IN YOUR HEAD echoes at head height; the last hand lifts the logo out of the fog for the end card.
                    Build: ./build.sh path/to/clip.MP4
 ```
 
