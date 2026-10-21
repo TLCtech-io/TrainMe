@@ -371,6 +371,7 @@
     if (MODE === "thumb") {
       [["eUp", 50], ["eTitle1", 160], ["eTitle2", 236], ["eDate", 344], ["eCta", 446]].forEach(([id, y]) => (byId(id).style.top = y + "px"));
       gsap.set("#eCta", { scale: 1 });
+      gsap.set("#alien", { opacity: 0 });   // the cover shows the ensemble clean, without ALIEN
     } else {
       gsap.set("#title", { opacity: 1, y: 0, scale: 1 });
       byId("t1").style.top = "124px"; byId("t2").style.top = "222px";
