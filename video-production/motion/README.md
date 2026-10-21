@@ -46,6 +46,12 @@ uptown-zombie/     Uptown Sound "Pick Your Poison" reel, "Poison Preview: Zombie
                      3:4 cover        render.cjs --in index.html --query thumb --stills 19   (1080x1440)
                      Facebook 4:5     render.cjs --in index.html --query fb --stills 19      (1080x1350)
                    Build: ./build.sh path/to/clip.MP4
+uptown-silence/    Uptown Sound "Pick Your Poison" reel, "Poison Preview: Sound of Silence" (9:16, 30 fps). Clip used as
+                   delivered (trim, end fade, greyscale, vignette, audio). Dreamy blur fade-in, then a white hand-drawn
+                   night scene keyed to the verse: rain from the upper left, a cobblestone street, a street lamp with a
+                   faint warm cone, the QCPA logo on a poster on the lamp post, and a man in hat and coat walking away up
+                   the street past the lamp; the neon-light flash brings on the end card. Line work boils at 10 fps.
+                   Build: ./build.sh path/to/clip.MP4
 ```
 
 Setup (once per machine): `npm install puppeteer-core@24 gsap` somewhere and point `NODE_PATH` at its `node_modules`;
