@@ -51,6 +51,10 @@ uptown-silence/    Uptown Sound "Pick Your Poison" reel, "Poison Preview: Sound 
                    night scene keyed to the verse: rain from the upper left, a cobblestone street, a street lamp with a
                    faint warm cone, the QCPA logo on a poster on the lamp post, and a man in hat and coat walking away up
                    the street past the lamp; the neon-light flash brings on the end card. Line work boils at 10 fps.
+                   Stills (the 0:05 scene with the end card's show name, date and tickets plus the one-line Poison
+                   Preview card, LAY in index.html):
+                     3:4 cover        render.cjs --in index.html --query thumb --stills 1   (1080x1440)
+                     Facebook 4:5     render.cjs --in index.html --query fb --stills 1      (1080x1350)
                    Build: ./build.sh path/to/clip.MP4
 ```
 

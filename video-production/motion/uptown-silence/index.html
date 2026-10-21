@@ -23,6 +23,7 @@
   html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; color: #fff; }
   canvas, svg { position: absolute; left: 0; top: 0; }
   #fimg, #fglow { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; opacity: 0; }
+  #vigB { position: absolute; left: 0; width: 1080px; height: 380px; display: none; background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.6)); }
   #fglow { mix-blend-mode: screen; filter: blur(30px) brightness(1.25); }
   #light, #rain { width: 1080px; height: 1920px; }
   #grain { width: 1080px; height: 1920px; opacity: 0.05; mix-blend-mode: overlay; }
@@ -40,12 +41,16 @@
            display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: 0 10px 24px rgba(0,0,0,0.5); }
   .label .no { font: 400 52px/1 "Special Elite", monospace; letter-spacing: 0.08em; }
   .label .tx { font: italic 600 98px/1 "Cormorant Garamond", serif; color: #2b2f45; letter-spacing: 0.01em; }
+  .one .label { flex-direction: row; gap: 18px; padding: 12px 30px 14px; border-radius: 14px; }
+  .one .label .no { font-size: 38px; letter-spacing: 0.06em; }
+  .one .label .tx { font-size: 64px; }
   .end-line { position: absolute; left: 0; width: 1080px; text-align: center; opacity: 0; }
   #eTitle1 .rl, #eTitle2 .rl { opacity: 0; }
 </style>
 </head>
 <body>
   <img id="fimg" alt="" /><img id="fglow" alt="" />
+  <div id="vigB"></div>
   <canvas id="light" width="1080" height="1920"></canvas>
   <svg id="scene" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
   <img id="qcpa" src="../shared/brand/qcpa-logo-white.svg" alt="Queen City Performing Arts" />
@@ -79,6 +84,19 @@
   const lerp = (a, b, k) => a + (b - a) * k;
   const byId = (id) => document.getElementById(id);
   const f1 = (v) => v.toFixed(1);
+
+  // Output: the 9:16 reel, or a still for another shape (?thumb = 3:4 cover, ?fb = 4:5 Facebook post). Stills take the
+  // scene from frameT (footage, lamp, street, rain, the man) and the show name, date and tickets from the end card
+  // (textT), with the one-line Poison Preview card under the title. footDY/drawDY move the footage and the drawn world
+  // up into the shorter frame; man = [dx, dy, scale] keeps him whole above the bottom edge; ends = tops of the text rows.
+  // cobT: the near cobbles fall below a shorter frame, so the stills draw the whole street (as it is a few seconds later).
+  const MODE = location.search.includes("thumb") ? "thumb" : location.search.includes("fb") ? "fb" : "video";
+  const LAY = {
+    video: { H: 1920 },
+    thumb: { H: 1440, textT: 27.5, frameT: 5.0, cobT: 11.5, footDY: -110, drawDY: -110, man: [30, -290, 0.86], ends: [40, 142, 214, 318, 438, 542] },
+    fb:    { H: 1350, textT: 27.5, frameT: 5.0, cobT: 11.5, footDY: -120, drawDY: -150, man: [60, -325, 0.78], ends: [34, 134, 204, 304, 420, 520] },
+  }[MODE];
+  const STILL = MODE !== "video";
 
   // Cue times (seconds), keyed to the verse (data/whisper-words.json)
   const T = {
@@ -242,8 +260,10 @@
   function drawMan(t) {
     const g = byId("man");
     if (t < T.man.start) { g.innerHTML = ""; return; }
-    const s = manScale(t), k = (1 - s) / (1 - S_END);            // 0 at A, 1 at B (can run below 0 before he is in frame)
-    const x = lerp(A[0], B[0], k), y = lerp(A[1], B[1], k);
+    let s = manScale(t);
+    const k = (1 - s) / (1 - S_END);                              // 0 at A, 1 at B (can run below 0 before he is in frame)
+    let x = lerp(A[0], B[0], k), y = lerp(A[1], B[1], k);
+    if (STILL) { x += LAY.man[0]; y += LAY.man[1]; s *= LAY.man[2]; }
     const walk = ((t - T.man.start) / 1.15) % 1;                  // slow trudge: one stride pair every 1.15 s
     const hunch = 0.35 + 0.65 * ease(span(T.collar[0], T.collar[1], t)) + 0.04 * Math.sin(t * 9) * span(T.collar[0], T.collar[1], t);  // a shiver as he turns his collar up
     const gone = 1 - span(T.flash, T.flash + 0.6, t);              // vanishes in the flash
@@ -357,15 +377,17 @@
   // ---------- per frame ----------
   const fimg = byId("fimg"), fglow = byId("fglow"), noise = byId("boilNoise");
   let lastSrc = "";
-  async function seek(t) {
-    tl.seek(t, false);
+  async function seek(t0) {
+    const t = STILL ? LAY.frameT : t0;                            // the scene's moment (stills: the 0:05 frame)
+    tl.seek(STILL ? LAY.textT : t0, false);                       // the text's moment (stills: the end card)
+    if (STILL) gsap.set("#badge", { opacity: 1, y: 0 });
     // dreamy fade-in: up from black, out of a soft blur, with a bloom that melts away
     const fin = ease(span(0, T.fade, t)), blur = 22 * (1 - ease(span(0, 3.8, t)));
     fimg.style.opacity = fin.toFixed(3);
     fimg.style.filter = `blur(${blur.toFixed(2)}px)`;
     fglow.style.opacity = (0.55 * fin * (1 - span(0.8, 5.5, t))).toFixed(3);
     noise.setAttribute("seed", String(1 + Math.floor(t * FPS / 3) % 97));   // line boil at 10 fps
-    drawLamp(t); drawCurbs(t); drawCobbles(t);
+    drawLamp(t); drawCurbs(t); drawCobbles(STILL ? LAY.cobT : t);
     qcpa.style.opacity = ease(span(T.lampDraw[1] - 0.2, T.lampDraw[1] + 0.8, t)).toFixed(3);
     drawMan(t); drawLight(t); drawRain(t); drawGrain(t);
     const n = Math.min(F.env.length, Math.floor(t * FPS + 1e-6) + 1);
@@ -379,8 +401,19 @@
   (async () => {
     await Promise.all(["italic 600 60px 'Cormorant Garamond'", "400 60px 'Special Elite'", "400 60px Anton"].map((f) => document.fonts.load(f)));
     await document.fonts.ready;
+    if (STILL) {
+      document.documentElement.style.height = document.body.style.height = LAY.H + "px";
+      ["fimg", "fglow"].forEach((id) => (byId(id).style.top = LAY.footDY + "px"));
+      Object.assign(byId("vigB").style, { display: "block", top: `${LAY.H - 380}px` });   // the crop loses the clip's own bottom vignette
+      ["light", "scene", "rain"].forEach((id) => (byId(id).style.top = LAY.drawDY + "px"));
+      qcpa.style.top = `${POSTER.cy - 82 + LAY.drawDY}px`;
+      document.body.classList.add("one");
+      byId("badge").querySelector(".no").textContent = "POISON PREVIEW:";
+      ["eUp", "eTitle1", "eTitle2", "badge", "eDate", "eCta"].forEach((id, i) => (byId(id).style.top = LAY.ends[i] + "px"));
+      if (MODE === "fb") byId("eCta").querySelector("span").innerHTML = "TICKETS &middot; LINK IN POST";
+    }
     window.__tl = tl;
-    window.__meta = { duration: D, width: 1080, height: 1920 };
+    window.__meta = { duration: D, width: 1080, height: LAY.H };
     window.__seek = seek;
     await seek(0);
   })();
