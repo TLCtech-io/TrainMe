@@ -281,11 +281,34 @@ Source lives in `video-production/motion/` (see its README). HTML + GSAP composi
 
 ---
 
-## 10. Open items
+## 10. PREPARE Vid 6: "Do you know what heats your apartment?" (2026-10-23)
+
+- **Source:** `PREPARE/Social Media Posts/Prepare_Vid 6 RAW` (`3651677d-a832-482b-b947-e6a69a4e789d`), composition
+  "Prepare_Vid 6 Edits" (`66768f19-...`, 64.6s), downloaded from the user's own unlisted publish. Nothing was changed
+  in Descript.
+- **Beat sheet:** Cowork, 10/22 (the .docx is the latest). Brief from the user: a disclaimer card in PREPARE colors;
+  the heat-rising animation may go full frame and replace him; from beat 4 on he can be cut out over graphics or
+  moved; better lighting on the seated shot (no portable light that day); captions added as part of the pass this
+  time (normally the user adds them in Descript).
+- **Build:** `motion/prepare-vid6/` (see its storyboard.md). Cards follow the V4/V5 spec in section 6. Captions are
+  burned in: Montserrat 800 uppercase on a harbor pill, active word gold, low in frame. Cards sit high.
+- **Presenter cut-out:** Robust Video Matting (MobileNetV3 TorchScript, CPU, about 0.25 s a frame) gives a clean matte,
+  hair included.
+- **Relight:** a soft key that follows the head (from the matte), a small lift, slightly cooler white balance, and the
+  room eased down 14%. Gentle by design.
+- **Captions and timing:** whisper medium.en word times, checked against Descript's subtitle VTT. Whisper skipped one
+  sentence on the first pass; that window was re-run on its own.
+- **Audio:** the voice is untouched (the residual of mix minus voice is -138 dBFS outside the SFX cues). The SFX are
+  synthesized and sit 5-8 dB under the voice peaks. Loudness matches V4/V5 (about -23.5 LUFS).
+- **Open decision:** the beat sheet's pipes sentence on the disclaimer card is off (`DISCLAIMER_PIPES` in
+  index.html).
+
+## 11. Open items
 
 - [ ] **PREPARE Vid 5 footage:** either approve the private publish/download of "Prepare_Vid 5 Claude Base", or export it from Descript and run `./build.sh base.mp4` locally. Then import the render into the Prepare_Vid 5 project as a new composition (requested by the user).
 - [ ] **Review the four TMA pilot graphics.** On approval, import them into IMP - Span of Control and place them in a VISUAL composition.
 - [ ] Optional upgrades: ElevenLabs SFX and music bed (API key), word-level timestamps (whisper locally).
+- [ ] PREPARE Vid 6 draft 1: user review. On approval, import into Prepare_Vid 6 RAW as a new composition (needs an OK).
 - [ ] Add notes from the Cowork "tool stack" session and the "TMA IMP visual development" session when the user provides them.
 - [ ] Span of Control: duplicate WORKING into "IMP - Span of Control VISUAL", map the transcript, propose an overlay plan for approval, then build.
 - [ ] Decide whether to fix the "1. Probem" typo in the published reference.

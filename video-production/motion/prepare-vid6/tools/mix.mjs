@@ -13,8 +13,9 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const [videoIn, out] = process.argv.slice(2).map((p) => path.resolve(p));
 
 // Against a voice peaking near -7.5 dBFS; every SFX file peaks at -3 dBFS.
-const GAIN = { beep: 0.2, pop: 0.24, whoosh: 0.2, soft: 0.24, tick: 0.26, click: 0.3, hum: 0.1, lock: 0.34, stamp: 0.34,
-               thud: 0.4, shimmer: 0.16, powerdown: 0.32, ding: 0.28 };
+// SFX peaks land about 6-8 dB under the voice peaks around them: supporting, never competing.
+const GAIN = { beep: 0.12, pop: 0.15, whoosh: 0.13, soft: 0.15, tick: 0.16, click: 0.19, hum: 0.07, lock: 0.21, stamp: 0.21,
+               thud: 0.25, shimmer: 0.1, powerdown: 0.2, ding: 0.17 };
 
 const chrome = [process.env.CHROME_PATH, "/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell",
   "/opt/pw-browsers/chromium-1194/chrome-linux/chrome"].filter(Boolean).find((p) => fs.existsSync(p));
