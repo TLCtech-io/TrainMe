@@ -78,12 +78,24 @@
     <div class="end-line" id="eCta" style="top:618px"><span style="display:inline-block; background:#0a0a0a; color:var(--bone); border:2px solid var(--lime); font:400 38px/1 'Special Elite'; padding:12px 24px; border-radius:8px; letter-spacing:0.06em">TICKETS &middot; LINK IN BIO</span></div>
   </div>
   <div id="flash"></div>
+  <div id="cover" style="display:none">
+    <div class="ransom" id="cT1"></div>
+    <div class="ransom" id="cT2"></div>
+    <div id="cHead" class="head slam" style="opacity:1">GET YOURS <em>BEFORE</em><br>THEY’RE <em>GONE</em></div>
+    <div id="cDate" class="end-line" style="opacity:1"><span style="font:400 58px/1 'Bowlby One SC'; color:var(--lime); text-shadow:0 0 22px rgba(198,255,61,0.6), 0 5px 0 rgba(0,0,0,0.7)">OCT 24 &amp; 25</span><span style="font:400 54px/1 'Creepster'; letter-spacing:0.05em; color:var(--orange); text-shadow:0 0 18px rgba(255,138,31,0.6), 0 4px 0 rgba(0,0,0,0.7)">&nbsp; · THIS WEEKEND</span></div>
+  </div>
 
 <script src="../shared/gsap.min.js"></script>
 <script src="data/features.js"></script>
 <script src="data/glare.js"></script>
 <script>
   const F = window.FEATURES, FPS = F.fps, D = F.env.length / FPS, NF = F.env.length;
+  // Output: the 9:16 reel, or a cover (?thumb = 3:4 for TikTok, ?ig = 9:16 for Instagram, whose grid shows the middle
+  // 3:4, so the ig cover keeps the whole design in the band OY..OY+1440). Covers show the scene at frameT, just after
+  // "abduction" with three tickets in the beam; the pile and the saucer sit a little higher so all of it fits the band.
+  const MODE = location.search.includes("thumb") ? "thumb" : location.search.includes("ig") ? "ig" : "video";
+  const LAY = { video: { H: 1920, OY: 0 }, thumb: { H: 1440, OY: 0, frameT: 23.25 }, ig: { H: 1920, OY: 240, frameT: 23.25 } }[MODE];
+  const POSTER = MODE !== "video";
   const FRAMES = "assets/frames/f_%05d.jpg";
   const rnd = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -234,7 +246,7 @@
   const ulEls = UL.map((_, k) => [byId(`ul${k}`), byId(`uc${k}`)]);
   const PAL = ["#c6ff3d", "#2be7ff", "#ff3dd8", "#ffb84d"];
   const bez = (t, p0, p1, p2, p3) => { const u = 1 - t; return u * u * u * p0 + 3 * u * u * t * p1 + 3 * u * t * t * p2 + t * t * t * p3; };
-  const PARK = [790, 560];
+  const PARK = POSTER ? [790, 615] : [790, 560];
   // where the saucer is: swoops in across the moon, parks over stage right, hovers, then streaks off
   function ufoAt(t) {
     const [cx, cy] = cam(t);
@@ -265,7 +277,7 @@
   }
 
   // ---------- the tractor beam, the ticket pile, and the tickets going up ----------
-  const PILE = [830, 1440];
+  const PILE = POSTER ? [830, 1325] : [830, 1440];
   const beamOn = (t) => { const k = span(T.beamOn, T.beamOn + 0.5, t); return k < 1 && rnd(Math.floor(t * 24)) < 0.4 ? k * 0.3 : k; };
   const kick = (t) => LIFTS.reduce((m, h) => Math.max(m, t >= h ? Math.exp(-(t - h) * 3) : 0), 0);
   const beamI = (t) => beamOn(t) * (1 - span(T.leave, T.leave + 0.15, t)) * (0.62 + 0.18 * env(t) + 0.3 * kick(t) + 0.6 * flashAt(t));
@@ -438,8 +450,9 @@
   // ---------- per frame ----------
   const fimg = new Image();
   let lastSrc = "";
-  async function seek(t) {
-    tl.seek(t, false);
+  async function seek(t0) {
+    const t = POSTER ? LAY.frameT : t0;
+    if (!POSTER) tl.seek(t, false);
     const n = Math.min(NF, Math.floor(t * FPS + 1e-6) + 1);
     const src = FRAMES.replace("%05d", String(n).padStart(5, "0"));
     if (src !== lastSrc) {
@@ -450,8 +463,15 @@
     const u = ufoAt(t);
     drawMoon(t); drawBeam(t, u); drawUfo(t, u); drawTickets(t, u); drawFog(t); drawBats(t); drawGrain(t); drawGlass(t);
     byId("webG").setAttribute("opacity", span(0.2, 1.2, t).toFixed(3));
-    byId("webR").setAttribute("transform", `rotate(${(Math.sin(t * 0.9) * 1.2).toFixed(2)} 1080 0)`);
-    byId("webL").setAttribute("transform", `rotate(${(Math.sin(t * 0.7 + 1) * 1.2).toFixed(2)} 0 1920)`);
+    const wyR = LAY.OY, wyL = POSTER ? LAY.OY + 1440 - 1920 : 0;              // webs in the corners of the (cover) band
+    byId("webR").setAttribute("transform", `translate(0 ${wyR}) rotate(${(Math.sin(t * 0.9) * 1.2).toFixed(2)} 1080 0)`);
+    byId("webL").setAttribute("transform", `translate(0 ${wyL}) rotate(${(Math.sin(t * 0.7 + 1) * 1.2).toFixed(2)} 0 1920)`);
+    if (POSTER) {                                                             // two bats crossing the moon
+      [[930, 300, 1.25, 0.8], [1015, 222, 0.85, 0.45]].forEach(([x, y, sc, fl], i) => {
+        const el = byId(`bat${i}`); el.setAttribute("opacity", "1");
+        el.setAttribute("transform", `translate(${x},${y + LAY.OY}) scale(${sc},${sc * fl})`);
+      });
+    }
     byId("flash").style.opacity = (0.55 * flashAt(t)).toFixed(3);
     const sh = t >= T.abduct && t < T.abduct + 0.4 ? (1 - (t - T.abduct) / 0.4) * 9 : 0;     // the room jolts on "abduction"
     document.body.style.transform = sh ? `translate(${f1(sh * Math.sin(t * 97))}px, ${f1(sh * Math.cos(t * 83))}px)` : "";
@@ -462,7 +482,19 @@
     await document.fonts.ready;
     try { await ticketImg.decode(); } catch (e) { console.error("ticket", e.message); }
     window.__tl = tl;
-    window.__meta = { duration: D, width: 1080, height: 1920 };
+    if (POSTER) {
+      const OY = LAY.OY;
+      document.documentElement.style.height = document.body.style.height = LAY.H + "px";
+      ["gl", "moon", "beam", "ufo", "tix", "fog"].forEach((id) => (byId(id).style.top = OY + "px"));
+      ["title", "badge", "h1", "h2", "h3", "glass", "end", "qcpa"].forEach((id) => (byId(id).style.display = "none"));
+      Object.assign(byId("scrim").style, { opacity: 1, height: OY + 760 + "px" });
+      byId("cover").style.display = "block";
+      ransom(byId("cT1"), "PICK YOUR", 64, 15); ransom(byId("cT2"), "POISON", 84, 17);
+      byId("cT1").style.top = OY + 40 + "px"; byId("cT2").style.top = OY + 118 + "px";
+      byId("cHead").style.top = OY + 236 + "px";
+      byId("cDate").style.top = OY + 452 + "px";
+    }
+    window.__meta = { duration: POSTER ? 0.1 : D, width: 1080, height: LAY.H };
     window.__seek = seek;
     await seek(0);
   })();
