@@ -6,9 +6,11 @@ Same model as HyperFrames (one paused, seekable GSAP timeline per composition), 
 GSAP live in `shared/`, and the renderer refuses any network request.
 
 ```
-shared/            fonts (Roboto, Lato, display faces), gsap.min.js, tma.css (TMA tokens), motion.js (helpers)
+shared/            fonts (Roboto, Lato, Montserrat, Open Sans, display faces; all OFL), gsap.min.js, tma.css (TMA
+                   tokens), motion.js (helpers)
 shared/brand/      qcpa-logo-white.svg: Queen City Performing Arts (Uptown Sound's parent org) one-colour white logo.
                    The diamonds and ball dots are knockouts (holes), so it reads on black, toxic green or footage.
+                   tlc-trng-horizontal-white.png: 2026 TLC_TRNG master (ds-bundle/guidelines/logos), for photos and dark.
 tools/render.cjs   renderer: --in page.html --out clip.mp4 [--out-width 3840] [--stills t1,t2 --stills-dir dir] [--alpha]
                    [--query thumb] (passes ?thumb etc. to the page)
 tools/audio_features.py   per-frame loudness envelope + onsets from a 16 kHz wav (drives audio-reactive layers)
@@ -21,6 +23,11 @@ tools/logo_mono.py one-colour knockout logo from a flat vector logo: pdftocairo 
                    logo_mono.py in.svg out.svg [--color #FFFFFF]. White shapes become holes in the shape under them.
 tma-pilots/        IMP Span of Control concept graphics (16:9, rendered at 3840x2160)
 prepare-vid5/      PREPARE Vid 5 recut per the Claude Edit Playbook (9:16) - see its storyboard.md and build.sh
+prepare-vid6/      PREPARE Vid 6 "Do you know what heats your apartment?" (9:16, 30 fps) - storyboard.md, build.sh.
+                   PREPARE palette and V4/V5 cards, burned-in word captions, tracked thermostat ring, the test card
+                   with a temperature graph, disclaimer card, full-frame building section (heat rises), and from beat
+                   4 on the presenter cut out (tools/prep_footage.py: Robust Video Matting) over graphics. The seated
+                   shot is relit there too (soft key from the matte). SFX kit synthesized by tools/make-sfx.sh.
 uptown-toxic/      Uptown Sound "Pick Your Poison" show reel, "Poison Preview: Toxic" (9:16, phone footage at 24000/1001 fps).
                    Toxic liquid layer driven by the vocal loudness (data/features.js); lyric hits from a whisper pass.
                    QCPA logo (logoState in index.html): surfaces in the slime at 1.5s and floats under the surface

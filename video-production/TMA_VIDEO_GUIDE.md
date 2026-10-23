@@ -1,6 +1,6 @@
 # TMA Video Production Guide
 
-Last updated: 2026-10-09 (research session in Claude Code using the Descript connector, drive TLC_TRNG).
+Last updated: 2026-10-23 (PREPARE Vid 6 build). First written 2026-10-09 (research session in Claude Code using the Descript connector, drive TLC_TRNG).
 
 Working reference for producing TrainMe (TMA) course videos in Descript with Claude. Read this before any Descript or video work, and update it as decisions are made.
 
@@ -24,6 +24,7 @@ Naming observed so far:
 | IMP - Management By Objectives | RAW (37:54) > WORKING Draft (26:46) > Draft Lessons 1.1, 1.2, 1.3, 1.4 (5:20 to 8:03 each) |
 | IMP - Span of Control | RAW (18:11) > WORKING (17:15) |
 | Prepare_Vid 5 | RAW > Edits > TLC Edits > Publish |
+| Prepare_Vid 6 RAW | RAW (1:21) > Edits (1:05; user's cleanup: word gaps, Studio Sound, eye contact, light filters) |
 
 Long IMP recordings may be split into lesson-length drafts (MBO became four lessons).
 
@@ -136,6 +137,18 @@ Folder `IMP - RIck`:
   - Uses Lato and custom per-video graphics (for example V5_01_laundry.png).
   - The full batch master ("preapre_batch_1 DO NOT USE.MP4") is in each project.
 - **PREPARE/Audio Book Chapters:** 2024-25 audiobook (opening credits, intro, Chapters 1 to 12, conclusion, credits).
+- **PREPARE look (design system):** Dropbox `/2_TLC_TRNG/4_Branding/ds-bundle/guidelines/brand-design-system.md` §4.1.
+  - Palette `--prep-*`: storm #3F6A72 (dominant), harbor #1A2A33, gold #E3BE6A (the one accent), gold-deep #7A5A12,
+    dawn #F1E5BD, fog #E4EAE8, grid #8C94A6 (linework only). Ratio 60-70% storm + harbor, 20-30% fog/dawn, 5-10% gold.
+  - Sign-off lockup: `[TLC_TRNG logo] | PREPARE`, logo cap height equal to the PREPARE letters.
+  - Typography (working): Montserrat 600-900 heads, Open Sans 400/600 body.
+- **PREPARE card system** (Batch 1 Graphics V4 and V5 PNGs, 1080x1920 with transparency): card 920 px wide at x 80,
+  harbor at 96%, 9 px gold top edge on 30 px corners, big soft shadow. Montserrat 800 header (white), Open Sans 600
+  dawn subtitle, rows of Open Sans 600 with 58 px grid-grey outline icon rings, gold letter-spaced Montserrat 800 labels
+  ("ALSO YOURS", "NOT ON IT").
+- **Published PREPARE videos (V4, V5):** Descript captions in the upper part of the frame (V4 blue word box, V5
+  uppercase with yellow highlight on a dark band); cards low over the torso; stickers; loudness about -24 LUFS, peaks
+  -6 to -7 dBFS (Descript publish default). Keep new videos at the same level.
 
 ---
 
@@ -151,6 +164,10 @@ Folder `IMP - RIck`:
 - **wait_for_job:** pass `wait_seconds` of 50 or less. The client times out at 60 s.
 - **Cloud sessions:** `share.descript.com` is blocked by the default network policy, so published videos can't be downloaded for frame review. Allow it under the environment's Network access settings, or run Claude Code locally. Descript's media upload host may also need allowing (not yet confirmed).
 - **Cloud container tools:** ffmpeg 6.1, Node 22, Python 3, headless Chromium.
+- **Cloud network (2026-10-23):** full network access. Dropbox downloads work (single-use links from the Dropbox
+  connector). `share.descript.com` pages are reachable, and a publish with downloads enabled carries a direct MP4 link
+  (`api.descript.com/v2/published_projects/<id>/download?...` in the page) and a subtitles VTT, so footage can come from
+  the user's own publish without Claude publishing anything. GitHub release downloads work (Robust Video Matting model).
 - **Cloud network (2026-10-09):**
   - Reachable: npm registry, GitHub, storage.googleapis.com, S3, fonts.gstatic.com.
   - Blocked: all Descript hosts, Dropbox content, Hugging Face (so no Whisper model download), Instagram, TikTok, Google Drive.

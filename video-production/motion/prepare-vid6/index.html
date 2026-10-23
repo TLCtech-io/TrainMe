@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PREPARE Vid 6: what heats your apartment</title>
+<!--
+  PREPARE Vid 6 "Do you know what heats your apartment?" (1080x1920, 30 fps). Plan: storyboard.md.
+  Footage: assets/frames (the Edits composition as delivered); shot C relit, with a person matte, in assets/lit and
+  assets/alpha (tools/prep_footage.py). Every cue keys off a spoken word in data/words.json (window.WORDS).
+  Look: PREPARE palette and the V4/V5 card system (harbor card, gold top edge, Montserrat heads, Open Sans rows).
+-->
+<style>
+  @font-face { font-family: "Montserrat"; font-weight: 600; src: url("../shared/fonts/montserrat-latin-600-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Montserrat"; font-weight: 700; src: url("../shared/fonts/montserrat-latin-700-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Montserrat"; font-weight: 800; src: url("../shared/fonts/montserrat-latin-800-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Montserrat"; font-weight: 900; src: url("../shared/fonts/montserrat-latin-900-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Open Sans"; font-weight: 400; src: url("../shared/fonts/open-sans-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Open Sans"; font-weight: 600; src: url("../shared/fonts/open-sans-latin-600-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Open Sans"; font-weight: 700; src: url("../shared/fonts/open-sans-latin-700-normal.woff2") format("woff2"); }
+  :root { --storm: #3F6A72; --harbor: #1A2A33; --gold: #E3BE6A; --dawn: #F1E5BD; --fog: #E4EAE8; --grid: #8C94A6;
+          --row: #C9D1D0; --well: #22363F; --warn: #FFA033; --error: #FF6B7A; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; }
+  canvas, svg { position: absolute; left: 0; top: 0; }
+  .abs { position: absolute; }
+  .layer { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+
+  /* V4/V5 card: harbor at 96%, 9px gold top edge, 30px corners */
+  .card { position: absolute; background: rgba(26, 42, 51, 0.96); border-top: 9px solid var(--gold); border-radius: 30px;
+          box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45); overflow: hidden; opacity: 0; }
+  .lbl { position: absolute; font: 800 30px/1 "Montserrat"; letter-spacing: 0.14em; color: var(--gold); text-transform: uppercase; white-space: nowrap; }
+  .hd { font: 800 64px/1.08 "Montserrat"; color: #fff; }
+  .rt { position: absolute; font: 700 44px/1.15 "Open Sans"; color: #fff; white-space: nowrap; }
+  .sub { position: absolute; font: 600 31px/1.3 "Open Sans"; color: var(--dawn); white-space: nowrap; }
+  .well { position: absolute; width: 150px; height: 150px; border-radius: 22px; background: var(--well); border: 2px solid rgba(140, 148, 166, 0.45); }
+  .badge { position: absolute; width: 50px; height: 50px; border-radius: 50%; background: var(--gold); color: var(--harbor);
+           font: 900 28px/50px "Montserrat"; text-align: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35); }
+  .ring { position: absolute; width: 64px; height: 64px; border-radius: 50%; border: 2.5px solid var(--grid); }
+  .chip { position: absolute; height: 58px; border-radius: 29px; border: 2.5px solid var(--grid); padding: 0 24px 0 62px;
+          font: 600 30px/53px "Open Sans"; color: var(--fog); white-space: nowrap; opacity: 0; }
+  .hide { opacity: 0; }
+
+  /* hook */
+  .hw { display: inline-block; opacity: 0; }
+  #hook .l { position: absolute; left: 44px; font: 800 54px/1 "Montserrat"; color: #fff; letter-spacing: 0.01em; white-space: nowrap; }
+  #heats { font: 900 160px/1 "Montserrat"; color: var(--gold); letter-spacing: 0.01em; filter: url(#heatwarp);
+           text-shadow: 0 0 34px rgba(227, 190, 106, 0.45); }
+  .mini { position: absolute; top: 104px; width: 270px; height: 300px; border-radius: 24px; background: var(--well);
+          border: 2.5px solid rgba(140, 148, 166, 0.6); opacity: 0; }
+  .mini .q { position: absolute; left: 0; right: 0; top: 52px; text-align: center; font: 900 170px/1 "Montserrat"; color: var(--fog); }
+
+  /* captions: burned in, low in frame, active word gold */
+  #caps { position: absolute; left: 0; top: 1418px; width: 1080px; display: flex; justify-content: center; }
+  #cap { background: rgba(26, 42, 51, 0.88); border-radius: 20px; padding: 8px 28px 12px; font: 800 62px/1.12 "Montserrat";
+         color: #fff; text-transform: uppercase; letter-spacing: 0.01em; white-space: nowrap; box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+         opacity: 0; transform-origin: 50% 60%; }
+  #cap .on { color: var(--gold); }
+
+  /* big type for the graphic scenes */
+  .big { position: absolute; left: 0; width: 1080px; text-align: center; color: #fff; font: 900 120px/1 "Montserrat"; opacity: 0; }
+  .pill { position: absolute; border-radius: 999px; white-space: nowrap; opacity: 0; }
+</style>
+</head>
+<body>
+  <canvas id="stage" width="1080" height="1920"></canvas>
+
+  <!-- overlays tied to the footage: thermostat ring (shot A), bracket on his HVAC (shot B), thermometers (beat 4) -->
+  <svg id="ov" width="1080" height="1920" viewBox="0 0 1080 1920">
+    <defs>
+      <filter id="heatwarp" x="-10%" y="-20%" width="120%" height="140%">
+        <feTurbulence id="heatNoise" type="fractalNoise" baseFrequency="0.012 0.05" numOctaves="2" seed="3" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+      <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="10"/></filter>
+    </defs>
+    <g id="thermoRing" opacity="0">
+      <circle id="tr1" r="112" fill="none" stroke="#E3BE6A" stroke-width="8" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/>
+      <circle id="tr2" r="112" fill="none" stroke="#E3BE6A" stroke-width="4" opacity="0"/>
+      <g id="trQ" transform="translate(-118,-118)" opacity="0">
+        <circle r="38" fill="#E3BE6A"/>
+        <text y="16" text-anchor="middle" font-family="Montserrat" font-weight="900" font-size="46" fill="#1A2A33">?</text>
+      </g>
+    </g>
+    <g id="thermos" opacity="0"></g>
+  </svg>
+
+  <!-- beat 4: the building section, full frame -->
+  <div id="bldL" class="layer" style="opacity:0">
+    <svg id="bld" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+    <canvas id="bfx" width="1080" height="1920"></canvas>
+    <svg id="bldTop" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+  </div>
+
+  <!-- card 1: hook > two answers > two types (one card that changes shape) -->
+  <div id="c1" class="card" style="left:380px; top:200px; width:680px; height:480px; opacity:1">
+    <div id="hook" class="abs" style="inset:0">
+      <div class="l" style="top:40px"><span class="hw" data-w="do">DO</span> <span class="hw" data-w="you">YOU</span> <span class="hw" data-w="know">KNOW</span></div>
+      <div class="l" style="top:104px"><span class="hw" data-w="what">WHAT</span> <span class="hw" data-w="actually">ACTUALLY</span></div>
+      <div class="l" style="top:166px"><span class="hw" id="heats" data-w="heats">HEATS</span></div>
+      <div class="l" style="top:352px"><span class="hw" data-w="your">YOUR</span> <span class="hw" data-w="apartment">APARTMENT?</span></div>
+    </div>
+    <div id="twoP" class="abs hide" style="inset:0">
+      <div class="lbl" style="left:44px; top:44px">Two answers</div>
+      <div class="mini" id="m1" style="left:44px"><div class="badge" style="left:18px; top:18px">1</div><div class="q">?</div></div>
+      <div class="mini" id="m2" style="left:350px"><div class="badge" style="left:18px; top:18px">2</div><div class="q">?</div></div>
+    </div>
+    <div id="typesP" class="abs hide" style="inset:0">
+      <div class="lbl" style="left:48px; top:40px">Two answers</div>
+      <div id="r1" class="hide">
+        <div class="well" style="left:48px; top:92px"><svg id="ic1" width="150" height="150" viewBox="0 0 150 150"></svg></div>
+        <div class="badge" style="left:30px; top:76px">1</div>
+        <div class="rt" style="left:230px; top:106px">Building-wide system</div>
+        <div class="sub" style="left:230px; top:170px"><span id="s1a" class="hide">Your thermostat.</span> <span id="s1b" class="hide">Not your system.</span></div>
+      </div>
+      <div id="div1" class="abs hide" style="left:48px; right:48px; top:266px; height:2px; background:rgba(140,148,166,0.35)"></div>
+      <div id="r2" class="hide">
+        <div class="well" style="left:48px; top:288px"><svg id="ic2" width="150" height="150" viewBox="0 0 150 150"></svg></div>
+        <div class="badge" style="left:30px; top:272px">2</div>
+        <div class="rt" style="left:230px; top:302px">Your own HVAC unit</div>
+        <div class="sub" style="left:230px; top:366px"><span id="s2a" class="hide">Hear it kick on and off?</span> <span id="s2b" class="hide">That’s yours.</span></div>
+      </div>
+      <div id="foot1" class="lbl hide" style="left:48px; top:478px; font-size:24px; color:var(--grid)">Usually in</div>
+      <div id="chip1" class="chip" style="left:250px; top:462px">Laundry room
+        <svg class="abs" style="left:16px; top:9px" width="34" height="34" viewBox="0 0 34 34"><path d="M17 31 C 9 21 6 17 6 12 A 11 11 0 0 1 28 12 C 28 17 25 21 17 31 Z" fill="none" stroke="#8C94A6" stroke-width="2.5"/><circle cx="17" cy="12" r="3.5" fill="#8C94A6"/></svg></div>
+      <div id="chip2" class="chip" style="left:556px; top:462px">Locked closet
+        <svg class="abs" style="left:16px; top:6px" width="36" height="40" viewBox="0 0 36 40"><path id="shackle" d="M10 18 L10 12 A 8 8 0 0 1 26 12 L26 8" fill="none" stroke="#E3BE6A" stroke-width="3" stroke-linecap="round"/><rect x="6" y="18" width="24" height="18" rx="4" fill="#E3BE6A"/><circle cx="18" cy="26" r="2.6" fill="#1A2A33"/></svg></div>
+      <div id="tagLL" class="pill" style="left:742px; top:426px; background:var(--dawn); color:var(--harbor); font:800 22px/1 'Montserrat'; letter-spacing:0.08em; padding:9px 16px; transform:rotate(-7deg)">LANDLORD ONLY</div>
+    </div>
+  </div>
+
+  <!-- card 2: the test, then its one-line summary -->
+  <div id="c2" class="card" style="left:70px; top:50px; width:940px; height:540px">
+    <div id="testP" class="abs" style="inset:0">
+      <div class="lbl" style="left:48px; top:40px">If it’s yours</div>
+      <div id="tTitle" class="abs hd hide" style="left:46px; top:82px; font-size:72px">Test it.</div>
+      <div id="st1" class="hide"><div class="ring" style="left:48px; top:190px"></div><svg class="abs" style="left:48px; top:190px" width="64" height="64" viewBox="0 0 64 64"><path d="M38 17 A 16 16 0 1 0 47 41 A 13 13 0 1 1 38 17 Z" fill="#E4EAE8"/><g stroke="#8C94A6" stroke-width="2.4" stroke-linecap="round"><path d="M46 14 L46 24 M41 19 L51 19 M42.5 15.5 L49.5 22.5 M49.5 15.5 L42.5 22.5"/></g></svg><div class="rt" style="left:132px; top:194px; font-size:38px">Cold evening</div></div>
+      <div id="st2" class="hide"><div class="ring" style="left:494px; top:190px"></div><svg class="abs" style="left:494px; top:190px" width="64" height="64" viewBox="0 0 64 64"><path id="flame" d="M32 46 C 22 46 19 38 23 31 C 26 26 28 24 29 18 C 34 22 41 28 41 36 C 41 42 37 46 32 46 Z" fill="#E3BE6A"/><path id="flameX" d="M20 20 L44 44" stroke="#E4EAE8" stroke-width="4" stroke-linecap="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/></svg><div class="rt" style="left:578px; top:194px; font-size:38px">Heat off</div></div>
+      <div id="st3" class="hide"><div class="ring" style="left:48px; top:280px"></div><svg class="abs" style="left:48px; top:280px" width="64" height="64" viewBox="0 0 64 64"><rect x="27" y="12" width="10" height="30" rx="5" fill="none" stroke="#E4EAE8" stroke-width="2.6"/><circle cx="32" cy="46" r="7" fill="#E3BE6A"/><rect id="merc" x="30" y="20" width="4" height="24" fill="#E3BE6A"/></svg><div class="rt" style="left:132px; top:284px; font-size:38px">Watch the temp</div></div>
+      <div id="st4" class="hide"><div class="ring" style="left:494px; top:280px"></div><svg class="abs" style="left:494px; top:280px" width="64" height="64" viewBox="0 0 64 64"><circle cx="32" cy="32" r="17" fill="none" stroke="#E4EAE8" stroke-width="2.6"/><path id="sweep" d="M32 32 L32 15 A 17 17 0 0 1 32 15 Z" fill="rgba(227,190,106,0.45)"/><path id="hand" d="M32 32 L32 19" stroke="#E3BE6A" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="32" r="2.4" fill="#E4EAE8"/></svg><div class="rt" style="left:578px; top:284px; font-size:38px">Two hours</div></div>
+      <svg id="graph" class="abs hide" style="left:0; top:0" width="940" height="540" viewBox="0 0 940 540"></svg>
+    </div>
+    <div id="sumP" class="abs hide" style="inset:0">
+      <div class="lbl" style="left:48px; top:34px; font-size:26px">The test</div>
+      <div class="sub" style="left:230px; top:24px; color:var(--fog)">Cold evening · Heat off · Two hours</div>
+    </div>
+  </div>
+
+  <!-- card 3: the disclaimer, smaller and quieter than the test card -->
+  <div id="c3" class="card" style="left:110px; top:182px; width:860px; border-top:4px solid var(--grid); background:rgba(26,42,51,0.93); border-radius:24px; box-shadow:0 16px 40px rgba(0,0,0,0.35)">
+    <div style="padding:30px 40px 34px">
+      <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px">
+        <svg width="44" height="44" viewBox="0 0 44 44" style="position:static; flex:none"><circle cx="22" cy="22" r="19" fill="none" stroke="#8C94A6" stroke-width="2.5"/><circle cx="22" cy="13.5" r="2.6" fill="#E4EAE8"/><path d="M22 19.5 L22 32" stroke="#E4EAE8" stroke-width="3.4" stroke-linecap="round"/></svg>
+        <div style="font:700 24px/1 'Montserrat'; letter-spacing:0.14em; color:var(--fog)">BEFORE YOU TRY IT</div>
+      </div>
+      <div id="disc" style="font:600 34px/1.36 'Open Sans'; color:#DCE3E2">Skip the test if anyone in your home is very young, elderly, pregnant, or has a medical reason to avoid cold.</div>
+    </div>
+  </div>
+
+  <!-- beat 4 / close / share type -->
+  <div id="fun" class="pill" style="left:540px; top:128px; transform:translateX(-50%); background:rgba(26,42,51,0.92); border:4px solid var(--gold); padding:14px 40px 16px; font:900 58px/1 'Montserrat'; color:var(--gold); letter-spacing:0.06em">FUN FACT</div>
+  <div id="neq" class="abs" style="left:770px; top:640px; width:60px; text-align:center; font:900 96px/1 'Montserrat'; color:var(--gold); opacity:0">≠</div>
+  <div id="kn1" class="big" style="top:170px; color:var(--gold); font-size:132px"><span id="knA" class="hw">KNOW</span> <span id="knB" class="hw">NOW.</span></div>
+  <div id="kn2" class="big" style="top:326px; font:700 44px/1 'Open Sans'; color:var(--fog)">Not the first night the power’s out.</div>
+  <div id="ds1" class="big" style="top:168px; font:800 62px/1 'Montserrat'">DOESN’T TAKE A</div>
+  <div id="ds2" class="big" style="top:246px; font:900 128px/1 'Montserrat'">DISASTER.<div id="strike" class="abs" style="left:150px; width:780px; top:58px; height:16px; border-radius:8px; background:var(--gold); transform-origin:0 50%; transform:scaleX(0)"></div></div>
+  <div id="cjb" class="big" style="top:150px; font:800 56px/1 'Montserrat'; color:var(--fog)">COULD JUST BE</div>
+  <div id="cal" class="abs" style="left:320px; top:236px; width:440px; height:440px; opacity:0">
+    <div class="abs" style="inset:0; border-radius:26px; background:var(--dawn); box-shadow:0 26px 60px rgba(0,0,0,0.5); overflow:hidden">
+      <div class="abs" style="left:0; right:0; top:0; height:150px; background:var(--gold)"></div>
+      <div class="abs" style="left:0; right:0; top:44px; text-align:center; font:900 74px/1 'Montserrat'; color:var(--harbor)">TUESDAY</div>
+      <div class="abs" style="left:40px; right:40px; top:204px; display:flex; justify-content:space-between; font:800 40px/1 'Montserrat'; color:rgba(26,42,51,0.55)">
+        <span>M</span><span id="tueDot" style="position:relative; color:var(--harbor)">T<span class="abs" style="left:-22px; top:-20px; width:72px; height:80px; border-radius:50%; border:5px solid var(--gold)"></span></span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+      <div class="abs" style="left:40px; right:40px; top:300px; text-align:center; font:600 32px/1.3 'Open Sans'; color:rgba(26,42,51,0.75)">An ordinary day.</div>
+    </div>
+    <div class="abs" style="left:110px; top:-22px; width:22px; height:58px; border-radius:11px; background:var(--grid)"></div>
+    <div class="abs" style="left:308px; top:-22px; width:22px; height:58px; border-radius:11px; background:var(--grid)"></div>
+  </div>
+
+  <!-- card 4: share -->
+  <div id="c4" class="card" style="left:70px; top:60px; width:940px; height:470px">
+    <div class="lbl" style="left:48px; top:40px">Share it</div>
+    <svg id="shareArt" class="abs" style="left:40px; top:96px" width="320" height="330" viewBox="0 0 320 330"></svg>
+    <div id="shTxt" class="abs hd" style="left:380px; top:100px; width:520px; font-size:52px; opacity:0">Share a space or a wall with someone?</div>
+    <div id="shBtn" class="abs" style="left:380px; top:334px; width:440px; height:96px; border-radius:48px; background:var(--gold); opacity:0;
+         box-shadow:0 0 0 0 rgba(227,190,106,0.6)">
+      <svg class="abs" style="left:36px; top:24px" width="50" height="48" viewBox="0 0 50 48"><path d="M3 22 L46 3 L33 45 L23 28 Z M23 28 L46 3" fill="none" stroke="#1A2A33" stroke-width="4" stroke-linejoin="round"/></svg>
+      <div class="abs" style="left:100px; top:25px; font:900 44px/1 'Montserrat'; color:var(--harbor); letter-spacing:0.04em">SHARE THIS</div>
+    </div>
+  </div>
+  <div id="lockup" class="abs" style="left:0; width:1080px; top:600px; display:flex; justify-content:center; align-items:center; gap:34px; opacity:0">
+    <img src="../shared/brand/tlc-trng-horizontal-white.png" alt="TLC_TRNG" style="height:54px">
+    <div style="width:3px; height:58px; background:var(--grid)"></div>
+    <div style="font:800 50px/1 'Montserrat'; letter-spacing:0.22em; color:#fff">PREPARE</div>
+  </div>
+
+  <div id="caps"><div id="cap"></div></div>
+
+<script src="../shared/gsap.min.js"></script>
+<script src="data/data.js"></script>
+<script>
+  const FPS = 30, NFRAMES = 1939, D = 64.6;
+  const LIT_FROM = 697;                     // shot C (dissolve at 23.2s): relit frames and the matte start here
+  const CUT_FROM = 38.0;                    // from beat 4 on he is a cut-out over graphics
+  const DISCLAIMER_PIPES = false;           // the beat sheet's pipes sentence ("needs a yes or a cut"); off until confirmed
+  const rnd = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const span = (a, b, t) => clamp((t - a) / (b - a), 0, 1);
+  const ease = (p) => (p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
+  const easeOut = (p) => 1 - Math.pow(1 - p, 3);
+  const lerp = (a, b, k) => a + (b - a) * k;
+  const byId = (id) => document.getElementById(id);
+  const f1 = (v) => v.toFixed(1);
+  const pad = (n) => String(n).padStart(5, "0");
+
+  // ---------- cue times, all from spoken words ----------
+  const WORDS = window.WORDS.map(([w, s, e]) => ({ w, s, e }));
+  const norm = (s) => s.toLowerCase().replace(/[’]/g, "'").replace(/[^a-z0-9']/g, "");
+  function w(word, after = 0) {
+    const x = WORDS.find((o) => o.s >= after - 1e-3 && norm(o.w) === norm(word));
+    if (!x) throw new Error(`no word "${word}" after ${after}`);
+    return x.s;
+  }
+  const C = {
+    heats: w("heats"), two: w("two"), answers: w("answers"), changes: w("changes"), cutB: 6.706,
+    some: w("some"), everything: w("everything"), central: w("central"), thermostat: w("thermostat"), notsys: w("system", 11),
+    other: w("other"), hvac: w("hvac"), hear: w("hear"), kick: w("kick"), off1: w("off", 16.9), thats: w("that's", 17), setup: w("setup"),
+    laundry: w("laundry"), locked: w("locked"), landlord: w("landlord"), into: w("into"),
+    ifits: w("if", 23), test: w("test"), cold: w("cold", 25), heatoff: w("heat", 26), watch: w("watch"), temp: w("temperature"),
+    hours: w("two", 28), see: w("see"), far: w("far"), fast: w("fast"), drops: w("drops"), but: w("but", 31), health: w("health"),
+    fun: w("fun"), number: w("number"), match: w("match"), heatRises: w("heat", 41), rises: w("rises"), middle: w("middle"),
+    upper: w("upper"), radiated: w("radiated"), below: w("below"), jan: w("nice", 46), july: w("not", 48),
+    either: w("either"), know: w("know", 50), now: w("now", 51), first: w("first", 52), out: w("out", 53),
+    doesnt: w("doesn't", 53), disaster: w("disaster"), could: w("could"), tuesday: w("tuesday"),
+    share1: w("share", 57), space: w("space"), wall: w("wall"), share2: w("share", 63), them: w("them"),
+  };
+
+  // ---------- state the painter reads (GSAP animates these) ----------
+  const P = { s: 1, dx: 0, dy: 0, vis: 1, dim: 0 };            // the cut-out: scale and offset about the bottom centre
+  const B = { wipe: 0, night: 0 };                              // backdrops: storm wipe-in, night block
+  const TH = { you: 0, nb: 0 };                                 // thermometer levels (beat 4)
+  const BL = { warm: [0.12, 0.12, 0.12, 0.12, 0.12], hot: 0, snow: 0, sun: 0, flow: 0, pulseM: 0, pulseU: 0, pulseB: 0 };
+
+  if (DISCLAIMER_PIPES) byId("disc").insertAdjacentHTML("beforeend", "<br><span style=\"color:#C9D1D0\">Don’t let the unit get cold enough to risk pipes.</span>");
+
+  // ---------- icon art for the two-types card ----------
+  // 1: one boiler in the basement feeding every floor; 2: a unit with its own air handler and fan
+  byId("ic1").innerHTML = `
+    <rect x="30" y="18" width="90" height="116" rx="4" fill="none" stroke="#E4EAE8" stroke-width="3.5"/>
+    <path d="M30 47 H120 M30 76 H120 M30 105 H120" stroke="#8C94A6" stroke-width="2.5"/>
+    <rect x="61" y="111" width="28" height="20" rx="3" fill="#1A2A33" stroke="#E3BE6A" stroke-width="2.5"/>
+    <path id="ic1flame" d="M75 128 C 70 128 69 124 71 121 C 72.5 119 73.5 118 74 115 C 76.5 117 79 120 79 123 C 79 126 77 128 75 128 Z" fill="#E3BE6A"/>
+    <g id="ic1pipes" fill="none" stroke="#E3BE6A" stroke-width="3" stroke-linecap="round">
+      <path class="flow" d="M75 111 V 30" pathLength="100"/>
+      <path class="flow" d="M75 98 H 44 V 88" pathLength="100"/><path class="flow" d="M75 98 H 106 V 88" pathLength="100"/>
+      <path class="flow" d="M75 69 H 44 V 59" pathLength="100"/><path class="flow" d="M75 69 H 106 V 59" pathLength="100"/>
+      <path class="flow" d="M75 40 H 44 V 31" pathLength="100"/><path class="flow" d="M75 40 H 106 V 31" pathLength="100"/>
+    </g>`;
+  byId("ic2").innerHTML = `
+    <path d="M22 64 L75 26 L128 64" fill="none" stroke="#E4EAE8" stroke-width="3.5" stroke-linejoin="round"/>
+    <rect x="30" y="62" width="90" height="70" rx="4" fill="none" stroke="#E4EAE8" stroke-width="3.5"/>
+    <rect x="80" y="76" width="30" height="50" rx="3" fill="#1A2A33" stroke="#8C94A6" stroke-width="2.5"/>
+    <g id="fan" transform="translate(95,93)"><circle r="11" fill="none" stroke="#E3BE6A" stroke-width="2"/>
+      <g id="blades" fill="#E3BE6A"><path d="M0 0 C 2 -4 6 -8 1 -10 C -2 -10 -2 -4 0 0 Z"/><path d="M0 0 C 2 -4 6 -8 1 -10 C -2 -10 -2 -4 0 0 Z" transform="rotate(120)"/><path d="M0 0 C 2 -4 6 -8 1 -10 C -2 -10 -2 -4 0 0 Z" transform="rotate(240)"/></g></g>
+    <g id="waves2" fill="none" stroke="#E3BE6A" stroke-width="2.6" stroke-linecap="round" opacity="0">
+      <path d="M50 88 A 10 10 0 0 0 50 108"/><path d="M42 82 A 18 18 0 0 0 42 114"/></g>`;
+
+  // ---------- test graph: temperature over two hours; how far, how fast ----------
+  const GX0 = 120, GX1 = 840, GY0 = 400, GDROP = 74;
+  const gy = (u) => GY0 + GDROP * (1 - Math.exp(-2.6 * u)) / (1 - Math.exp(-2.6));
+  const curve = [...Array(41)].map((_, i) => `${i ? "L" : "M"} ${f1(lerp(GX0, GX1, i / 40))} ${f1(gy(i / 40))}`).join(" ");
+  byId("graph").innerHTML = `
+    <path d="M ${GX0} 386 V 492 H ${GX1 + 16}" fill="none" stroke="#8C94A6" stroke-width="2.5"/>
+    <text x="${GX0}" y="522" font-family="Open Sans" font-weight="600" font-size="22" fill="#8C94A6" text-anchor="middle">0</text>
+    <text x="${GX1}" y="522" font-family="Open Sans" font-weight="600" font-size="22" fill="#8C94A6" text-anchor="middle">2 hrs</text>
+    <g transform="translate(60,392)"><rect x="9" y="0" width="12" height="44" rx="6" fill="none" stroke="#8C94A6" stroke-width="2.4"/><circle cx="15" cy="50" r="9" fill="#8C94A6"/></g>
+    <path id="gline" d="${curve}" fill="none" stroke="#E3BE6A" stroke-width="7" stroke-linecap="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/>
+    <circle id="gdot" cx="${GX1}" cy="${f1(gy(1))}" r="11" fill="#E3BE6A" opacity="0"/>
+    <g id="gFar" opacity="0"><path d="M ${GX1 + 34} ${GY0} V ${GY0 + GDROP} M ${GX1 + 24} ${GY0} H ${GX1 + 44} M ${GX1 + 24} ${GY0 + GDROP} H ${GX1 + 44}" stroke="#F1E5BD" stroke-width="3"/>
+      <path d="M ${GX0} ${GY0} H ${GX1 + 30}" stroke="#F1E5BD" stroke-width="2" stroke-dasharray="6 8" opacity="0.6"/>
+      <text x="${GX1 - 4}" y="${GY0 - 12}" text-anchor="end" font-family="Montserrat" font-weight="800" font-size="24" letter-spacing="2" fill="#F1E5BD">HOW FAR</text></g>
+    <g id="gFast" opacity="0"><path d="M ${GX0 + 6} ${GY0 - 4} L ${GX0 + 190} ${GY0 + 62}" stroke="#F1E5BD" stroke-width="3" stroke-dasharray="7 7"/>
+      <text x="${GX0 + 210}" y="${GY0 + 86}" font-family="Montserrat" font-weight="800" font-size="24" letter-spacing="2" fill="#F1E5BD">HOW FAST</text></g>`;
+
+  // ---------- thermometers (beat 4) ----------
+  const THX = [700, 900], THT = 420, THB = 960;
+  byId("thermos").innerHTML = THX.map((x, i) => `
+    <g id="th${i}" opacity="0">
+      <rect x="${x - 30}" y="${THT}" width="60" height="${THB - THT + 30}" rx="30" fill="rgba(26,42,51,0.88)" stroke="#E4EAE8" stroke-width="5"/>
+      ${[...Array(8)].map((_, k) => `<path d="M ${x + 30} ${THT + 50 + k * 60} h -16" stroke="#8C94A6" stroke-width="3"/>`).join("")}
+      <rect id="hg${i}" x="${x - 13}" y="${THB}" width="26" height="40" rx="13" fill="#E3BE6A"/>
+      <circle cx="${x}" cy="${THB + 52}" r="54" fill="#E3BE6A" stroke="#E4EAE8" stroke-width="5"/>
+      <text x="${x}" y="${THB + 160}" text-anchor="middle" font-family="Montserrat" font-weight="800" font-size="36" fill="#fff" letter-spacing="2">${i ? "NEIGHBOR" : "YOU"}</text>
+    </g>`).join("");
+
+  // ---------- the building section (beat 4) ----------
+  const BX0 = 250, BX1 = 830, FL = 180, GND = 1400, NF = 5, ROOF = GND - FL * NF;
+  const floorTop = (k) => GND - FL * (k + 1);                      // k = 0 (ground floor) .. 4 (top)
+  byId("bld").innerHTML = `
+    <defs><linearGradient id="bsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14232b"/><stop offset="0.6" stop-color="#22414a"/><stop offset="1" stop-color="#2e5760"/></linearGradient>
+      <linearGradient id="hotg" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#E3BE6A"/><stop offset="1" stop-color="#E3BE6A"/></linearGradient></defs>
+    <rect width="1080" height="1920" fill="url(#bsky)"/>
+    <g stroke="rgba(140,148,166,0.10)" stroke-width="2">${[...Array(12)].map((_, i) => `<path d="M ${30 + i * 90} 0 V 1920"/>`).join("")}${[...Array(22)].map((_, i) => `<path d="M 0 ${i * 90} H 1080"/>`).join("")}</g>
+    <rect x="0" y="${GND}" width="1080" height="${1920 - GND}" fill="#121f26"/>
+    ${[...Array(NF)].map((_, k) => `<rect id="fw${k}" x="${BX0}" y="${floorTop(k)}" width="${BX1 - BX0}" height="${FL}" fill="#E3BE6A" opacity="0"/>`).join("")}
+    ${[...Array(NF)].map((_, k) => [0, 1].map((u) => {
+      const cx = u ? (540 + BX1) / 2 : (BX0 + 540) / 2, y = floorTop(k) + 46;
+      return `<rect x="${cx - 40}" y="${y}" width="80" height="78" rx="4" fill="rgba(241,229,189,0.10)" stroke="#8C94A6" stroke-width="3"/><path d="M ${cx} ${y} V ${y + 78} M ${cx - 40} ${y + 39} H ${cx + 40}" stroke="#8C94A6" stroke-width="2"/>`;
+    }).join("")).join("")}
+    <g stroke="#E4EAE8" stroke-width="6" fill="none" stroke-linecap="square">
+      <path d="M ${BX0} ${GND} V ${ROOF - 16} H ${BX1} V ${GND}"/>
+      ${[...Array(NF - 1)].map((_, k) => `<path d="M ${BX0} ${floorTop(k)} H ${BX1}"/>`).join("")}
+      <path d="M ${BX0 - 16} ${ROOF} H ${BX1 + 16}"/>
+    </g>
+    <g stroke="#8C94A6" stroke-width="3">${[...Array(NF)].map((_, k) => `<path d="M 540 ${floorTop(k) + 6} V ${floorTop(k) + FL - 4}"/>`).join("")}</g>
+    <path d="M 0 ${GND} H 1080" stroke="#E4EAE8" stroke-width="5"/>`;
+  byId("bldTop").innerHTML = `
+    <g id="hrT" opacity="0"><text id="hrA" x="540" y="300" text-anchor="middle" font-family="Montserrat" font-weight="900" font-size="128" fill="#fff">HEAT RISES</text>
+      <path d="M 540 112 L 520 140 M 540 112 L 560 140 M 540 112 V 176" stroke="#E3BE6A" stroke-width="10" stroke-linecap="round" fill="none"/></g>
+    <g id="lblU" opacity="0"><path d="M 852 ${floorTop(4) + 14} H 868 V ${floorTop(3) + FL - 14} H 852" stroke="#E3BE6A" stroke-width="5" fill="none"/>
+      <text x="884" y="${floorTop(3) + 18}" font-family="Montserrat" font-weight="900" font-size="34" fill="#fff">UPPER</text>
+      <text x="884" y="${floorTop(3) + 50}" font-family="Montserrat" font-weight="700" font-size="22" fill="#8C94A6" letter-spacing="2">FLOORS</text></g>
+    <g id="lblM" opacity="0"><path d="M 852 ${floorTop(2) + 14} H 868 V ${floorTop(1) + FL - 14} H 852" stroke="#E3BE6A" stroke-width="5" fill="none"/>
+      <text x="884" y="${floorTop(1) + 18}" font-family="Montserrat" font-weight="900" font-size="34" fill="#fff">MIDDLE</text>
+      <text x="884" y="${floorTop(1) + 50}" font-family="Montserrat" font-weight="700" font-size="22" fill="#8C94A6" letter-spacing="2">FLOORS</text></g>
+    <g id="lblB" opacity="0"><text x="166" y="${floorTop(0) + 100}" text-anchor="end" font-family="Montserrat" font-weight="900" font-size="30" fill="#fff">BELOW</text></g>
+    <g id="arrowR" opacity="0"><path id="arrowLine" d="M 200 ${GND - 30} V ${ROOF + 40}" stroke="#E3BE6A" stroke-width="8" stroke-linecap="round" fill="none" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/>
+      <path d="M 176 ${ROOF + 70} L 200 ${ROOF + 38} L 224 ${ROOF + 70}" stroke="#E3BE6A" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <text transform="translate(150 ${(GND + ROOF) / 2}) rotate(-90)" text-anchor="middle" font-family="Montserrat" font-weight="800" font-size="28" fill="#F1E5BD" letter-spacing="3">RADIATED HEAT</text></g>
+    <g id="seasonJ" opacity="0"><rect x="60" y="358" width="300" height="72" rx="36" fill="rgba(26,42,51,0.92)" stroke="#E4EAE8" stroke-width="3"/>
+      <g transform="translate(104 394)" stroke="#E4EAE8" stroke-width="3.4" stroke-linecap="round"><path d="M0 -20 V20 M-17 -10 L17 10 M-17 10 L17 -10"/></g>
+      <text x="140" y="406" font-family="Montserrat" font-weight="900" font-size="32" fill="#fff" letter-spacing="2">JANUARY</text></g>
+    <g id="seasonX" opacity="0"><rect x="60" y="358" width="300" height="72" rx="36" fill="rgba(26,42,51,0.92)" stroke="#FFA033" stroke-width="3"/>
+      <g transform="translate(104 394)"><circle r="12" fill="#FFA033"/><g stroke="#FFA033" stroke-width="3.4" stroke-linecap="round">${[...Array(8)].map((_, i) => `<path d="M 0 -17 V -22" transform="rotate(${i * 45})"/>`).join("")}</g></g>
+      <text x="140" y="406" font-family="Montserrat" font-weight="900" font-size="32" fill="#fff" letter-spacing="2">JULY</text></g>
+    <g id="niceJ" opacity="0"><rect x="560" y="358" width="200" height="72" rx="36" fill="#E3BE6A"/>
+      <path d="M 592 394 L 606 408 L 630 380" stroke="#1A2A33" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="644" y="406" font-family="Montserrat" font-weight="900" font-size="32" fill="#1A2A33">NICE</text></g>
+    <g id="niceX" opacity="0"><rect x="480" y="358" width="340" height="72" rx="36" fill="rgba(26,42,51,0.92)" stroke="#FF6B7A" stroke-width="3"/>
+      <path d="M 510 380 L 534 406 M 534 380 L 510 406" stroke="#FF6B7A" stroke-width="7" stroke-linecap="round"/>
+      <text x="552" y="406" font-family="Montserrat" font-weight="900" font-size="32" fill="#fff">NOT SO NICE</text></g>`;
+
+  // ---------- share card art: two homes sharing a wall ----------
+  byId("shareArt").innerHTML = `
+    <g fill="none" stroke="#E4EAE8" stroke-width="4" stroke-linejoin="round">
+      <rect id="rmA" x="16" y="90" width="140" height="200" rx="6" fill="rgba(227,190,106,0)"/>
+      <rect id="rmB" x="164" y="90" width="140" height="200" rx="6" fill="rgba(227,190,106,0)"/>
+      <path d="M 6 96 L 160 18 L 314 96"/></g>
+    <rect id="wallG" x="152" y="86" width="16" height="208" rx="4" fill="#E3BE6A" opacity="0"/>
+    ${[86, 234].map((x) => `<g transform="translate(${x} 200)" fill="#E4EAE8"><circle cy="-38" r="17"/><path d="M -28 30 C -28 -6 28 -6 28 30 Z"/></g>`).join("")}`;
+
+  // ---------- captions: 1-3 word chunks; new chunk at punctuation, a 0.3s gap, or ~17 characters ----------
+  const CHUNKS = (() => {
+    const out = []; let cur = [];
+    WORDS.forEach((x, i) => {
+      const prev = WORDS[i - 1], text = cur.map((c) => c.w).join(" ") + " " + x.w;
+      if (cur.length && (cur.length >= 3 || text.length > 18 || x.s - prev.e > 0.3 || /[.,?!]$/.test(prev.w))) { out.push(cur); cur = []; }
+      cur.push(x);
+    });
+    out.push(cur);
+    return out.map((ws, i) => {
+      const next = out[i + 1];
+      return { ws, s: ws[0].s - 0.05, e: Math.min(next ? next[0].s - 0.04 : D, ws[ws.length - 1].e + 0.5) };
+    });
+  })();
+  const capEl = byId("cap");
+  let capIdx = -2;
+  function drawCaptions(t) {
+    const i = t < C.heats + 1.25 ? -1 : CHUNKS.findIndex((c) => t >= c.s && t < c.e);   // the hook card carries line one
+    if (i < 0) { capEl.style.opacity = 0; capIdx = -1; return; }
+    const c = CHUNKS[i];
+    if (i !== capIdx) {
+      capEl.innerHTML = c.ws.map((x) => `<span>${x.w.replace(/'/g, "’")}</span>`).join(" ");
+      capIdx = i;
+    }
+    const spans = capEl.children;
+    c.ws.forEach((x, k) => spans[k].classList.toggle("on", t >= x.s && (k === c.ws.length - 1 || t < c.ws[k + 1].s)));
+    const k = easeOut(span(c.s, c.s + 0.12, t));
+    capEl.style.opacity = 1;
+    capEl.style.transform = `scale(${(0.9 + 0.1 * k).toFixed(3)})`;
+  }
+
+  // ---------- timeline ----------
+  const tl = gsap.timeline({ paused: true });
+  const at = (sel, vars, t) => tl.to(sel, vars, t);
+  // hook: words pop as spoken ("do you know" is up from the first frame)
+  document.querySelectorAll("#hook .hw").forEach((el) => {
+    const t0 = w(el.dataset.w);
+    if (t0 < 0.3) { gsap.set(el, { opacity: 1 }); return; }
+    tl.fromTo(el, { opacity: 0, y: 26, scale: el.id === "heats" ? 1.5 : 1 }, { opacity: 1, y: 0, scale: 1, duration: el.id === "heats" ? 0.3 : 0.16, ease: "back.out(2)" }, t0 - 0.04);
+  });
+  // two answers
+  at("#hook", { opacity: 0, y: -40, duration: 0.25, ease: "power2.in" }, C.two - 0.45);
+  at("#twoP", { opacity: 1, duration: 0.2 }, C.two - 0.25);
+  tl.fromTo("#m1", { opacity: 0, rotationY: 90 }, { opacity: 1, rotationY: 0, duration: 0.3, ease: "back.out(1.6)" }, C.two - 0.05);
+  tl.fromTo("#m2", { opacity: 0, rotationY: 90 }, { opacity: 1, rotationY: 0, duration: 0.3, ease: "back.out(1.6)" }, C.answers);
+  tl.to(".mini .q", { scale: 1.12, duration: 0.18, yoyo: true, repeat: 1, ease: "power1.inOut" }, C.changes);
+  // the card reshapes into the two-types card on the cut to the closet
+  at("#twoP", { opacity: 0, duration: 0.15 }, C.cutB - 0.2);
+  at("#c1", { left: 70, top: 50, width: 940, height: 540, duration: 0.45, ease: "power3.inOut" }, C.cutB - 0.22);
+  at("#typesP", { opacity: 1, duration: 0.2 }, C.cutB + 0.1);
+  tl.fromTo("#r1", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.35, ease: "power2.out" }, C.some - 0.05);
+  at("#s1a", { opacity: 1, duration: 0.25 }, C.thermostat);
+  at("#s1b", { opacity: 1, duration: 0.25 }, C.notsys - 0.1);
+  at("#div1", { opacity: 1, duration: 0.3 }, C.other - 0.2);
+  tl.fromTo("#r2", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.35, ease: "power2.out" }, C.other - 0.05);
+  at("#s2a", { opacity: 1, duration: 0.25 }, C.hear - 0.1);
+  at("#s2b", { opacity: 1, duration: 0.25 }, C.thats - 0.05);
+  at("#foot1", { opacity: 1, duration: 0.25 }, C.laundry - 0.2);
+  tl.fromTo("#chip1", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)" }, C.laundry - 0.05);
+  tl.fromTo("#chip2", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)" }, C.locked - 0.05);
+  tl.fromTo("#tagLL", { opacity: 0, scale: 1.8, rotation: -20 }, { opacity: 1, scale: 1, rotation: -7, duration: 0.3, ease: "back.out(2.2)" }, C.landlord + 0.3);
+  at("#c1", { y: -640, opacity: 0, duration: 0.4, ease: "power2.in" }, C.ifits - 0.3);
+  // the test
+  tl.fromTo("#c2", { opacity: 0, y: -60 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, C.ifits);
+  tl.fromTo("#tTitle", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)", transformOrigin: "0% 50%" }, C.test - 0.05);
+  [["#st1", C.cold], ["#st2", C.heatoff], ["#st3", C.temp], ["#st4", C.hours]].forEach(([sel, t0]) =>
+    tl.fromTo(sel, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.25, ease: "back.out(2)" }, t0 - 0.06));
+  at("#graph", { opacity: 1, duration: 0.3 }, C.see - 0.35);
+  // ...then folds to a one-line summary; the disclaimer card comes in under it
+  at("#testP", { opacity: 0, duration: 0.15 }, C.but - 0.25);
+  at("#c2", { height: 104, duration: 0.4, ease: "power3.inOut" }, C.but - 0.2);
+  at("#sumP", { opacity: 1, duration: 0.25 }, C.but + 0.12);
+  tl.fromTo("#c3", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, C.but + 0.15);
+  at(["#c2", "#c3"], { opacity: 0, y: -60, duration: 0.35, ease: "power2.in" }, C.fun - 0.35);
+  // beat 4: the office wipes away; he steps left for the thermometers
+  at(B, { wipe: 1, duration: 0.7, ease: "power2.inOut" }, C.fun - 0.15);
+  at(P, { s: 0.8, dx: -170, duration: 0.7, ease: "power2.inOut" }, C.fun + 0.25);
+  tl.fromTo("#fun", { opacity: 0, scale: 1.7, rotation: -10 }, { opacity: 1, scale: 1, rotation: -3, duration: 0.3, ease: "back.out(2)" }, C.fun);
+  tl.fromTo("#th0", { opacity: 0, y: 80 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, C.number - 0.2);
+  tl.fromTo("#th1", { opacity: 0, y: 80 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, C.number);
+  at("#thermos", { opacity: 1, duration: 0.01 }, C.number - 0.2);
+  at(TH, { you: 0.42, nb: 0.78, duration: 1.1, ease: "power2.out" }, C.number + 0.1);
+  tl.fromTo("#neq", { opacity: 0, scale: 0.3 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2.5)" }, C.match - 0.05);
+  // the building takes the frame
+  at(["#fun", "#neq", "#thermos"], { opacity: 0, duration: 0.25 }, C.heatRises - 0.3);
+  at(P, { dx: -900, duration: 0.4, ease: "power2.in" }, C.heatRises - 0.35);
+  tl.fromTo("#bldL", { opacity: 0, y: 160 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, C.heatRises - 0.3);
+  tl.fromTo("#hrT", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.35, ease: "back.out(1.8)" }, C.heatRises - 0.05);
+  at(BL, { flow: 1, duration: 0.6 }, C.heatRises);
+  at(BL.warm, { 0: 0.22, 1: 0.32, 2: 0.42, 3: 0.55, 4: 0.66, duration: 4.0, ease: "power1.inOut" }, C.heatRises + 0.2);
+  at("#lblM", { opacity: 1, duration: 0.25 }, C.middle - 0.05);
+  at(BL, { pulseM: 1, duration: 0.25, yoyo: true, repeat: 1 }, C.middle - 0.05);
+  at("#lblU", { opacity: 1, duration: 0.25 }, C.upper - 0.05);
+  at(BL, { pulseU: 1, duration: 0.25, yoyo: true, repeat: 1 }, C.upper - 0.05);
+  at("#arrowR", { opacity: 1, duration: 0.2 }, C.radiated - 0.1);
+  at("#lblB", { opacity: 1, duration: 0.25 }, C.below - 0.1);
+  at(BL, { pulseB: 1, duration: 0.25, yoyo: true, repeat: 1 }, C.below - 0.1);
+  at(BL, { snow: 1, duration: 0.6 }, C.jan - 0.3);
+  tl.fromTo(["#seasonJ", "#niceJ"], { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)", transformOrigin: "50% 50%" }, C.jan - 0.05);
+  at(["#seasonJ", "#niceJ"], { opacity: 0, duration: 0.15 }, C.july - 0.15);
+  at(BL, { snow: 0, sun: 1, hot: 1, duration: 0.5 }, C.july - 0.15);
+  tl.fromTo(["#seasonX", "#niceX"], { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)", transformOrigin: "50% 50%" }, C.july);
+  // close: back to him, over a night block
+  tl.set(P, { dx: 0, s: 0.86, dy: 520 }, C.either - 0.5);
+  at(B, { night: 1, duration: 0.01 }, C.either - 0.5);
+  at("#bldL", { opacity: 0, y: 200, duration: 0.45, ease: "power2.in" }, C.either - 0.45);
+  at(P, { dy: 0, duration: 0.5, ease: "power3.out" }, C.either - 0.2);
+  tl.fromTo("#kn1", { opacity: 0 }, { opacity: 1, duration: 0.01 }, C.know - 0.1);
+  tl.fromTo("#knA", { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(2)" }, C.know - 0.05);
+  tl.fromTo("#knB", { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(2)" }, C.now - 0.05);
+  tl.fromTo("#kn2", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3 }, C.first - 0.15);
+  at(P, { dim: 1, duration: 0.35 }, C.out + 0.05);
+  at(["#kn1", "#kn2"], { opacity: 0, duration: 0.2 }, C.doesnt - 0.25);
+  tl.fromTo("#ds1", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.25 }, C.doesnt - 0.05);
+  tl.fromTo("#ds2", { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)" }, C.disaster - 0.1);
+  at("#strike", { scaleX: 1, duration: 0.28, ease: "power2.out" }, C.disaster + 0.32);
+  at(["#ds1", "#ds2"], { opacity: 0, duration: 0.2 }, C.could - 0.25);
+  tl.fromTo("#cjb", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.25 }, C.could - 0.05);
+  tl.fromTo("#cal", { opacity: 0, y: -520, rotation: -14 }, { opacity: 1, y: 0, rotation: -3, duration: 0.42, ease: "bounce.out" }, C.tuesday - 0.32);
+  // share
+  at(["#cjb", "#cal"], { opacity: 0, y: -60, duration: 0.3, ease: "power2.in" }, C.share1 - 0.55);
+  at(B, { night: 0, duration: 0.5 }, C.share1 - 0.5);
+  at(P, { dim: 0, duration: 0.5 }, C.share1 - 0.5);
+  tl.fromTo("#c4", { opacity: 0, y: -60 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, C.share1 - 0.3);
+  tl.fromTo("#shTxt", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.3 }, C.share1 - 0.1);
+  at("#rmA", { attr: { fill: "rgba(227,190,106,0.28)" }, duration: 0.25 }, C.space - 0.05);
+  at("#rmB", { attr: { fill: "rgba(227,190,106,0.28)" }, duration: 0.25 }, C.space + 0.1);
+  at("#wallG", { opacity: 1, duration: 0.2 }, C.wall - 0.05);
+  tl.fromTo("#shBtn", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2.4)" }, C.share2 - 0.1);
+  tl.fromTo("#lockup", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, C.share2 - 0.7);
+
+  // ---------- per-frame art ----------
+  const TR = window.TRACKS;
+  const trackAt = (tr, t) => { const i = clamp(Math.floor(t * FPS + 1e-6) + 1 - tr.first, 0, tr.xy.length - 1); return tr.xy[i]; };
+  function drawOverlays(t) {
+    // thermostat ring (shot A), stuck to the tracked thermostat
+    const ring = span(C.heats - 0.05, C.heats + 0.35, t) * (1 - span(C.two - 0.4, C.two - 0.1, t));
+    const [tx, ty] = trackAt(TR.thermo, t);
+    const g = byId("thermoRing");
+    g.setAttribute("opacity", ring.toFixed(3));
+    g.setAttribute("transform", `translate(${f1(tx)},${f1(ty)})`);
+    byId("tr1").setAttribute("stroke-dashoffset", (1 - easeOut(span(C.heats - 0.05, C.heats + 0.3, t))).toFixed(3));
+    const pp = ((t - C.heats) % 0.7) / 0.7;
+    byId("tr2").setAttribute("r", f1(112 + 60 * pp));
+    byId("tr2").setAttribute("opacity", (t > C.heats ? 0.7 * (1 - pp) : 0).toFixed(3));
+    const q = easeOut(span(C.heats + 0.15, C.heats + 0.4, t));
+    byId("trQ").setAttribute("opacity", q.toFixed(3));
+    byId("trQ").setAttribute("transform", `translate(-118,-118) scale(${(0.4 + 0.6 * q).toFixed(3)})`);
+    // thermometer mercury
+    [TH.you, TH.nb].forEach((v, i) => { const top = THB - (THB - THT - 40) * v; const r = byId(`hg${i}`); r.setAttribute("y", f1(top)); r.setAttribute("height", f1(THB + 40 - top)); });
+  }
+
+  function drawHookFx(t) {
+    // heat shimmer on HEATS (noise reseeded every other frame) and a slow warm glow
+    byId("heatNoise").setAttribute("seed", String(1 + Math.floor(t * FPS / 2) % 50));
+    byId("heats").style.textShadow = `0 0 ${f1(30 + 14 * Math.sin(t * 5))}px rgba(227,190,106,${(0.4 + 0.15 * Math.sin(t * 5)).toFixed(3)})`;
+  }
+
+  function drawCardFx(t) {
+    // two-types icons: heat flowing up the risers; the fan kicks on and off
+    const flow = -((t * 60) % 100);
+    document.querySelectorAll("#ic1pipes .flow").forEach((p) => { p.setAttribute("stroke-dasharray", "14 10"); p.setAttribute("stroke-dashoffset", f1(flow)); });
+    byId("ic1pipes").setAttribute("opacity", (0.35 + 0.65 * span(C.everything - 0.2, C.central + 0.3, t)).toFixed(3));
+    byId("ic1flame").setAttribute("transform", `translate(75 128) scale(${(1 + 0.12 * Math.sin(t * 19)).toFixed(3)}) translate(-75 -128)`);
+    const spin = span(C.kick, C.kick + 0.35, t) * (1 - span(C.off1 + 0.05, C.off1 + 0.6, t));
+    const ang = 720 * (Math.max(0, t - C.kick) - (t > C.off1 ? 0.6 * Math.max(0, t - C.off1 - 0.3) : 0)) * (t > C.kick ? 1 : 0);
+    byId("blades").setAttribute("transform", `rotate(${f1(spin > 0.01 ? ang : 0)})`);
+    byId("waves2").setAttribute("opacity", (spin * (0.6 + 0.4 * Math.sin(t * 22))).toFixed(3));
+    // padlock closes on "landlord"
+    const lk = easeOut(span(C.landlord, C.landlord + 0.15, t));
+    byId("shackle").setAttribute("d", `M10 18 L10 12 A 8 8 0 0 1 26 12 L26 ${f1(8 + 10 * lk)}`);
+    // the test: flame out on "heat off"; clock sweeps two hours; graph draws as he says how far and how fast it drops
+    byId("flameX").setAttribute("stroke-dashoffset", (1 - easeOut(span(C.heatoff + 0.15, C.heatoff + 0.4, t))).toFixed(3));
+    byId("flame").setAttribute("opacity", (1 - 0.65 * span(C.heatoff + 0.2, C.heatoff + 0.5, t)).toFixed(3));
+    const sw = ease(span(C.hours, C.hours + 0.9, t)) * 60, a = (sw - 90) * Math.PI / 180;
+    const hx = 32 + 13 * Math.cos(a), hy = 32 + 13 * Math.sin(a), ex = 32 + 17 * Math.cos(a), ey = 32 + 17 * Math.sin(a);
+    byId("hand").setAttribute("d", `M32 32 L${f1(hx)} ${f1(hy)}`);
+    byId("sweep").setAttribute("d", sw < 0.5 ? "M32 32 Z" : `M32 32 L32 15 A 17 17 0 0 1 ${f1(ex)} ${f1(ey)} Z`);
+    const gd = span(C.see - 0.1, C.drops + 0.35, t);
+    byId("gline").setAttribute("stroke-dashoffset", (1 - gd).toFixed(3));
+    byId("gdot").setAttribute("opacity", span(C.drops + 0.2, C.drops + 0.35, t).toFixed(3));
+    byId("gdot").setAttribute("r", f1(11 + 4 * Math.max(0, Math.sin((t - C.drops) * 9)) * span(C.drops, C.drops + 0.3, t)));
+    byId("gFar").setAttribute("opacity", span(C.far - 0.05, C.far + 0.15, t).toFixed(3));
+    byId("gFast").setAttribute("opacity", span(C.fast - 0.05, C.fast + 0.15, t).toFixed(3));
+    const mh = 24 * (1 - 0.6 * gd);
+    byId("merc").setAttribute("y", f1(44 - mh)); byId("merc").setAttribute("height", f1(mh));
+    // share button pulse
+    const sp = t > C.share2 + 0.25 ? (t - C.share2 - 0.25) % 0.9 / 0.9 : 0;
+    byId("shBtn").style.boxShadow = `0 0 0 ${f1(30 * sp)}px rgba(227,190,106,${(0.55 * (1 - sp) * (sp > 0 ? 1 : 0)).toFixed(3)})`;
+  }
+
+  // ---------- the building: floor warmth, heat climbing through the slabs, January snow, July sun ----------
+  const bfx = byId("bfx").getContext("2d");
+  const FLAKES = [...Array(90)].map((_, i) => ({ x: rnd(i + 1) * 1080, v: 70 + rnd(i + 2) * 70, ph: rnd(i + 3), r: 2 + rnd(i + 4) * 4 }));
+  const HEATP = [...Array(72)].map((_, i) => ({ x: BX0 + 30 + rnd(i + 11) * (BX1 - BX0 - 60), k: Math.floor(rnd(i + 12) * 4), ph: rnd(i + 13), v: 0.45 + rnd(i + 14) * 0.4 }));
+  function drawBuilding(t) {
+    const on = parseFloat(getComputedStyle(byId("bldL")).opacity);
+    bfx.clearRect(0, 0, 1080, 1920);
+    if (on <= 0.001) return;
+    const hotC = (k) => (BL.hot > 0 && k >= 3 ? [255, 160, 51] : [227, 190, 106]);
+    for (let k = 0; k < NF; k++) {
+      let v = BL.warm[k] + 0.25 * BL.pulseB * (k === 0) + 0.3 * BL.pulseM * (k === 1 || k === 2) + 0.3 * BL.pulseU * (k >= 3);
+      if (k >= 3) v += 0.22 * BL.hot; else if (k >= 1) v += 0.08 * BL.hot;
+      const r = byId(`fw${k}`);
+      r.setAttribute("opacity", (0.42 * clamp(v, 0, 1)).toFixed(3));
+      r.setAttribute("fill", `rgb(${hotC(k).map((c, i) => Math.round(lerp([227, 190, 106][i], c, BL.hot))).join(",")})`);
+    }
+    // heat rising: short wavy strokes leave each floor, cross the slab above and fade into the next floor
+    bfx.lineCap = "round";
+    for (const p of HEATP) {
+      const ph = (t * p.v + p.ph) % 1, y0 = floorTop(p.k) + FL - 20, y = y0 - ph * (FL + 40);
+      const a = BL.flow * Math.sin(Math.PI * ph) * (0.55 + 0.45 * (p.k / 3));
+      if (a <= 0.01) continue;
+      const rgb = BL.hot > 0.5 && p.k >= 2 ? "255,160,51" : "227,190,106";
+      bfx.beginPath();
+      for (let s = 0; s <= 7; s++) { const yy = y - s * 9, xx = p.x + 9 * Math.sin(s * 1.2 + t * 6 + p.ph * 9); s ? bfx.lineTo(xx, yy) : bfx.moveTo(xx, yy); }
+      bfx.strokeStyle = `rgba(${rgb},${(0.25 * a).toFixed(3)})`; bfx.lineWidth = 14; bfx.stroke();    // soft glow
+      bfx.strokeStyle = `rgba(${rgb},${a.toFixed(3)})`; bfx.lineWidth = 6; bfx.stroke();
+    }
+    // the radiated-heat arrow draws on
+    byId("arrowLine").setAttribute("stroke-dashoffset", (1 - easeOut(span(C.radiated - 0.1, C.radiated + 0.6, t))).toFixed(3));
+    // January snow around the building
+    if (BL.snow > 0) {
+      bfx.fillStyle = `rgba(228,234,232,${(0.85 * BL.snow).toFixed(3)})`;
+      for (const f of FLAKES) {
+        const y = ((t * f.v + f.ph * 1500) % 1500) - 40, x = f.x + 14 * Math.sin(t * 1.6 + f.ph * 6);
+        if (x > BX0 - 10 && x < BX1 + 10 && y > ROOF - 30 && y < GND) continue;
+        if (y > GND) continue;
+        bfx.beginPath(); bfx.arc(x, y, f.r, 0, Math.PI * 2); bfx.fill();
+      }
+    }
+    // July sun and shimmer off the roof
+    if (BL.sun > 0) {
+      const sx = 975, sy = 455;
+      const glow = bfx.createRadialGradient(sx, sy, 0, sx, sy, 240);
+      glow.addColorStop(0, `rgba(255,160,51,${(0.45 * BL.sun).toFixed(3)})`); glow.addColorStop(1, "rgba(255,160,51,0)");
+      bfx.fillStyle = glow; bfx.fillRect(sx - 240, sy - 240, 480, 480);
+      bfx.fillStyle = `rgba(255,160,51,${BL.sun.toFixed(3)})`;
+      bfx.beginPath(); bfx.arc(sx, sy, 52, 0, Math.PI * 2); bfx.fill();
+      bfx.strokeStyle = `rgba(255,160,51,${BL.sun.toFixed(3)})`; bfx.lineWidth = 8;
+      for (let i = 0; i < 10; i++) { const a = i * Math.PI / 5 + t * 0.4; bfx.beginPath(); bfx.moveTo(sx + 70 * Math.cos(a), sy + 70 * Math.sin(a)); bfx.lineTo(sx + 96 * Math.cos(a), sy + 96 * Math.sin(a)); bfx.stroke(); }
+      bfx.strokeStyle = `rgba(255,160,51,${(0.6 * BL.hot).toFixed(3)})`; bfx.lineWidth = 5;
+      for (let i = 0; i < 6; i++) {
+        const x = BX0 + 60 + i * 92, ph = (t * 0.8 + i * 0.29) % 1, y = ROOF - 30 - 60 * ph;
+        bfx.globalAlpha = Math.sin(Math.PI * ph);
+        bfx.beginPath(); for (let s = 0; s <= 6; s++) { const yy = y - s * 8, xx = x + 7 * Math.sin(s * 1.2 + t * 5); s ? bfx.lineTo(xx, yy) : bfx.moveTo(xx, yy); } bfx.stroke();
+        bfx.globalAlpha = 1;
+      }
+    }
+  }
+
+  // ---------- backdrops behind the cut-out ----------
+  function drawStorm(g, t) {
+    const gr = g.createLinearGradient(0, 0, 0, 1920);
+    gr.addColorStop(0, "#14232b"); gr.addColorStop(0.55, "#24434c"); gr.addColorStop(1, "#3F6A72");
+    g.fillStyle = gr; g.fillRect(0, 0, 1080, 1920);
+    g.strokeStyle = "rgba(140,148,166,0.10)"; g.lineWidth = 2;
+    const off = (t * 10) % 90;
+    g.beginPath();
+    for (let x = 30; x < 1080; x += 90) { g.moveTo(x, 0); g.lineTo(x, 1920); }
+    for (let y = -off; y < 1920; y += 90) { g.moveTo(0, y); g.lineTo(1080, y); }
+    g.stroke();
+    const hx = 540 + P.dx + (500 - 540) * P.s, hy = 1920 - (1920 - 950) * P.s;
+    const glow = g.createRadialGradient(hx, hy, 0, hx, hy, 620);
+    glow.addColorStop(0, "rgba(227,190,106,0.16)"); glow.addColorStop(1, "rgba(227,190,106,0)");
+    g.fillStyle = glow; g.fillRect(0, 0, 1080, 1920);
+  }
+  // night block: towers with lit windows that go dark, in a ripple, on "power's out"
+  const TOWERS = [[-40, 760, 300], [230, 980, 260], [470, 640, 280], [730, 880, 250], [950, 720, 200]];
+  const WINS = [];
+  TOWERS.forEach(([x0, top, wd], ti) => {
+    for (let y = top + 50; y < 1900; y += 70) for (let x = x0 + 30; x < x0 + wd - 40; x += 56) {
+      const id = WINS.length;
+      WINS.push({ x, y, lit: rnd(id * 3 + 1) < 0.72, off: C.out + 0.05 + rnd(id * 7 + 2) * 0.5 + (Math.abs(x - 540) / 540) * 0.15, warm: rnd(id * 5 + 3) });
+    }
+  });
+  const STARS = [...Array(60)].map((_, i) => ({ x: rnd(i + 401) * 1080, y: rnd(i + 402) * 700, r: 1 + rnd(i + 403) * 1.8, ph: rnd(i + 404) * 6 }));
+  function drawNight(g, t) {
+    const sky = g.createLinearGradient(0, 0, 0, 1920);
+    sky.addColorStop(0, "#0b141a"); sky.addColorStop(0.45, "#15242c"); sky.addColorStop(1, "#22404a");
+    g.fillStyle = sky; g.fillRect(0, 0, 1080, 1920);
+    for (const s of STARS) { g.fillStyle = `rgba(228,234,232,${(0.35 + 0.35 * Math.sin(t * 2 + s.ph)).toFixed(3)})`; g.beginPath(); g.arc(s.x, s.y, s.r, 0, Math.PI * 2); g.fill(); }
+    const mg = g.createRadialGradient(150, 560, 0, 150, 560, 190);
+    mg.addColorStop(0, "rgba(241,229,189,0.35)"); mg.addColorStop(1, "rgba(241,229,189,0)");
+    g.fillStyle = mg; g.fillRect(-40, 370, 380, 380);
+    g.fillStyle = "#F1E5BD"; g.beginPath(); g.arc(150, 560, 50, 0, Math.PI * 2); g.fill();
+    for (const [x0, top, wd] of TOWERS) {
+      g.fillStyle = "#0f1b21"; g.fillRect(x0, top, wd, 1920 - top);
+      g.strokeStyle = "rgba(140,148,166,0.35)"; g.lineWidth = 3; g.strokeRect(x0, top, wd, 1920 - top);
+    }
+    for (const w of WINS) {
+      let lit = w.lit && t < w.off;
+      if (w.lit && t >= w.off && t < w.off + 0.12) lit = Math.floor((t - w.off) * 60) % 2 === 0;   // a flicker as each goes
+      g.fillStyle = lit ? `rgba(${w.warm > 0.5 ? "227,190,106" : "241,229,189"},${(0.7 + 0.25 * w.warm).toFixed(3)})` : "rgba(26,42,51,0.9)";
+      g.fillRect(w.x, w.y, 30, 38);
+    }
+  }
+
+  // ---------- footage and the cut-out ----------
+  const stage = byId("stage").getContext("2d");
+  const fimg = new Image(), aimg = new Image();
+  const pc = document.createElement("canvas"); pc.width = 1080; pc.height = 1920;
+  const pcx = pc.getContext("2d", { willReadFrequently: true });
+  const ac = document.createElement("canvas"); ac.width = 1080; ac.height = 1920;
+  const acx = ac.getContext("2d", { willReadFrequently: true });
+  let haveSrc = "", haveA = "", cutN = -1;
+  const ALUT = new Uint8Array(256).map((_, v) => Math.round(255 * Math.pow(v / 255, 1.35)));
+  async function loadImg(im, src) { im.src = src; try { await im.decode(); } catch (e) { console.error("load", src, e.message); } }
+  async function paint(t) {
+    const n = clamp(Math.floor(t * FPS + 1e-6) + 1, 1, NFRAMES);
+    const src = (n >= LIT_FROM ? "assets/lit/" : "assets/frames/") + `f_${pad(n)}.jpg`;
+    if (src !== haveSrc) { await loadImg(fimg, src); haveSrc = src; }
+    const g = stage;
+    g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.filter = "none";
+    g.shadowColor = "transparent"; g.shadowBlur = 0; g.shadowOffsetY = 0;
+    if (t < CUT_FROM) { g.drawImage(fimg, 0, 0, 1080, 1920); return; }
+    const asrc = `assets/alpha/a_${pad(n)}.png`;
+    if (asrc !== haveA) { await loadImg(aimg, asrc); haveA = asrc; }
+    if (cutN !== n) {                                     // person = relit frame with the matte as its alpha
+      pcx.clearRect(0, 0, 1080, 1920); pcx.drawImage(fimg, 0, 0);
+      acx.clearRect(0, 0, 1080, 1920); acx.drawImage(aimg, 0, 0);
+      const f = pcx.getImageData(0, 0, 1080, 1920), a = acx.getImageData(0, 0, 1080, 1920).data, d = f.data;
+      for (let i = 3; i < d.length; i += 4) d[i] = ALUT[a[i - 3]];
+      pcx.putImageData(f, 0, 0); cutN = n;
+    }
+    if (B.wipe < 1) g.drawImage(fimg, 0, 0, 1080, 1920);
+    if (B.wipe > 0) {
+      g.save();
+      if (B.wipe < 1) { g.beginPath(); g.arc(1080, 0, 2300 * B.wipe, 0, Math.PI * 2); g.clip(); }
+      drawStorm(g, t);
+      if (B.night > 0) { g.globalAlpha = B.night; drawNight(g, t); g.globalAlpha = 1; }
+      g.restore();
+    }
+    if (P.vis > 0 && P.dx > -1000) {
+      g.save();
+      g.globalAlpha = P.vis;
+      if (P.dim > 0) g.filter = `brightness(${(1 - 0.3 * P.dim).toFixed(3)}) saturate(${(1 - 0.3 * P.dim).toFixed(3)})`;
+      if (B.wipe > 0) { g.shadowColor = `rgba(0,0,0,${(0.5 * B.wipe).toFixed(3)})`; g.shadowBlur = 50; g.shadowOffsetY = 14; }
+      g.translate(540 + P.dx, 1920 + P.dy); g.scale(P.s, P.s);
+      g.drawImage(pc, -540, -1920);
+      g.restore();
+    }
+  }
+
+  // ---------- SFX cue list (tools/mix.mjs reads window.SFX) ----------
+  window.SFX = [
+    [C.heats, "beep"], [C.heats, "pop"], [C.two - 0.05, "pop"], [C.answers, "pop"], [C.cutB - 0.22, "whoosh"],
+    [C.some, "pop"], [C.thermostat, "tick"], [C.other, "pop"], [C.kick, "click"], [C.kick + 0.02, "hum"], [C.off1 + 0.05, "click"],
+    [C.laundry, "pop"], [C.locked, "pop"], [C.landlord + 0.08, "lock"],
+    [C.ifits - 0.3, "whoosh"], [C.test, "pop"], [C.cold, "pop"], [C.heatoff, "pop"], [C.temp, "pop"], [C.hours, "pop"],
+    ...[0, 1, 2, 3].map((i) => [C.hours + 0.15 + i * 0.2, "tick"]), [C.see - 0.1, "soft"],
+    [C.but - 0.2, "soft"], [C.but + 0.15, "soft"],
+    [C.fun - 0.15, "whoosh"], [C.fun, "stamp"], [C.number, "pop"], [C.match, "pop"],
+    [C.heatRises - 0.3, "whoosh"], [C.heatRises, "shimmer"], [C.middle, "tick"], [C.upper, "tick"], [C.radiated, "shimmer"],
+    [C.jan, "soft"], [C.july, "soft"], [C.july, "shimmer"],
+    [C.either - 0.45, "whoosh"], [C.know, "pop"], [C.now, "pop"], [C.out, "powerdown"],
+    [C.disaster + 0.32, "whoosh"], [C.tuesday - 0.1, "thud"],
+    [C.share1 - 0.3, "whoosh"], [C.space, "pop"], [C.wall, "pop"], [C.share2, "ding"],
+  ].map(([t, kind]) => ({ t: +t.toFixed(3), kind }));
+
+  async function seek(t) {
+    tl.seek(t, false);
+    drawCaptions(t); drawOverlays(t); drawHookFx(t); drawCardFx(t); drawBuilding(t);
+    await paint(t);
+  }
+
+  (async () => {
+    await Promise.all(["800 60px Montserrat", "900 60px Montserrat", "700 60px Montserrat", "600 40px 'Open Sans'", "700 40px 'Open Sans'"].map((f) => document.fonts.load(f)));
+    await document.fonts.ready;
+    window.__tl = tl;
+    window.__meta = { duration: D, width: 1080, height: 1920 };
+    window.__seek = seek;
+    await seek(0);
+  })();
+</script>
+</body>
+</html>
