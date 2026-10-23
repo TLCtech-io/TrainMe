@@ -67,6 +67,12 @@ uptown-silence/    Uptown Sound "Pick Your Poison" reel, "Poison Preview: Sound 
                      3:4 cover        render.cjs --in index.html --query thumb --stills 1   (1080x1440)
                      Facebook 4:5     render.cjs --in index.html --query fb --stills 1      (1080x1350)
                    Build: ./build.sh path/to/clip.MP4
+uptown-tickets/    Uptown Sound ticket push on "10.23 Fri ET Clip" (dress rehearsal, house lights up; 9:16, 24000/1001 fps).
+                   Night treatment in a WebGL grade: darker, moonlit blue, a stage light that follows the singers, the
+                   concrete sunk into the dark, the venue's lime webbing glowing like blacklight. Floor fog, bats, cobwebs,
+                   the work light (tools/glare_track.py) turned moon. A saucer crosses the moon, parks over stage right and
+                   beams up a pile of show tickets (in bursts on the sung hits) until none are left; LAST CALL badge,
+                   three headlines, end card. Clip and audio used as delivered. Build: ./build.sh path/to/clip.MOV
 ```
 
 Setup (once per machine): `npm install puppeteer-core@24 gsap` somewhere and point `NODE_PATH` at its `node_modules`;
