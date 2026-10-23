@@ -73,6 +73,7 @@ uptown-tickets/    Uptown Sound ticket push on "10.23 Fri ET Clip" (dress rehear
                    the work light (tools/glare_track.py) turned moon. A saucer crosses the moon, parks over stage right and
                    beams up a pile of show tickets (in bursts on the sung hits) until none are left; LAST CALL badge,
                    three headlines, end card. Clip and audio used as delivered. Build: ./build.sh path/to/clip.MOV
+                   24 s cut (?cut24): tighter heist, end card by 21.5 s, picture and sound fade out over the last second.
                    Covers (the scene just after "abduction", LAY in index.html):
                      3:4 TikTok          render.cjs --in index.html --query thumb --stills 0   (1080x1440)
                      9:16 Instagram      render.cjs --in index.html --query ig --stills 0      (1080x1920, design in y 240-1680)

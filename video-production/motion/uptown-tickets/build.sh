@@ -19,4 +19,7 @@ ffmpeg -v error -y -i assets/clip.mov -map 0:a:0 -ac 1 -ar 16000 -c:a pcm_s16le 
 python3 -c "import sys; p='data/features.js'; s=open(p).read().strip(); s=s if s.startswith('window.') else 'window.FEATURES = ' + s + ';'; open(p,'w').write(s + '\n')"
 node ../tools/render.cjs --in index.html --out "$OUT_DIR/picture.mp4" --out-width 1080 --fps 24000/1001
 ffmpeg -v error -y -i "$OUT_DIR/picture.mp4" -i assets/clip.mov -map 0:v -map 1:a:0 -c:v copy -c:a copy -shortest -movflags +faststart "$OUT_DIR/uptown-tickets.mp4"
-ffprobe -v error -show_entries format=duration -show_entries stream=codec_type,codec_name,width,height,r_frame_rate -of compact "$OUT_DIR/uptown-tickets.mp4"
+# the 24 s cut (?cut24): the clip's first 24 s of audio, faded out over the last second
+node ../tools/render.cjs --in index.html --query cut24 --out "$OUT_DIR/picture-24.mp4" --out-width 1080 --fps 24000/1001
+ffmpeg -v error -y -i "$OUT_DIR/picture-24.mp4" -i assets/clip.mov -map 0:v -map 1:a:0 -t 24 -c:v copy -af "afade=t=out:st=23:d=1" -c:a aac -b:a 256k -movflags +faststart "$OUT_DIR/uptown-tickets-24s.mp4"
+ffprobe -v error -show_entries format=duration -show_entries stream=codec_type,codec_name,width,height,r_frame_rate -of compact "$OUT_DIR/uptown-tickets.mp4" "$OUT_DIR/uptown-tickets-24s.mp4"

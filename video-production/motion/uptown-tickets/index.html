@@ -78,6 +78,7 @@
     <div class="end-line" id="eCta" style="top:618px"><span style="display:inline-block; background:#0a0a0a; color:var(--bone); border:2px solid var(--lime); font:400 38px/1 'Special Elite'; padding:12px 24px; border-radius:8px; letter-spacing:0.06em">TICKETS &middot; LINK IN BIO</span></div>
   </div>
   <div id="flash"></div>
+  <div id="fadeout" style="position:absolute; inset:0; background:#000; opacity:0"></div>
   <div id="cover" style="display:none">
     <div class="ransom" id="cT1"></div>
     <div class="ransom" id="cT2"></div>
@@ -110,11 +111,18 @@
   // Cue times (seconds). Sung hits from a whisper pass (data/whisper-words.json): three "take"s, "abduction", "alien".
   const T = {
     title: 0.3, compact: 4.4, ufoIn: 5.0, moonPass: 6.3, park: 7.4, beamOn: 8.2, h1: 10.4, abduct: 22.26, alien: 25.68,
-    h3: 28.0, leave: 33.35, end: 33.7,
+    h3: 28.0, leave: 33.35, end: 33.7, len: D,
   };
+  T.h2 = T.abduct;
+  // ?cut24: the 24 s version. Same open; a tighter heist (fewer tickets, the last three on the sung "take"s), TIME IS
+  // RUNNING OUT before GET YOURS, the saucer gone by 20 s, the end card up by 21.5 s (it pulses on "abduction"), and
+  // picture and sound fade out over the last second.
+  const CUT = location.search.includes("cut24");
+  if (CUT) Object.assign(T, { h3: 14.4, h2: 17.16, leave: 20.0, end: 20.25, fade: 23.0, len: 24.0 });
   // every lift takes a ticket off the pile; the last one goes just before the saucer leaves
-  const LIFTS = [9.4, 10.9, 12.3, 13.6, 15.0, 16.2, 17.16, 18.6, 18.96, 20.3, 21.4, 22.26, 22.38, 22.5, 24.0, 25.68, 27.0, 28.5, 29.9, 31.0, 31.95];
-  const FLY = 1.35;
+  const LIFTS = CUT ? [9.4, 10.5, 11.5, 12.4, 13.3, 14.2, 15.2, 16.1, 17.16, 18.6, 18.96]
+                    : [9.4, 10.9, 12.3, 13.6, 15.0, 16.2, 17.16, 18.6, 18.96, 20.3, 21.4, 22.26, 22.38, 22.5, 24.0, 25.68, 27.0, 28.5, 29.9, 31.0, 31.95];
+  const FLY = 1.35, flyOf = (i) => (CUT && LIFTS[i] > 18 ? 0.95 : FLY);
 
   // ---------- series lettering ----------
   const FONTS = ["Anton", "Rubik Mono One", "Bowlby One SC", "Abril Fatface", "Special Elite", "Permanent Marker"];
@@ -191,7 +199,7 @@
     const a = SPOT[i], b = SPOT[i + 1], k = ease(span(a[0], b[0], t));
     return [1, 2, 3, 4].map((j) => lerp(a[j], b[j], k));
   }
-  const flashAt = (t) => [T.abduct, T.leave].reduce((m, h) => Math.max(m, t >= h ? Math.exp(-(t - h) * 6) * Math.min(1, (t - h) / 0.04) : 0), 0);
+  const flashAt = (t) => (CUT ? [T.leave] : [T.abduct, T.leave]).reduce((m, h) => Math.max(m, t >= h ? Math.exp(-(t - h) * 6) * Math.min(1, (t - h) / 0.04) : 0), 0);
   function drawGrade(t) {
     const [sx, sy, rx, ry] = spotAt(t);
     gl.uniform2f(U.spot, sx, sy); gl.uniform2f(U.spotR, rx, ry);
@@ -334,7 +342,7 @@
     }
     // tickets in flight: lift off, wobble and spin up the beam, shrink, vanish into the saucer
     LIFTS.forEach((h, i) => {
-      const k = (t - h) / FLY; if (k < 0 || k > 1) return;
+      const k = (t - h) / flyOf(i); if (k < 0 || k > 1) return;
       const p = PILEPOS[i], e = k * k * (1.2 - 0.2 * k);
       const sx = PILE[0] + cx + p.dx, sy = PILE[1] + cy + p.dy;
       const x = lerp(sx, u.x, e) + 26 * Math.sin(k * 9 + i) * (1 - k), y = lerp(sy, u.y + 30, e);
@@ -412,7 +420,7 @@
 
   // ---------- hourglass beside "TIME IS RUNNING OUT" ----------
   function drawGlass(t) {
-    const k = span(T.h3, T.leave, t), top = 1 - k, bot = k;
+    const k = span(T.h3, CUT ? T.h2 : T.leave, t), top = 1 - k, bot = k;
     byId("glass").innerHTML = `
       <path d="M 14 8 H 106 M 14 172 H 106" stroke="#f2ecdf" stroke-width="9" stroke-linecap="round"/>
       <path d="M 24 14 C 24 60 56 74 56 90 C 56 106 24 120 24 166 H 96 C 96 120 64 106 64 90 C 64 74 96 60 96 14 Z" fill="rgba(198,255,61,0.08)" stroke="#f2ecdf" stroke-width="5"/>
@@ -429,20 +437,34 @@
   tl.fromTo("#badge", { opacity: 0, y: -30 }, { opacity: 1, y: 0, duration: 0.5, ease: "back.out(2)" }, T.compact + 0.35);
   tl.to("#scrim", { opacity: 1, duration: 0.6 }, T.h1 - 0.4);
   tl.fromTo("#h1", { opacity: 0, scale: 0.8, filter: "blur(8px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.6, ease: "power2.out" }, T.h1);
-  tl.to("#h1", { opacity: 0, duration: 0.12 }, T.abduct - 0.05);
-  tl.fromTo("#h2", { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(1.8)" }, T.abduct);
-  tl.to("#h2", { opacity: 0, y: -20, duration: 0.25 }, T.h3 - 0.25);
-  tl.fromTo("#h3", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, T.h3);
-  tl.fromTo("#glass", { opacity: 0, rotation: -180 }, { opacity: 1, rotation: 0, duration: 0.5, ease: "back.out(1.6)", transformOrigin: "50% 50%" }, T.h3 + 0.1);
-  tl.to(["#h3", "#glass", "#badge"], { opacity: 0, duration: 0.25 }, T.leave);
-  // the end card flickers on once the saucer is gone
+  const h3In = () => {
+    tl.fromTo("#h3", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, T.h3);
+    tl.fromTo("#glass", { opacity: 0, rotation: -180 }, { opacity: 1, rotation: 0, duration: 0.5, ease: "back.out(1.6)", transformOrigin: "50% 50%" }, T.h3 + 0.1);
+  };
+  const h2In = () => tl.fromTo("#h2", { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(1.8)" }, T.h2);
+  if (CUT) {                                   // h1, then TIME IS RUNNING OUT, then GET YOURS on the first "take"
+    tl.to("#h1", { opacity: 0, duration: 0.2 }, T.h3 - 0.25);
+    h3In();
+    tl.to(["#h3", "#glass"], { opacity: 0, duration: 0.12 }, T.h2 - 0.08);
+    h2In();
+    tl.to(["#h2", "#badge"], { opacity: 0, duration: 0.25 }, T.leave);
+  } else {                                     // h1, GET YOURS on "abduction", then TIME IS RUNNING OUT
+    tl.to("#h1", { opacity: 0, duration: 0.12 }, T.abduct - 0.05);
+    h2In();
+    tl.to("#h2", { opacity: 0, y: -20, duration: 0.25 }, T.h3 - 0.25);
+    h3In();
+    tl.to(["#h3", "#glass", "#badge"], { opacity: 0, duration: 0.25 }, T.leave);
+  }
+  // the end card flickers on once the saucer is gone (faster in the 24 s cut)
   const flicker = (sel, at) => [0, 1, 0.15, 1, 0.4, 1].forEach((o, i) => tl.set(sel, { opacity: o }, at + i * 0.07));
+  const ES = CUT ? 0.7 : 1;
   flicker("#eUp", T.end + 0.05);
-  document.querySelectorAll("#eTitle1 .rl, #eTitle2 .rl").forEach((el, i) => flicker(el, T.end + 0.25 + i * 0.03));
-  flicker("#eDate", T.end + 0.85);
-  flicker("#eWk", T.end + 1.2);
-  flicker("#eCta", T.end + 1.55);
-  tl.fromTo("#qcpa", { opacity: 0 }, { opacity: 1, duration: 0.6 }, T.end + 1.9);
+  document.querySelectorAll("#eTitle1 .rl, #eTitle2 .rl").forEach((el, i) => flicker(el, T.end + 0.25 * ES + i * 0.03 * ES));
+  flicker("#eDate", T.end + 0.85 * ES);
+  flicker("#eWk", T.end + 1.2 * ES);
+  flicker("#eCta", T.end + 1.55 * ES);
+  tl.fromTo("#qcpa", { opacity: 0 }, { opacity: 1, duration: 0.6 }, T.end + 1.9 * ES);
+  if (CUT) tl.to(["#eDate", "#eWk"], { scale: 1.12, duration: 0.14, yoyo: true, repeat: 1, ease: "power2.out" }, T.abduct);
 
   const qcpa = byId("qcpa"), ASPECT = 253.262 / 340.77;
   Object.assign(qcpa.style, { height: "150px", width: `${150 * ASPECT}px`, left: `${540 - 75 * ASPECT}px`, top: "712px" });
@@ -473,7 +495,8 @@
       });
     }
     byId("flash").style.opacity = (0.55 * flashAt(t)).toFixed(3);
-    const sh = t >= T.abduct && t < T.abduct + 0.4 ? (1 - (t - T.abduct) / 0.4) * 9 : 0;     // the room jolts on "abduction"
+    const sh = !CUT && t >= T.abduct && t < T.abduct + 0.4 ? (1 - (t - T.abduct) / 0.4) * 9 : 0;     // the room jolts on "abduction"
+    if (CUT) byId("fadeout").style.opacity = span(T.fade, T.len, t).toFixed(3);
     document.body.style.transform = sh ? `translate(${f1(sh * Math.sin(t * 97))}px, ${f1(sh * Math.cos(t * 83))}px)` : "";
   }
 
@@ -494,7 +517,7 @@
       byId("cHead").style.top = OY + 236 + "px";
       byId("cDate").style.top = OY + 452 + "px";
     }
-    window.__meta = { duration: POSTER ? 0.1 : D, width: 1080, height: LAY.H };
+    window.__meta = { duration: POSTER ? 0.1 : T.len, width: 1080, height: LAY.H };
     window.__seek = seek;
     await seek(0);
   })();

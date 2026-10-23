@@ -1,7 +1,7 @@
 # Per-output-frame loudness envelope (0..1) and onset times, from a 16 kHz mono wav.
 import sys, wave, json
 import numpy as np
-fps = 24000 / 1001
+fps = float(sys.argv[3]) if len(sys.argv) > 3 else 24000 / 1001
 with wave.open(sys.argv[1]) as w:
     sr = w.getframerate(); x = np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16).astype(np.float32) / 32768.0
 dur = len(x) / sr
