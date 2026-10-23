@@ -77,6 +77,12 @@ uptown-tickets/    Uptown Sound ticket push on "10.23 Fri ET Clip" (dress rehear
                    Covers (the scene just after "abduction", LAY in index.html):
                      3:4 TikTok          render.cjs --in index.html --query thumb --stills 0   (1080x1440)
                      9:16 Instagram      render.cjs --in index.html --query ig --stills 0      (1080x1920, design in y 240-1680)
+uptown-getover/    Uptown Sound ticket push on "10.23 Fri Get Over" (dress rehearsal, house lights up; 9:16, 24 fps).
+                   Haunted countdown: the uptown-tickets night grade; the opening floor shot splits along its real crack
+                   (tracked with ../prepare-vid6/tools/track.py) with fire light and a burst of bats; foreground
+                   jack-o'-lanterns light on the beat; a haunted clock steps toward midnight on the beat and strikes on
+                   the second "tonight"; ghosts drift through; lightning on both "tonight"s; the "bye"s blow the pumpkins
+                   out as the end card comes on. Clip and audio used as delivered. Build: ./build.sh path/to/clip.MOV
 ```
 
 Setup (once per machine): `npm install puppeteer-core@24 gsap` somewhere and point `NODE_PATH` at its `node_modules`;
