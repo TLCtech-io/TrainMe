@@ -28,6 +28,7 @@ prepare-vid6/      PREPARE Vid 6 "Do you know what heats your apartment?" (9:16,
                    with a temperature graph, disclaimer card, full-frame building section (heat rises), and from beat
                    4 on the presenter cut out (tools/prep_footage.py: Robust Video Matting) over graphics. The seated
                    shot is relit there too (soft key from the matte). SFX kit synthesized by tools/make-sfx.sh.
+                   3:4 cover: render.cjs --in thumb.html --stills 0 (1080x1440; cut-out frame FRAME in thumb.html)
 uptown-toxic/      Uptown Sound "Pick Your Poison" show reel, "Poison Preview: Toxic" (9:16, phone footage at 24000/1001 fps).
                    Toxic liquid layer driven by the vocal loudness (data/features.js); lyric hits from a whisper pass.
                    QCPA logo (logoState in index.html): surfaces in the slime at 1.5s and floats under the surface
