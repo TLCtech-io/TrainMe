@@ -4,9 +4,12 @@
 <meta charset="utf-8">
 <title>PREPARE Vid 6: thumbnail</title>
 <!--
-  3:4 cover (1080x1440) for Vid 6: the hook line with HEATS in gold, the presenter cut out (relit frame FRAME and its
-  matte from tools/prep_footage.py) over the storm backdrop, and the heat-rising building from beat 4 behind him.
-  Render: node ../tools/render.cjs --in thumb.html --stills 0 --stills-dir <dir>
+  Cover for Vid 6: the hook line with HEATS in gold, the presenter cut out (relit frame FRAME and its matte from
+  tools/prep_footage.py) over the storm backdrop, and the heat-rising building from beat 4 behind him.
+    3:4 (1080x1440, TikTok)          render.cjs --in thumb.html --stills 0 --stills-dir <dir>
+    9:16 (1080x1920, Instagram)      render.cjs --in thumb.html --query ig --stills 0 --stills-dir <dir>
+  Instagram's Reels cover is 9:16 and its profile grid shows the middle 3:4, so the ig version keeps the whole 3:4
+  design in the band y 240-1680 (OY) and only backdrop, floor and his shirt run into the top and bottom 240 px.
 -->
 <style>
   @font-face { font-family: "Montserrat"; font-weight: 800; src: url("../shared/fonts/montserrat-latin-800-normal.woff2") format("woff2"); }
@@ -44,7 +47,16 @@
   </div>
 <script>
   const FRAME = 1195;                       // 39.8s: "your number won't match" (brows up, a "do you know?" look)
-  const P = { s: 0.72, hx: 300 };           // cut-out scale; where his head centre lands
+  const IG = location.search.includes("ig");
+  const H = IG ? 1920 : 1440, OY = IG ? 240 : 0;
+  // cut-out scale and where his head centre lands; on 9:16 the frame bottom meets the cover bottom, so he scales up
+  // to keep his head where the 3:4 design has it
+  const P = IG ? { s: 0.9, hx: 280, base: 1920 } : { s: 0.72, hx: 300, base: 1440 };
+  document.documentElement.style.height = document.body.style.height = H + "px";
+  ["bg", "fg"].forEach((id) => (document.getElementById(id).height = H));
+  const svg = document.getElementById("bld"); svg.setAttribute("height", H); svg.setAttribute("viewBox", `0 0 1080 ${H}`);
+  ["l1", "l2", "l3"].forEach((id) => { const el = document.getElementById(id); el.style.top = parseFloat(el.style.top) + OY + "px"; });
+  document.getElementById("lockup").style.bottom = 40 + OY + "px";
   const rnd = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
   const pad = (n) => String(n).padStart(5, "0");
   const byId = (id) => document.getElementById(id);
@@ -72,21 +84,21 @@
     <path d="M ${BX1 + 34} ${GND - 30} V ${ROOF + 30}" stroke="#E3BE6A" stroke-width="8" stroke-linecap="round"/>
     <path d="M ${BX1 + 14} ${ROOF + 56} L ${BX1 + 34} ${ROOF + 28} L ${BX1 + 54} ${ROOF + 56}" stroke="#E3BE6A" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M 0 ${GND} H 1080" stroke="#E4EAE8" stroke-width="5"/>`;
-  byId("bld").insertAdjacentHTML("beforeend", art);
+  byId("bld").insertAdjacentHTML("beforeend", `<g transform="translate(0 ${OY})">${art}</g>`);
 
   // backdrop: the video's storm gradient and blueprint grid, a warm glow behind his head, darker band under the type
   const g = byId("bg").getContext("2d");
-  const gr = g.createLinearGradient(0, 0, 0, 1440);
+  const gr = g.createLinearGradient(0, 0, 0, H);
   gr.addColorStop(0, "#14232b"); gr.addColorStop(0.55, "#24434c"); gr.addColorStop(1, "#3F6A72");
-  g.fillStyle = gr; g.fillRect(0, 0, 1080, 1440);
+  g.fillStyle = gr; g.fillRect(0, 0, 1080, H);
   g.strokeStyle = "rgba(140,148,166,0.10)"; g.lineWidth = 2; g.beginPath();
-  for (let x = 30; x < 1080; x += 90) { g.moveTo(x, 0); g.lineTo(x, 1440); }
-  for (let y = 40; y < 1440; y += 90) { g.moveTo(0, y); g.lineTo(1080, y); }
+  for (let x = 30; x < 1080; x += 90) { g.moveTo(x, 0); g.lineTo(x, H); }
+  for (let y = 40 + OY % 90; y < H; y += 90) { g.moveTo(0, y); g.lineTo(1080, y); }
   g.stroke();
-  const glow = g.createRadialGradient(P.hx, 860, 0, P.hx, 860, 560);
+  const glow = g.createRadialGradient(P.hx, 860 + OY, 0, P.hx, 860 + OY, 560);
   glow.addColorStop(0, "rgba(227,190,106,0.22)"); glow.addColorStop(1, "rgba(227,190,106,0)");
-  g.fillStyle = glow; g.fillRect(0, 0, 1080, 1440);
-  g.fillStyle = "#121f26"; g.fillRect(0, GND, 1080, 1440 - GND);
+  g.fillStyle = glow; g.fillRect(0, 0, 1080, H);
+  g.fillStyle = "#121f26"; g.fillRect(0, GND + OY, 1080, H - GND - OY);
 
   async function load(src) { const im = new Image(); im.src = src; await im.decode(); return im; }
   async function draw() {
@@ -96,13 +108,18 @@
     px.drawImage(a, 0, 0); const ad = px.getImageData(0, 0, 1080, 1920).data;
     px.clearRect(0, 0, 1080, 1920); px.drawImage(f, 0, 0);
     const im = px.getImageData(0, 0, 1080, 1920), d = im.data;
-    for (let i = 3; i < d.length; i += 4) d[i] = Math.round(255 * Math.pow(ad[i - 3] / 255, 1.35));
+    // matte (tightened a touch), feathered over the last 220 px before the source frame's right edge, where his
+    // shoulder was cut by the camera: a hard vertical edge there reads as a cut, a fade reads as design
+    for (let i = 3; i < d.length; i += 4) {
+      const x = ((i - 3) >> 2) % 1080, f = Math.min(1, (1080 - x) / 220), fe = f * f * (3 - 2 * f);
+      d[i] = Math.round(255 * Math.pow(ad[i - 3] / 255, 1.35) * fe);
+    }
     px.putImageData(im, 0, 0);
     // place him: head centre (x 500 in the source) at P.hx, the frame's bottom on the thumbnail's bottom
     const c = byId("fg").getContext("2d");
     c.save();
     c.shadowColor = "rgba(0,0,0,0.5)"; c.shadowBlur = 50; c.shadowOffsetY = 14;
-    c.translate(P.hx, 1440); c.scale(P.s, P.s); c.drawImage(pc, -500, -1920);
+    c.translate(P.hx, P.base); c.scale(P.s, P.s); c.drawImage(pc, -500, -1920);
     c.restore();
   }
 
@@ -110,7 +127,7 @@
     await Promise.all(["800 60px Montserrat", "900 60px Montserrat"].map((f) => document.fonts.load(f)));
     await document.fonts.ready;
     await draw();
-    window.__meta = { duration: 0.1, width: 1080, height: 1440 };
+    window.__meta = { duration: 0.1, width: 1080, height: H };
     window.__seek = async () => {};
   })();
 </script>

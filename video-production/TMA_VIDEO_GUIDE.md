@@ -300,6 +300,9 @@ Source lives in `video-production/motion/` (see its README). HTML + GSAP composi
   sentence on the first pass; that window was re-run on its own.
 - **Audio:** the voice is untouched (the residual of mix minus voice is -138 dBFS outside the SFX cues). The SFX are
   synthesized and sit 5-8 dB under the voice peaks. Loudness matches V4/V5 (about -23.5 LUFS).
+- **Covers:** TikTok takes the 3:4 (1080x1440) as-is. The Instagram Reels cover is 9:16 (1080x1920); IG center-crops
+  a 3:4 upload to 9:16 (cutting the sides), and its profile grid shows the middle 3:4 of the 9:16. So make a 9:16 for
+  IG with the whole design inside y 240-1680 (user found this out on 2026-10-23). Make both for every PREPARE video.
 - **Open decision:** the beat sheet's pipes sentence on the disclaimer card is off (`DISCLAIMER_PIPES` in
   index.html).
 
