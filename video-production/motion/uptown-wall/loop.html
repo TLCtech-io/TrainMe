@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Uptown Sound: video wall loop</title>
+<!--
+  The video wall backdrop brought to life as a seamless loop (LOOP seconds; every motion completes a whole number of
+  cycles, so the last frame runs straight back into the first). It animates the finished still
+  (assets/base_1610.png = index.html?r=1610, 3840x2400 with the engraved logos):
+    candles     each flame sways, stretches and flickers on its own, throwing a moving warm light and halo around it
+                (data/flames.js, from tools/snap_flames.py); the spirit lamp under the green flask burns green
+    liquids     the glowing flasks and bottles pulse, bubbles rise through the flasks and pop at the surface
+    vapour      wisps curl up from the green flasks (value-noise smoke, cross-faded across the loop point)
+    dust        motes drift through the candlelight
+    gleam       a glint runs along UPTOWN SOUND, later along PICK YOUR POISON
+  ?w=1920 renders a half-size preview (all positions scale). The 16:9 cut is the centre 2160 rows of the 16:10 frame.
+-->
+<style>
+  * { margin: 0; padding: 0; }
+  html, body { background: #000; overflow: hidden; }
+  canvas { position: absolute; left: 0; top: 0; display: block; }
+  #fx { mix-blend-mode: screen; }
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<canvas id="fx"></canvas>
+<script src="data/flames.js"></script>
+<script>
+  const LOOP = 20, FPS = 30;
+  const W = Number(new URLSearchParams(location.search).get("w") || 3840), H = Math.round(W * 0.625);
+  const PW = 5504, PH = 3072, S = W / PW, PAD = (H - PH * S) / 2;
+  const P = (x, y) => [x * S, y * S + PAD];                  // plate pixels to frame pixels
+  const TAU = Math.PI * 2;
+  const rnd = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  const wave = (t, n, ph) => Math.sin(TAU * n * t / LOOP + ph);  // n whole cycles per loop: always seamless
+  for (const id of ["gl", "fx"]) { const c = document.getElementById(id); c.width = W; c.height = H; }
+  document.documentElement.style.width = document.body.style.width = W + "px";
+  document.documentElement.style.height = document.body.style.height = H + "px";
+
+  // ---------- what moves, in plate pixels ----------
+  const FL = window.FLAMES.map(([x, y, w, h, kind], i) => ({ x, y, w, h, kind, i }));
+  // glowing liquids: centre, radius, colour, pulse cycles per loop
+  const GLOWS = [
+    [1345, 2040, 300, [0.35, 1.0, 0.3], 0.30, 3], [1220, 1500, 220, [0.35, 1.0, 0.3], 0.22, 4], [4472, 1500, 260, [0.35, 1.0, 0.3], 0.26, 2],
+    [4172, 1940, 170, [1.0, 0.12, 0.08], 0.22, 5], [692, 2290, 260, [1.0, 0.15, 0.08], 0.12, 3], [1048, 1790, 200, [1.0, 0.15, 0.08], 0.10, 4],
+  ];
+  // flasks with bubbles: centre, radius, liquid surface y, bubble tint
+  const FLASKS = [
+    { c: [1345, 1988], r: 124, surf: 1979, tint: [200, 255, 190], n: 16 },
+    { c: [692, 2264], r: 133, surf: 2222, tint: [255, 190, 180], n: 12 },
+    { c: [1048, 1760], r: 112, surf: 1762, tint: [255, 190, 180], n: 9 },
+    { c: [4472, 1472], r: 100, surf: 1468, tint: [200, 255, 190], n: 10 },
+  ];
+  // vapour: source x, source y, height, width
+  const SMOKE = [[1350, 1705, 620, 70], [1216, 1445, 260, 50]];
+  // gleams: letter box (plate) and when the glint crosses it (s)
+  const GLEAMS = [{ box: [1380, 220, 4120, 520], t0: 3.0, dur: 2.6 }, { box: [2140, 1080, 3360, 1240], t0: 12.0, dur: 2.0 }];
+
+  // ---------- flame motion: every term completes whole cycles in the loop ----------
+  function flame(f, t) {
+    const k = f.i * 7.31;
+    const flick = 0.07 * wave(t, 37 + f.i % 5, k) + 0.05 * wave(t, 53 + f.i % 7, k * 1.7) + 0.035 * wave(t, 89 + f.i % 3, k * 2.3)
+      + 0.03 * wave(t, 131, k * 3.1);
+    const gust = Math.max(0, wave(t, 3 + f.i % 3, k * 0.5)) ** 6 * 0.18;      // now and then a draught catches it
+    const sway = 0.5 * wave(t, 9 + f.i % 4, k) + 0.3 * wave(t, 17 + f.i % 5, k * 1.3) + gust * 2.2 * wave(t, 41, k);
+    const stretch = 0.06 * wave(t, 23 + f.i % 6, k * 0.7) + 0.04 * wave(t, 61, k * 1.9) - gust * 0.3;
+    return { f: 1 + flick - gust * 0.6, sway, stretch };
+  }
+
+  // ---------- the WebGL pass ----------
+  const glc = document.getElementById("gl"), gl = glc.getContext("webgl", { preserveDrawingBuffer: true, antialias: false });
+  const NF = FL.length, NG = GLOWS.length, NS = SMOKE.length;
+  const VS = "attribute vec2 p; varying vec2 v; void main(){ v = vec2(p.x * 0.5 + 0.5, 0.5 - p.y * 0.5); gl_Position = vec4(p, 0.0, 1.0); }";
+  const FS = `precision highp float;
+    #define NF ${NF}
+    #define NG ${NG}
+    #define NS ${NS}
+    uniform sampler2D base; uniform vec2 res; uniform float t; uniform float loopT; uniform float lightAll;
+    uniform vec4 fl[NF]; uniform vec4 fs[NF];        // flame x, y, w, h (frame px); f, sway, stretch, kind
+    uniform vec4 gw[NG]; uniform vec3 gc[NG];         // glow x, y, r, strength; colour
+    uniform vec4 sm[NS];                              // smoke x, y, height, width
+    uniform vec4 gbox; uniform vec2 gband;            // gleam letter box; band centre and width (0 width = off)
+    varying vec2 v;
+    float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    float noise(vec2 p) {
+      vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
+      return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+    }
+    float fbm(vec2 p) { float s = 0.0, a = 0.5; for (int k = 0; k < 4; k++) { s += a * noise(p); p = p * 2.03 + 17.1; a *= 0.5; } return s; }
+    void main() {
+      vec2 px = v * res;
+      // flames: sway the tongue (more toward the tip), stretch it, brighten and dim it
+      vec2 disp = vec2(0.0); float core = 0.0; float coreF = 1.0;
+      float lm = 1.0; vec3 halo = vec3(0.0);
+      for (int i = 0; i < NF; i++) {
+        vec2 d = px - fl[i].xy; float w = fl[i].z, h = fl[i].w;
+        float by = 0.22 * h;                                   // flame base, below the bright core
+        float up = clamp((by - d.y) / h, 0.0, 1.0);
+        float wgt = exp(-pow(d.x / (1.5 * w), 2.0) - pow((d.y + 0.3 * h) / (0.9 * h), 2.0));
+        disp.x -= fs[i].y * w * 0.42 * pow(up, 1.5) * wgt;
+        disp.y += (by - d.y) * fs[i].z * wgt;
+        float cw = exp(-pow(d.x / (0.8 * w), 2.0) - pow((d.y + 0.25 * h) / (0.6 * h), 2.0));
+        if (cw > core) { core = cw; coreF = fs[i].x; }
+        float r2 = dot(d, d);
+        float green = fs[i].w;
+        lm += 0.16 * (fs[i].x - 1.0) * exp(-r2 / (2.0 * pow(12.0 * w, 2.0)));
+        vec3 hc = mix(vec3(1.0, 0.6, 0.22), vec3(0.35, 1.0, 0.3), green);
+        vec2 dh = d + vec2(0.0, 0.3 * h);
+        halo += hc * (0.10 * fs[i].x) * exp(-dot(dh, dh) / (2.0 * pow(2.4 * w, 2.0)));
+        halo += hc * (0.035 * fs[i].x) * exp(-r2 / (2.0 * pow(9.0 * w, 2.0)));
+      }
+      vec3 c = texture2D(base, (px + disp) / res).rgb;
+      c *= 1.0 + (coreF - 1.0) * 0.9 * core;
+      c *= lm * lightAll;
+      // glowing liquids
+      for (int i = 0; i < NG; i++) {
+        vec2 d = px - gw[i].xy;
+        c += gc[i] * gw[i].w * exp(-dot(d, d) / (2.0 * pow(0.45 * gw[i].z, 2.0)));
+      }
+      c += halo;
+      // vapour curling up, the noise cross-faded across the loop point so it never jumps
+      for (int i = 0; i < NS; i++) {
+        float vy = (sm[i].y - px.y) / sm[i].z;
+        if (vy < 0.0 || vy > 1.0) continue;
+        float drift = sm[i].w * 0.8 * sin(vy * 4.0 + t * 0.6283 * 2.0) * vy;
+        float spread = sm[i].w * (0.35 + 1.4 * vy);
+        float mask = exp(-pow((px.x - sm[i].x - drift) / spread, 2.0)) * smoothstep(0.0, 0.12, vy) * (1.0 - smoothstep(0.55, 1.0, vy));
+        if (mask < 0.003) continue;
+        vec2 q = vec2((px.x - sm[i].x) / (sm[i].w * 1.3), (px.y) / (sm[i].w * 2.0));
+        float rise = 0.9;                                    // noise units per second, upward
+        float n1 = fbm(q + vec2(0.0, t * rise) + float(i) * 9.0);
+        float n2 = fbm(q + vec2(0.0, (t - loopT) * rise) + float(i) * 9.0);
+        float n = mix(n1, n2, t / loopT);
+        float dens = mask * smoothstep(0.42, 0.78, n) * 0.42;
+        c = 1.0 - (1.0 - c) * (1.0 - dens * vec3(0.78, 0.88, 0.78));
+      }
+      // a glint along the gold lettering
+      if (gband.y > 0.0 && px.x > gbox.x && px.x < gbox.z && px.y > gbox.y && px.y < gbox.w) {
+        vec3 b = texture2D(base, px / res).rgb;
+        float gold = smoothstep(0.08, 0.22, b.r - b.b) * smoothstep(0.28, 0.55, dot(b, vec3(0.299, 0.587, 0.114)));
+        float u = px.x + 0.45 * (px.y - gbox.y);
+        c += gold * exp(-pow((u - gband.x) / gband.y, 2.0)) * vec3(1.0, 0.86, 0.58) * 0.6;
+      }
+      gl_FragColor = vec4(c, 1.0);
+    }`;
+  function shader(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s)); return s; }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, shader(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog); gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW);
+  const pLoc = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(pLoc); gl.vertexAttribPointer(pLoc, 2, gl.FLOAT, false, 0, 0);
+  gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+  [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]].forEach(([k, v]) => gl.texParameteri(gl.TEXTURE_2D, k, v));
+  const U = (n) => gl.getUniformLocation(prog, n);
+  gl.viewport(0, 0, W, H);
+  gl.uniform2f(U("res"), W, H);
+  gl.uniform1f(U("loopT"), LOOP);
+  gl.uniform4fv(U("fl"), FL.flatMap((f) => [...P(f.x, f.y), f.w * S, f.h * S]));
+  gl.uniform4fv(U("sm"), SMOKE.flatMap(([x, y, h, w]) => [...P(x, y), h * S, w * S]));
+  gl.uniform3fv(U("gc"), GLOWS.flatMap((g) => g[3]));
+
+  function drawGL(t) {
+    const st = FL.map((f) => flame(f, t));
+    gl.uniform1f(U("t"), t);
+    gl.uniform4fv(U("fs"), st.flatMap((s, i) => [s.f, s.sway, s.stretch, FL[i].kind]));
+    gl.uniform1f(U("lightAll"), 1 + 0.012 * wave(t, 7, 0.4) + 0.008 * wave(t, 29, 1.1));
+    gl.uniform4fv(U("gw"), GLOWS.flatMap(([x, y, r, , a, n], i) => [...P(x, y), r * S, a * (0.75 + 0.25 * wave(t, n, i * 1.7))]));
+    const g = GLEAMS.find((g) => t >= g.t0 && t <= g.t0 + g.dur);
+    if (g) {
+      const [x0, y0] = P(g.box[0], g.box[1]), [x1, y1] = P(g.box[2], g.box[3]);
+      const k = (t - g.t0) / g.dur, bw = 60 * S * 3;
+      gl.uniform4f(U("gbox"), x0, y0, x1, y1);
+      gl.uniform2f(U("gband"), x0 - 3 * bw + (x1 - x0 + 6 * bw + 0.45 * (y1 - y0)) * k, bw);
+    } else gl.uniform2f(U("gband"), 0, 0);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+  }
+
+  // ---------- bubbles and dust (2D, screen-blended) ----------
+  const fx = document.getElementById("fx").getContext("2d");
+  function bubbles(t) {
+    FLASKS.forEach((F, fi) => {
+      const [cx, cy] = P(...F.c), r = F.r * S, surf = P(0, F.surf)[1];
+      const bottom = cy + r * 0.92;
+      fx.save(); fx.beginPath(); fx.arc(cx, cy, r * 0.9, 0, TAU); fx.clip();
+      for (let b = 0; b < F.n; b++) {
+        const seed = fi * 100 + b, cycles = 2 + Math.floor(rnd(seed) * 4);       // whole trips per loop
+        const ph = ((t / LOOP) * cycles + rnd(seed + 1)) % 1;
+        const y = bottom - ph * (bottom - surf);
+        const half = Math.sqrt(Math.max(0, r * r * 0.7 - (y - cy) ** 2));
+        const x = cx + (rnd(seed + 2) - 0.5) * 1.6 * half + 3 * S * 3 * wave(t, 11 + b % 4, seed);
+        const br = (2 + rnd(seed + 3) * 4.5) * S * 1.4 * (0.75 + 0.45 * ph);     // they swell a little as they rise
+        const fade = Math.min(1, ph / 0.12) * (1 - Math.max(0, (ph - 0.88) / 0.12));
+        const [tr, tg, tb] = F.tint;
+        const g = fx.createRadialGradient(x, y, br * 0.55, x, y, br);              // a thin bright skin, clear inside
+        g.addColorStop(0, `rgba(${tr},${tg},${tb},0)`); g.addColorStop(0.8, `rgba(${tr},${tg},${tb},${(0.32 * fade).toFixed(3)})`);
+        g.addColorStop(1, `rgba(${tr},${tg},${tb},0)`);
+        fx.fillStyle = g; fx.beginPath(); fx.arc(x, y, br, 0, TAU); fx.fill();
+        fx.fillStyle = `rgba(255,255,255,${(0.38 * fade).toFixed(3)})`;
+        fx.beginPath(); fx.arc(x - br * 0.38, y - br * 0.38, br * 0.22, 0, TAU); fx.fill();
+      }
+      fx.restore();
+    });
+  }
+  // dust: some motes circle slowly in the warm air, some sink through it; both close their paths in one loop
+  const MOTES = [...Array(170)].map((_, i) => ({
+    x: rnd(i * 3 + 1) * PW, y: 150 + rnd(i * 3 + 2) * (PH - 700), r: 1 + rnd(i * 5 + 3) * 2.4,
+    ax: 30 + rnd(i * 7) * 90, ay: 20 + rnd(i * 11) * 60, nx: 1 + (i % 3), ny: 1 + (i % 2), ph: rnd(i * 13) * TAU,
+    fall: i % 4 === 0 ? 1 + (i % 3) : 0,
+  }));
+  function lightAt(x, y) {    // how much candlelight reaches a point (plate px)
+    let s = 0.18;
+    for (const f of FL) { const d2 = (x - f.x) ** 2 + (y - f.y) ** 2; s += Math.exp(-d2 / (2 * (f.w * 16) ** 2)) * 0.9; }
+    return Math.min(1, s);
+  }
+  function dust(t) {
+    MOTES.forEach((m, i) => {
+      let x = m.x + m.ax * Math.sin(TAU * m.nx * t / LOOP + m.ph), y = m.y + m.ay * Math.sin(TAU * m.ny * t / LOOP + m.ph * 1.3);
+      if (m.fall) y = 150 + ((m.y - 150 + m.fall * (PH - 700) * t / LOOP) % (PH - 700));
+      const light = lightAt(x, y), tw = 0.6 + 0.4 * wave(t, 13 + i % 9, i);
+      const [px, py] = P(x, y);
+      fx.fillStyle = `rgba(255,228,180,${(0.5 * light * tw).toFixed(3)})`;
+      fx.beginPath(); fx.arc(px, py, m.r * S * 2, 0, TAU); fx.fill();
+    });
+  }
+
+  async function seek(t0) {
+    const t = ((t0 % LOOP) + LOOP) % LOOP;
+    drawGL(t);
+    fx.clearRect(0, 0, W, H);
+    bubbles(t); dust(t);
+  }
+
+  (async () => {
+    const im = new Image(); im.src = "assets/base_1610.png"; await im.decode();
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, im);
+    window.__meta = { duration: LOOP, width: W, height: H };
+    window.__seek = seek;
+    await seek(0);
+  })();
+</script>
+</body>
+</html>

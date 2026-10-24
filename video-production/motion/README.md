@@ -120,6 +120,10 @@ uptown-wall/       Video wall backdrop for the Pick Your Poison shows: a dusty a
                    frames the plate: ?r=169 (3840x2160) or ?r=1610 (3840x2400, top and bottom carried on).
                      render.cjs --in index.html --query r=169 --stills 0 --stills-dir <dir>
                    tools/mockup.py puts a render on the venue screen in a photo (with the ensemble matted in front).
+                   loop.html: the seamless 20 s loop of the still (flames sway and flicker with moving light, liquids
+                   glow and bubble, vapour rises, dust drifts, a glint runs along the gold lettering; every motion makes
+                   whole cycles in the loop). ./build.sh renders the stills and the loop at 3840x2400, 3840x2160,
+                   1920x1200 and 1920x1080.
 ```
 
 Setup (once per machine): `npm install puppeteer-core@24 gsap` somewhere and point `NODE_PATH` at its `node_modules`;
