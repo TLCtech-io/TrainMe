@@ -83,6 +83,9 @@ uptown-getover/    Uptown Sound ticket push on "10.23 Fri Get Over" (dress rehea
                    jack-o'-lanterns light on the beat; a haunted clock steps toward midnight on the beat and strikes on
                    the second "tonight"; ghosts drift through; lightning on both "tonight"s; the "bye"s blow the pumpkins
                    out as the end card comes on. Clip and audio used as delivered. Build: ./build.sh path/to/clip.MOV
+                   Covers (clock, two posed ghosts, lit pumpkins; LAY in index.html):
+                     3:4 TikTok          render.cjs --in index.html --query thumb --stills 0   (1080x1440)
+                     9:16 Instagram      render.cjs --in index.html --query ig --stills 0      (1080x1920, design in y 240-1680)
 ```
 
 Setup (once per machine): `npm install puppeteer-core@24 gsap` somewhere and point `NODE_PATH` at its `node_modules`;

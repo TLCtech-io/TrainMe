@@ -79,12 +79,24 @@
     <div class="end-line" id="eCta" style="top:618px"><span style="display:inline-block; background:#0a0a0a; color:var(--bone); border:2px solid var(--lime); font:400 38px/1 'Special Elite'; padding:12px 24px; border-radius:8px; letter-spacing:0.06em">TICKETS &middot; LINK IN BIO</span></div>
   </div>
   <div id="flash"></div>
+  <div id="cover" style="display:none">
+    <div class="ransom" id="cT1"></div>
+    <div class="ransom" id="cT2"></div>
+    <div id="cHead" class="head creep" style="opacity:1; font-size:104px">THE CLOCK IS<br>TICKING...</div>
+    <div id="cDate" class="end-line" style="opacity:1"><span style="font:400 56px/1 'Bowlby One SC'; color:var(--lime); text-shadow:0 0 22px rgba(198,255,61,0.6), 0 5px 0 rgba(0,0,0,0.7)">OCT 24 &amp; 25</span><span style="font:400 52px/1 'Creepster'; letter-spacing:0.05em; color:var(--orange); text-shadow:0 0 18px rgba(255,138,31,0.6), 0 4px 0 rgba(0,0,0,0.7)">&nbsp; · THIS WEEKEND</span></div>
+  </div>
 
 <script src="../shared/gsap.min.js"></script>
 <script src="data/features.js"></script>
 <script src="data/tracks.js"></script>
 <script>
   const F = window.FEATURES, FPS = F.fps, D = F.env.length / FPS, NF = F.env.length;
+  // Output: the 9:16 reel, or a cover (?thumb = 3:4 for TikTok, ?ig = 9:16 for Instagram, whose grid shows the middle
+  // 3:4, so the ig cover keeps the whole design in the band OY..OY+1440). Covers show the scene at frameT with the clock,
+  // two ghosts posed and the pumpkins lit; the pumpkins come up PDY so they sit on the band's bottom edge.
+  const MODE = location.search.includes("thumb") ? "thumb" : location.search.includes("ig") ? "ig" : "video";
+  const LAY = { video: { H: 1920, OY: 0 }, thumb: { H: 1440, OY: 0, frameT: 24.8 }, ig: { H: 1920, OY: 240, frameT: 24.8 } }[MODE];
+  const POSTER = MODE !== "video", PDY = POSTER ? -470 : 0;
   const FRAMES = "assets/frames/f_%05d.jpg";
   const rnd = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -260,7 +272,7 @@
       byId(`lit${i}`).setAttribute("opacity", (on * (0.75 * fl + 0.3 * flare)).toFixed(3));
       byId(`dim${i}`).setAttribute("opacity", (0.5 * (1 - on)).toFixed(3));
       const rise = 1 - easeOut(span(2.7 + i * 0.12, 3.7 + i * 0.12, t));                // they come up into frame on the tilt
-      byId(`pump${i}`).setAttribute("transform", `translate(${p.x},${f1(p.y + 260 * rise)}) scale(${(p.w / 300).toFixed(3)})`);
+      byId(`pump${i}`).setAttribute("transform", `translate(${p.x},${f1(p.y + PDY + 260 * rise)}) scale(${(p.w / 300).toFixed(3)})`);
       // a curl of smoke after it goes out
       const so = t - outAt(i), sv = so > 0 && so < 1.6 ? Math.sin(Math.PI * so / 1.6) : 0;
       byId(`smoke${i}`).setAttribute("opacity", (0.8 * sv).toFixed(3));
@@ -268,9 +280,9 @@
       // warm light thrown up into the fog and onto the floor
       const I = on * fl * 0.65 + on * flare * 0.5;
       if (I > 0.01) {
-        const g = wv.createRadialGradient(p.x, p.y - 60, 0, p.x, p.y - 60, 420);
+        const py = p.y + PDY, g = wv.createRadialGradient(p.x, py - 60, 0, p.x, py - 60, 420);
         g.addColorStop(0, `rgba(255,140,40,${(0.38 * I).toFixed(3)})`); g.addColorStop(1, "rgba(255,140,40,0)");
-        wv.fillStyle = g; wv.fillRect(p.x - 420, p.y - 480, 840, 840);
+        wv.fillStyle = g; wv.fillRect(p.x - 420, py - 480, 840, 840);
       }
     });
   }
@@ -341,9 +353,14 @@
     GHOSTS.forEach((g, i) => {
       const el = byId(`gh${i}`);
       let k = span(g.t0, g.t1, t); if (g.stay && t > g.t1) k = 1;
-      const fade = Math.min(span(g.t0, g.t0 + 0.6, t), g.stay ? 1 - span(BYE[1], BYE[2] + 0.3, t) : 1 - span(g.t1 - 0.6, g.t1, t));
+      const fade = POSTER ? 1 : Math.min(span(g.t0, g.t0 + 0.6, t), g.stay ? 1 - span(BYE[1], BYE[2] + 0.3, t) : 1 - span(g.t1 - 0.6, g.t1, t));
       if (fade <= 0) { el.setAttribute("opacity", "0"); return; }
-      const x = lerp(g.a[0], g.b[0], ease(k)) + 30 * Math.sin(t * 1.3 + i), y = lerp(g.a[1], g.b[1], ease(k)) + 18 * Math.sin(t * 2.1 + i * 2);
+      let x = lerp(g.a[0], g.b[0], ease(k)) + 30 * Math.sin(t * 1.3 + i), y = lerp(g.a[1], g.b[1], ease(k)) + 18 * Math.sin(t * 2.1 + i * 2);
+      if (POSTER) {                                   // covers: two ghosts posed either side of the singers
+        const pose = [[112, 566], [945, 960], null][i];
+        if (!pose) { el.setAttribute("opacity", "0"); return; }
+        [x, y] = pose;
+      }
       el.setAttribute("opacity", (0.85 * fade).toFixed(3));
       el.setAttribute("transform", `translate(${f1(x)},${f1(y)}) rotate(${f1(6 * Math.sin(t * 1.7 + i))}) scale(${g.s})`);
       const d = ghostPath(t, i);
@@ -460,8 +477,9 @@
   // ---------- per frame ----------
   const fimg = new Image();
   let lastSrc = "";
-  async function seek(t) {
-    tl.seek(t, false);
+  async function seek(t0) {
+    const t = POSTER ? LAY.frameT : t0;
+    if (!POSTER) tl.seek(t, false);
     const n = Math.min(NF, Math.floor(t * FPS + 1e-6) + 1);
     const src = FRAMES.replace("%05d", String(n).padStart(5, "0"));
     if (src !== lastSrc) {
@@ -473,13 +491,31 @@
     byId("webR").setAttribute("transform", `rotate(${(Math.sin(t * 0.9) * 1.2).toFixed(2)} 1080 0)`);
     byId("webL").setAttribute("transform", `rotate(${(Math.sin(t * 0.7 + 1) * 1.2).toFixed(2)} 0 0)`);
     byId("flash").style.opacity = (0.3 * lightning(t)).toFixed(3);
+    if (POSTER) [[205, 205, 1.3, 0.8], [880, 168, 0.9, 0.45]].forEach(([x, y, sc, fl], i) => {
+      const el = byId(`bat${i}`); el.setAttribute("opacity", "1");
+      el.setAttribute("transform", `translate(${x},${y}) scale(${sc},${sc * fl})`);
+    });
   }
 
   (async () => {
     await Promise.all(["400 60px Creepster", "400 60px Anton", "400 60px 'Bowlby One SC'", "400 60px 'Special Elite'", "400 30px 'Abril Fatface'"].map((f) => document.fonts.load(f)));
     await document.fonts.ready;
     window.__tl = tl;
-    window.__meta = { duration: D, width: 1080, height: 1920 };
+    if (POSTER) {
+      const OY = LAY.OY;
+      document.documentElement.style.height = document.body.style.height = LAY.H + "px";
+      ["gl", "crack", "warm", "ghosts", "fog", "pumps", "webs", "bats", "bolt"].forEach((id) => (byId(id).style.top = OY + "px"));
+      ["title", "badge", "h1", "h2", "h3", "end", "qcpa"].forEach((id) => (byId(id).style.display = "none"));
+      gsap.set("#clock", { scale: 1, rotation: 0, opacity: 1 });
+      byId("clock").style.top = OY - 22 + "px";
+      Object.assign(byId("scrim").style, { opacity: 1, height: OY + 820 + "px" });
+      byId("cover").style.display = "block";
+      ransom(byId("cT1"), "PICK YOUR", 54, 15); ransom(byId("cT2"), "POISON", 68, 17);
+      byId("cT1").style.top = OY + 26 + "px"; byId("cT2").style.top = OY + 92 + "px";
+      byId("cHead").style.top = OY + 488 + "px";
+      byId("cDate").style.top = OY + 694 + "px";
+    }
+    window.__meta = { duration: POSTER ? 0.1 : D, width: 1080, height: LAY.H };
     window.__seek = seek;
     await seek(0);
   })();
