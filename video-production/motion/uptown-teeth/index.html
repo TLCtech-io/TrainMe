@@ -55,6 +55,16 @@
   <div id="h1" class="head" style="top:520px"><div class="slam">LAST CHANCE TO</div><div class="creep blood" style="font-size:112px; margin-top:6px">SINK YOUR TEETH IN</div></div>
   <div id="h2" class="head" style="top:520px"><div style="font:400 104px/1 'Bowlby One SC'" class="mint">OCT 24 &amp; 25</div><div class="creep blood" style="font-size:96px; margin-top:12px">THIS WEEKEND ONLY</div></div>
 
+  <!-- covers (?thumb, ?ig): the soloist between the fangs, the hook and date under her -->
+  <div id="cover" style="display:none">
+    <div id="cScrim" style="position:absolute; left:0; width:1080px; height:760px; background:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.6) 24%, rgba(0,0,0,0.6) 82%, rgba(0,0,0,0))"></div>
+    <div id="cH1" class="head slam" style="opacity:1; font-size:74px">LAST CHANCE TO</div>
+    <div id="cH2" class="head creep blood" style="opacity:1; font-size:158px">SINK YOUR</div>
+    <div id="cH3" class="head creep mint" style="opacity:1; font-size:158px">TEETH IN</div>
+    <div id="cDate" class="end-line" style="opacity:1"><span style="font:400 58px/1 'Bowlby One SC'; color:var(--mint); text-shadow:0 0 22px rgba(60,218,130,0.6), 0 5px 0 rgba(0,0,0,0.7)">OCT 24 &amp; 25</span><span style="font:400 54px/1 'Creepster'; letter-spacing:0.05em; color:var(--blood); text-shadow:0 0 10px rgba(0,0,0,0.95), 0 0 18px rgba(224,20,47,0.6), 0 4px 0 rgba(0,0,0,0.7)">&nbsp; &middot; THIS WEEKEND</span></div>
+    <div class="ransom" id="cT"></div>
+  </div>
+
   <img id="qcpa" src="../shared/brand/qcpa-logo-white.svg" alt="Queen City Performing Arts" />
   <div id="end">
     <div class="end-line" id="eUp" style="top:640px; font:400 92px/1 'Anton'; letter-spacing:0.08em; color:#fff; text-shadow:0 0 18px rgba(224,20,47,0.5), 0 6px 0 rgba(0,0,0,0.6)">UPTOWN SOUND</div>
@@ -71,6 +81,16 @@
 <script src="data/features.js"></script>
 <script>
   const F = window.FEATURES, FPS = F.fps, D = F.env.length / FPS, NF = F.env.length;
+  // Output: the 9:16 reel, or a cover (?thumb = 3:4 for TikTok, ?ig = 9:16 for Instagram, whose grid shows the middle
+  // 3:4, so the ig cover keeps the whole design in the band OY..OY+1440 and only gum fills the outer 240 px). Covers
+  // use the soloist's close-up at frameT, taken from the 4K source (assets/cover.jpg) and re-framed by VIEW so her face
+  // sits between the fangs.
+  const MODE = location.search.includes("thumb") ? "thumb" : location.search.includes("ig") ? "ig" : "video";
+  const LAY = { video: { H: 1920, OY: 0 }, thumb: { H: 1440, OY: 0, frameT: 8.8 }, ig: { H: 1920, OY: 240, frameT: 8.8 } }[MODE];
+  const POSTER = MODE !== "video";
+  const JT = POSTER ? LAY.OY : 0, JB = POSTER ? LAY.OY + 1440 : 1920;      // where the upper and lower gum lines sit
+  const FACE = [0.59, 0.43], ZOOM = 2;                                      // her face in the frame (uv), cover zoom
+  const VIEW = POSTER ? [FACE[0], FACE[1] + (0.5 - 1 / 3) / ZOOM, ZOOM] : [0.5, 0.5, 1];
   const FRAMES = "assets/frames/f_%05d.jpg";
   const rnd = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -112,10 +132,10 @@
   const glc = byId("gl"), gl = glc.getContext("webgl", { preserveDrawingBuffer: true, antialias: false });
   const VS = "attribute vec2 p; varying vec2 v; void main(){ v = vec2(p.x * 0.5 + 0.5, 0.5 - p.y * 0.5); gl_Position = vec4(p, 0.0, 1.0); }";
   const FS = `precision highp float;
-    uniform sampler2D img; uniform vec2 spot; uniform vec2 spotR; uniform float spotK; uniform float dark; uniform float red; varying vec2 v;
+    uniform sampler2D img; uniform vec2 spot; uniform vec2 spotR; uniform float spotK; uniform float dark; uniform float red; uniform vec3 view; varying vec2 v;
     void main() {
       vec2 px = v * vec2(1080.0, 1920.0);
-      vec3 c = texture2D(img, v).rgb;
+      vec3 c = texture2D(img, view.xy + (v - 0.5) / view.z).rgb;
       float mx = max(c.r, max(c.g, c.b)), mn = min(c.r, min(c.g, c.b)), sat = (mx - mn) / (mx + 1e-4);
       float l = dot(c, vec3(0.299, 0.587, 0.114));
       float lime = smoothstep(0.10, 0.30, sat) * smoothstep(0.02, 0.10, c.g - c.b) * smoothstep(-0.10, 0.02, c.g - c.r) * smoothstep(0.22, 0.5, l);
@@ -140,7 +160,8 @@
   const pLoc = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(pLoc); gl.vertexAttribPointer(pLoc, 2, gl.FLOAT, false, 0, 0);
   gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
   [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]].forEach(([k, v]) => gl.texParameteri(gl.TEXTURE_2D, k, v));
-  const U = Object.fromEntries(["spot", "spotR", "spotK", "dark", "red"].map((n) => [n, gl.getUniformLocation(prog, n)]));
+  const U = Object.fromEntries(["spot", "spotR", "spotK", "dark", "red", "view"].map((n) => [n, gl.getUniformLocation(prog, n)]));
+  gl.uniform3f(U.view, ...VIEW);
   gl.viewport(0, 0, 1080, 1920);
   // the light follows the soloist (keyframes read off the footage)
   const SPOT = [[3.6, 500, 950, 520, 600], [5.6, 590, 1000, 520, 640], [7.5, 650, 1150, 560, 760], [9.4, 595, 1250, 560, 800],
@@ -154,11 +175,11 @@
   // a failing light: a steady buzz with the odd dropout, frame-locked so every render matches
   const flick = (t) => { const f = Math.floor(t * FPS); return 0.93 + 0.07 * rnd(f) - (rnd(f * 3 + 1) < 0.05 ? 0.35 : 0); };
   function drawGrade(t) {
-    const [sx, sy, rx, ry] = spotAt(t);
+    const [sx, sy, rx, ry] = POSTER ? [540, 660, 360, 520] : spotAt(t);
     gl.uniform2f(U.spot, sx, sy); gl.uniform2f(U.spotR, rx, ry);
-    gl.uniform1f(U.spotK, span(2.8, 4.0, t));
-    gl.uniform1f(U.dark, flick(t) * (0.85 + 0.15 * span(0.4, 1.2, t)));
-    gl.uniform1f(U.red, 1.2 * bite(t));
+    gl.uniform1f(U.spotK, POSTER ? 1 : span(2.8, 4.0, t));
+    gl.uniform1f(U.dark, POSTER ? 0.92 : flick(t) * (0.85 + 0.15 * span(0.4, 1.2, t)));
+    gl.uniform1f(U.red, POSTER ? 0.6 : 1.2 * bite(t));
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
 
@@ -219,7 +240,7 @@
   function drawSpit(t, dy, jx, jy) {
     if (!(t < 1.8 || (t > T.reopen[0] - 0.1 && t < 12.4))) { byId("spit").innerHTML = ""; return; }
     byId("spit").innerHTML = SPIT.map(([ui, li, sag, brk]) => {
-      const u = UP[ui], l = LO[li], ux = u.x + jx, uy = dy + jy + u.len - 4, lx = l.x + jx, ly = 1920 - dy + jy - l.len + 4;
+      const u = UP[ui], l = LO[li], ux = u.x + jx, uy = JT + dy + jy + u.len - 4, lx = l.x + jx, ly = JB - dy + jy - l.len + 4;
       const gap = ly - uy, s = (gap - 60) / (brk - 60);
       if (s < 1) {
         const w = lerp(9, 1.4, Math.pow(clamp(s, 0, 1), 0.6)), mx = (ux + lx) / 2 + sag * s, my = (uy + ly) / 2 + 30 * s;
@@ -236,17 +257,17 @@
   // blood: a drop gathers on each upper fang after a chomp and falls; the fangs stay redder with every bite
   const FANGS = UP.filter((u) => u.k === "c");
   function drawJaws(t) {
-    const o = openAt(t), dy = (1 - o) * SHUT, sh = 10 * bite(t);
+    const o = POSTER ? 1 : openAt(t), dy = (1 - o) * SHUT, sh = 10 * bite(t);
     const jx = sh * Math.sin(t * 90), jy = sh * Math.cos(t * 70);
-    byId("upper").setAttribute("transform", `translate(${f1(jx)} ${f1(dy + jy)})`);
-    byId("lower").setAttribute("transform", `translate(${f1(jx)} ${f1(1920 - dy + jy)}) scale(1 -1)`);
+    byId("upper").setAttribute("transform", `translate(${f1(jx)} ${f1(JT + dy + jy)})`);
+    byId("lower").setAttribute("transform", `translate(${f1(jx)} ${f1(JB - dy + jy)}) scale(1 -1)`);
     drawSpit(t, dy, jx, jy);
-    const stain = Math.min(0.95, BITES.reduce((m, h) => m + 0.22 * span(h, h + 0.4, t), 0));
+    const stain = POSTER ? 0.9 : Math.min(0.95, BITES.reduce((m, h) => m + 0.22 * span(h, h + 0.4, t), 0));
     bloodTips.forEach((el) => el.setAttribute("opacity", stain.toFixed(3)));
     let d = "";
     FANGS.forEach(({ x, len }, j) => {
       const y = len + 6;
-      BITES.forEach((h) => {
+      (POSTER ? [t - [0.4, 0.62][j] - 0.1 * j] : BITES).forEach((h) => {     // covers: one drop hanging, one just falling
         const s = t - h - 0.1 * j; if (s < 0 || s > 1.6) return;
         const grow = Math.min(1, s / 0.35), fall = Math.max(0, s - 0.45), r = 5 + 6 * grow, yy = y + 4 + 14 * grow + 900 * fall * fall;
         const top = fall > 0 ? Math.max(y, yy - r * 3.4) : y, a = (1 - span(1.1, 1.6, s)).toFixed(3);
@@ -291,10 +312,11 @@
   // ---------- per frame ----------
   const fimg = new Image();
   let lastSrc = "";
-  async function seek(t) {
-    tl.seek(t, false);
+  async function seek(t0) {
+    const t = POSTER ? LAY.frameT : t0;
+    if (!POSTER) tl.seek(t, false);
     const n = Math.min(NF, Math.floor(t * FPS + 1e-6) + 1);
-    const src = FRAMES.replace("%05d", String(n).padStart(5, "0"));
+    const src = POSTER ? "assets/cover.jpg" : FRAMES.replace("%05d", String(n).padStart(5, "0"));
     if (src !== lastSrc) {
       fimg.src = src; lastSrc = src;
       try { await fimg.decode(); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, fimg); } catch (e) { console.error("frame", n, e.message); }
@@ -306,7 +328,19 @@
     await Promise.all(["400 60px Creepster", "400 60px Anton", "400 60px 'Bowlby One SC'", "400 60px 'Special Elite'"].map((f) => document.fonts.load(f)));
     await document.fonts.ready;
     window.__tl = tl;
-    window.__meta = { duration: D, width: 1080, height: 1920 };
+    if (POSTER) {
+      const OY = LAY.OY;
+      document.documentElement.style.height = document.body.style.height = LAY.H + "px";
+      byId("gl").style.top = OY - 240 + "px";
+      byId("grain").style.height = LAY.H + "px";
+      const jw = byId("jaws"); jw.setAttribute("height", LAY.H); jw.setAttribute("viewBox", `0 0 1080 ${LAY.H}`);
+      ["title", "h1", "h2", "end", "qcpa"].forEach((id) => (byId(id).style.display = "none"));
+      byId("scrim").style.opacity = 0.3;
+      byId("cover").style.display = "block";
+      ransom(byId("cT"), "PICK YOUR POISON", 40, 15);
+      [["cScrim", 520], ["cH1", 600], ["cH2", 680], ["cH3", 830], ["cDate", 1000], ["cT", 1074]].forEach(([id, y]) => (byId(id).style.top = OY + y + "px"));
+    }
+    window.__meta = { duration: POSTER ? 0.1 : D, width: 1080, height: LAY.H };
     window.__seek = seek;
     await seek(0);
   })();

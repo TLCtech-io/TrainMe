@@ -13,6 +13,8 @@ OUT_DIR="${OUT_DIR:-out}"; mkdir -p "$OUT_DIR" assets data
 if [ -n "${1:-}" ]; then cp "$1" assets/clip.mov; fi
 rm -rf assets/frames && mkdir -p assets/frames
 ffmpeg -v error -y -i assets/clip.mov -vf "scale=1080:1920" -q:v 2 -start_number 1 assets/frames/f_%05d.jpg
+# covers: the soloist close-up at full 4K resolution (re-framed in index.html by VIEW)
+ffmpeg -v error -y -ss 8.8 -i assets/clip.mov -frames:v 1 -q:v 2 assets/cover.jpg
 ffmpeg -v error -y -i assets/clip.mov -map 0:a:0 -ac 1 -ar 16000 -c:a pcm_s16le assets/voice16k.wav
 "$PY" ../tools/audio_features.py assets/voice16k.wav data/features.js 23.976023976023978 >/dev/null
 python3 -c "p='data/features.js'; s=open(p).read().strip(); s=s if s.startswith('window.') else 'window.FEATURES = ' + s + ';'; open(p,'w').write(s + '\n')"
