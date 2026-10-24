@@ -9,7 +9,7 @@
 //
 // Usage:
 //   NODE_PATH=<dir with puppeteer-core> node render.cjs --in page.html --out clip.mp4 \
-//     [--out-width 3840] [--fps 30] [--alpha] [--from 0] [--to <dur>] [--stills 1.5,8,12 --stills-dir dir]
+//     [--out-width 3840] [--fps 30] [--alpha] [--crf 16 | --crf 0 (lossless)] [--from 0] [--to <dur>] [--stills 1.5,8,12 --stills-dir dir]
 const puppeteer = require("puppeteer-core");
 const { spawn } = require("child_process");
 const fs = require("fs");
@@ -101,7 +101,9 @@ async function main() {
   const out = path.resolve(args.out);
   const enc = alpha
     ? ["-c:v", "prores_ks", "-profile:v", "4444", "-pix_fmt", "yuva444p10le", "-vendor", "apl0"]
-    : ["-c:v", "libx264", "-preset", "medium", "-crf", "16", "-pix_fmt", "yuv420p", "-g", String(Math.round(fps)), "-keyint_min", String(Math.round(fps)), "-movflags", "+faststart"];
+    : args.crf === "0"   // --crf 0: a lossless intermediate (4:4:4) for a final encode elsewhere
+      ? ["-c:v", "libx264", "-preset", "veryfast", "-qp", "0", "-pix_fmt", "yuv444p", "-g", String(Math.round(fps)), "-movflags", "+faststart"]
+      : ["-c:v", "libx264", "-preset", "medium", "-crf", String(args.crf || 16), "-pix_fmt", "yuv420p", "-g", String(Math.round(fps)), "-keyint_min", String(Math.round(fps)), "-movflags", "+faststart"];
   const ff = spawn("ffmpeg", ["-y", "-loglevel", "error", "-f", "image2pipe", "-framerate", fpsArg, "-c:v", "png", "-i", "-", ...enc, "-r", fpsArg, out], { stdio: ["pipe", "inherit", "inherit"] });
   const started = Date.now();
   for (let i = 0; i < frames; i++) {

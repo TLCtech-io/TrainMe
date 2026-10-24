@@ -102,6 +102,9 @@ uptown-zombiecall/ Uptown Sound ticket push on "10.23 Fri Zombie" (the venue's g
                    flare with lightning on each one. DEAD / LAST / CHANCE and GET / YOUR / TICKETS slam in on the ZOMBIEs,
                    ONLY THE DEAD / MISS THIS SHOW on "what's in your head"; the series' zombie hands climb out of the fog
                    and drag TICKETS under before the end card. Clip and audio used as delivered. Build: ./build.sh
+                   Covers (the skull close-up with the eyes lit, DEAD LAST CHANCE, POSE in index.html):
+                     3:4 TikTok          render.cjs --in index.html --query thumb --stills 0   (1080x1440)
+                     9:16 Instagram      render.cjs --in index.html --query ig --stills 0      (1080x1920, design in y 240-1680)
 uptown-airguitar/  Uptown Sound ticket push on "10.23 Fri Air Guitar Zombie" (the reaper prop under the riff the ensemble
                    air-guitars; 9:16, 24000/1001 fps). User's asks: darken the edges only, look different from the Zombie
                    post. A rock show: stage washes that change with the music (magenta, ice, then cycling every two beats

@@ -69,6 +69,17 @@
   </div>
   <div id="g2"><div class="w nos" id="s3" style="top:1280px">GET</div><div class="w nos" id="s4" style="top:1430px">YOUR</div><div class="w nos" id="s5" style="top:1580px">TICKETS</div></div>
 
+  <!-- covers (?thumb 3:4, ?ig 9:16): the skull close-up, eyes lit, the hook below -->
+  <div id="cover" style="display:none">
+    <div id="cEdge" style="position:absolute; left:0; top:0; width:420px; height:100%; background:linear-gradient(90deg, #000 0px, #000 150px, rgba(0,0,0,0) 420px)"></div>
+    <div id="cScrim" style="position:absolute; left:0; width:1080px; height:520px; background:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.7) 30%, rgba(0,0,0,0.85))"></div>
+    <div class="ransom" id="cT1"></div>
+    <div class="ransom" id="cT2"></div>
+    <div class="w nos" id="cS1" style="opacity:1; font-size:120px">DEAD LAST</div>
+    <div class="w nos" id="cS2" style="opacity:1; font-size:150px">CHANCE</div>
+    <div class="end-line" id="cDate" style="opacity:1"><span style="font:400 62px/1 'Bowlby One SC'; color:var(--bone); text-shadow:0 0 18px rgba(224,36,43,0.45), 0 5px 0 rgba(0,0,0,0.85)">OCT 24 &amp; 25</span><span style="font:400 58px/1 'Creepster'; letter-spacing:0.05em; color:var(--blood); text-shadow:0 0 10px rgba(0,0,0,0.95), 0 0 18px rgba(224,36,43,0.6), 0 4px 0 rgba(0,0,0,0.8)">&nbsp; &middot; THIS WEEKEND</span></div>
+  </div>
+
   <!-- end card -->
   <img id="qcpa" src="../shared/brand/qcpa-logo-white.svg" alt="Queen City Performing Arts" />
   <div id="end">
@@ -88,6 +99,13 @@
 <script>
   const F = window.FEATURES, FPS = F.fps, D = F.env.length / FPS, NF = F.env.length, EYES = window.EYES.eyes;
   const FRAMES = "assets/frames/f_%05d.jpg";
+  // Output: the 9:16 reel, or a cover (?thumb = 3:4 for TikTok, ?ig = 9:16 for Instagram, whose grid shows the middle
+  // 3:4, so the ig cover keeps the whole design in the band OY..OY+1440). Covers hold the skull close-up at frameT with
+  // the eyes lit and a little flare; the footage layers move by dx, dy so the eyes sit centred below the title.
+  const MODE = location.search.includes("thumb") ? "thumb" : location.search.includes("ig") ? "ig" : "video";
+  const LAY = { video: { H: 1920, OY: 0 }, thumb: { H: 1440, OY: 0 }, ig: { H: 1920, OY: 240 } }[MODE];
+  const POSTER = MODE !== "video";
+  const POSE = { frameT: 6.7, flare: 0.35, dy: -190, dx: 150 };
   const rnd = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const span = (a, b, t) => clamp((t - a) / (b - a), 0, 1);
@@ -168,6 +186,7 @@
   const bolt = (t) => HITS.reduce((m, h) => { const s = t - h; return Math.max(m, s < 0 ? 0 : s < 0.07 ? 1 : s < 0.11 ? 0.15 : s < 0.17 ? 0.65 : Math.exp(-(s - 0.17) * 14) * 0.65); }, 0);
   // eyes: dark sockets until the first ZOMBIE, then they sputter alight and stay lit, flaring on every hit
   function eyeLevel(t) {
+    if (POSTER) return 1;
     if (t < T.z1[0] - 0.02) return 0;
     const s = t - T.z1[0], f = Math.floor(t * FPS);
     const sputter = s < 0.45 ? (rnd(f * 7 + 3) < 0.55 ? 1 : 0.15) : 1;
@@ -177,8 +196,8 @@
     const e = eyesAt(t);
     if (e) { gl.uniform2f(U.spot, e.cx, e.cy + e.w * 0.9); gl.uniform2f(U.spotR, e.w * 3.0, e.w * 4.4); }
     gl.uniform1f(U.spotK, e ? 1 : 0);
-    gl.uniform1f(U.flash, 0.45 * bolt(t));
-    gl.uniform1f(U.redK, eyeLevel(t) * (0.6 + 0.8 * hit(t)));
+    gl.uniform1f(U.flash, POSTER ? 0 : 0.45 * bolt(t));
+    gl.uniform1f(U.redK, eyeLevel(t) * (0.6 + 0.8 * (POSTER ? POSE.flare : hit(t))));
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
 
@@ -188,7 +207,7 @@
     ex.clearRect(0, 0, 1080, 1920);
     const e = eyesAt(t), I = eyeLevel(t);
     if (!e || I <= 0) return;
-    const fl = hit(t), w = e.w;
+    const fl = POSTER ? POSE.flare : hit(t), w = e.w;
     const halo = ex.createRadialGradient(e.cx, e.cy, 0, e.cx, e.cy, w * (1.3 + 0.8 * fl));
     halo.addColorStop(0, `rgba(255,30,20,${(0.22 * I + 0.25 * fl).toFixed(3)})`); halo.addColorStop(1, "rgba(255,0,0,0)");
     ex.fillStyle = halo; ex.fillRect(0, 0, 1080, 1920);
@@ -381,8 +400,9 @@
   }
   const fimg = new Image();
   let lastSrc = "";
-  async function seek(t) {
-    tl.seek(t, false);
+  async function seek(t0) {
+    const t = POSTER ? POSE.frameT : t0;
+    if (!POSTER) tl.seek(t, false);
     const n = Math.min(NF, Math.floor(t * FPS + 1e-6) + 1);
     const src = FRAMES.replace("%05d", String(n).padStart(5, "0"));
     if (src !== lastSrc) {
@@ -391,16 +411,29 @@
     }
     // a jolt on every ZOMBIE
     const sh = 9 * hit(t, HITS, 9), f = Math.floor(t * FPS);
-    glc.style.transform = sh > 0.3 ? `translate(${((rnd(f) - 0.5) * 2 * sh).toFixed(1)}px, ${((rnd(f + 9) - 0.5) * 2 * sh).toFixed(1)}px) scale(1.012)` : "";
+    glc.style.transform = !POSTER && sh > 0.3 ? `translate(${((rnd(f) - 0.5) * 2 * sh).toFixed(1)}px, ${((rnd(f + 9) - 0.5) * 2 * sh).toFixed(1)}px) scale(1.012)` : "";
     drawGrade(t); drawEyes(t);
     drawFog(fb, t, 1, 12, 0.075, 780, 160); drawFog(ff, t, 300, 9, 0.09, 870, 90);
     drawHands(t); drawHead(t); drawGrain(t);
-    byId("flash").style.opacity = (0.32 * bolt(t)).toFixed(3);
+    byId("flash").style.opacity = POSTER ? 0 : (0.32 * bolt(t)).toFixed(3);
   }
 
   (async () => {
     await Promise.all(["400 100px Nosifer", "400 100px Creepster", "400 100px Anton", "400 60px 'Bowlby One SC'", "400 60px 'Special Elite'"].map((f) => document.fonts.load(f)));
     await document.fonts.ready;
+    if (POSTER) {
+      const OY = LAY.OY, dy = OY + POSE.dy;
+      document.documentElement.style.height = document.body.style.height = LAY.H + "px";
+      ["gl", "eyes", "top", "fogBack", "fogFront"].forEach((id) => Object.assign(byId(id).style, { top: dy + "px", left: POSE.dx + "px" }));
+      byId("sides").style.top = dy + "px";                 // the vignette stays on the cover's edges; cEdge hides the seam
+      byId("bottom3").style.top = 1280 + dy + "px";
+      byId("grain").style.height = LAY.H + "px";
+      ["t1", "t2", "tZ", "g1", "head", "g2", "end", "qcpa", "hands"].forEach((id) => (byId(id).style.display = "none"));
+      byId("cover").style.display = "block";
+      ransom(byId("cT1"), "PICK YOUR", 54, 21); ransom(byId("cT2"), "POISON", 68, 23);
+      document.querySelectorAll("#cover .rl").forEach((el) => (el.style.opacity = 1));
+      [["cT1", 34], ["cT2", 104], ["cScrim", 900], ["cS1", 1002], ["cS2", 1128], ["cDate", 1312]].forEach(([id, y]) => (byId(id).style.top = OY + y + "px"));
+    }
     document.querySelectorAll(".w").forEach((el) => {     // fit every line to the frame width (measured unscaled: the
       const prev = el.style.transform; el.style.transform = "none";   // timeline has already set the slam-in scale)
       const r = document.createRange(); r.selectNodeContents(el);
@@ -412,10 +445,11 @@
       const els = [...byId(g).children], fs = Math.min(...els.map((el) => parseFloat(el.style.fontSize || getComputedStyle(el).fontSize)));
       els.forEach((el) => (el.style.fontSize = fs + "px"));
     });
-    window.__tl = tl;
-    window.__meta = { duration: D, width: 1080, height: 1920 };
+    // signal ready only once the first frame is drawn (the renderer starts capturing as soon as __meta appears)
     window.__seek = seek;
     await seek(0);
+    window.__tl = tl;
+    window.__meta = { duration: POSTER ? 0.1 : D, width: 1080, height: LAY.H };
   })();
 </script>
 </body>
