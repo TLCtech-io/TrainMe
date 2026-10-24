@@ -95,6 +95,13 @@ uptown-teeth/      Uptown Sound ticket push on "10.23 Fri Teeth" (dress rehearsa
                    Covers (her face between the bloody fangs, the hook and date under her; frame from the 4K source):
                      3:4 TikTok          render.cjs --in index.html --query thumb --stills 0   (1080x1440)
                      9:16 Instagram      render.cjs --in index.html --query ig --stills 0      (1080x1920, design in y 240-1680)
+uptown-zombiecall/ Uptown Sound ticket push on "10.23 Fri Zombie" (the venue's guitar-playing reaper prop under the ZOMBIE
+                   chorus; 9:16, 24 fps). User's asks: bottom third fades to black, side vignette hides the background.
+                   Cold colourless WebGL grade that also keys the brick wall to black; graveyard fog over the faded bottom
+                   third; the reaper's eye sockets (tools/skull_track.py, data/eyes.js) ignite red on the first ZOMBIE and
+                   flare with lightning on each one. DEAD / LAST / CHANCE and GET / YOUR / TICKETS slam in on the ZOMBIEs,
+                   ONLY THE DEAD / MISS THIS SHOW on "what's in your head"; the series' zombie hands climb out of the fog
+                   and drag TICKETS under before the end card. Clip and audio used as delivered. Build: ./build.sh
 ```
 
 Setup (once per machine): `npm install puppeteer-core@24 gsap` somewhere and point `NODE_PATH` at its `node_modules`;
