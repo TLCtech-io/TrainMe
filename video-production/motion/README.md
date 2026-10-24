@@ -113,10 +113,13 @@ uptown-airguitar/  Uptown Sound ticket push on "10.23 Fri Air Guitar Zombie" (th
                      3:4 TikTok          render.cjs --in index.html --query thumb --stills 0   (1080x1440)
                      9:16 Instagram      render.cjs --in index.html --query ig --stills 0      (1080x1920, design in y 240-1680)
 uptown-wall/       Video wall backdrop for the Pick Your Poison shows: a dusty apothecary bar (UPTOWN SOUND sign, labelled
-                   bottles, alchemy rig, PICK YOUR POISON plaque, the poison list). The plate is an OpenArt Nano Banana Pro
-                   render (prompt.txt; assets/plate.png is not committed); index.html engraves the QCPA logo into the two
-                   brass medallions and frames it: ?r=169 (3840x2160) or ?r=1610 (3840x2400, top and bottom carried on).
+                   bottles, alchemy rig, PICK YOUR POISON plaque on the wall above the bottles so it clears the singers'
+                   heads, the poison list). The plate is an OpenArt Nano Banana Pro render plus one edit (prompt.txt has
+                   both prompts and the fixes; assets/ is not committed). tools/fade_labels.py re-letters labels,
+                   tools/find_medallions.py finds the brass medallions, index.html engraves the QCPA logo into them and
+                   frames the plate: ?r=169 (3840x2160) or ?r=1610 (3840x2400, top and bottom carried on).
                      render.cjs --in index.html --query r=169 --stills 0 --stills-dir <dir>
+                   tools/mockup.py puts a render on the venue screen in a photo (with the ensemble matted in front).
 ```
 
 Setup (once per machine): `npm install puppeteer-core@24 gsap` somewhere and point `NODE_PATH` at its `node_modules`;

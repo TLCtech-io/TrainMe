@@ -7,7 +7,7 @@
   Video wall backdrop behind the ensemble at the Pick Your Poison shows: a dusty apothecary bar. The plate
   (assets/plate.png, 5504x3072) is a Nano Banana Pro render from OpenArt (prompt in prompt.txt); it carries the
   UPTOWN SOUND sign, the PICK YOUR POISON plaque, the menu, the labelled bottles and two blank brass medallions. This
-  page engraves the QCPA logo into the medallions and frames the plate for the wall:
+  page engraves the QCPA logo into the medallions (found by tools/find_medallions.py) and frames the plate for the wall:
     ?r=169   3840x2160 (16:9, the plate trimmed 21 px a side)
     ?r=1610  3840x2400 (16:10, the plate at full width with the dark ceiling and bar front carried on above and below)
   render.cjs --in index.html --query r=169 --stills 0 --stills-dir <dir>
@@ -20,11 +20,12 @@
 </head>
 <body>
 <canvas id="c"></canvas>
+<script src="data/medallions.js"></script>
 <script>
   const R = new URLSearchParams(location.search).get("r") || "169";
   const PW = 5504, PH = 3072;
-  // the brass medallions in plate pixels: centre and the radius of the flat face inside the rim
-  const MEDALS = [[714, 377, 186], [4790, 382, 186]];
+  // the brass medallions in plate pixels: centre and the radius of the flat face inside the rim (data/medallions.js)
+  const MEDALS = window.MEDALS;
   const OUT = R === "1610" ? { W: 3840, H: 2400 } : { W: 3840, H: 2160 };
   const cv = document.getElementById("c"), cx = cv.getContext("2d");
   cv.width = OUT.W; cv.height = OUT.H;

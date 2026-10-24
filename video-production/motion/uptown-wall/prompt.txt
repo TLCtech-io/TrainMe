@@ -16,3 +16,20 @@ BACK WALL: dark aged plaster and old wood with tall shelves crowded with antique
 TOP: above the highest shelf, a long carved and gilded wooden sign board, centered, with large ornate gold letters reading exactly "UPTOWN SOUND". At the far left and far right ends of that sign board, two plain, round, polished brass medallions with nothing on them (completely blank).
 
 ATMOSPHERE: dozens of lit candles of different heights with dripping wax on the bar and on the shelves; realistic photographic cobwebs made of fine, silky, translucent strands draped across shelf corners, between bottles and hanging from the sign (not cartoon spider webs); a thick layer of dust on every surface; floating dust motes catching the candlelight; warm amber candlelight mixed with eerie toxic-green and blood-red glows from the liquids; deep shadows, rich contrast, soft vignette. No people. Keep all important objects and all lettering inside the central 90 percent of the width, away from the left and right edges.
+
+v2 (2026-10-24), the plaque moved up onto the wall: an image2image edit of the v1 plate (OpenArt Nano Banana Pro, 4K, 16:9,
+1 image, 80 credits), history VBCiI1FWEMbl4nDKW4wn, resource o1yH0dmnVkzZsgRWLQK4 (kept as assets/plate_v2_raw.png). Prompt:
+
+Edit this image, keeping everything else exactly as it is.
+
+1. Move the carved wooden "PICK YOUR POISON" plaque off the bar counter and up onto the back wall: hang it centered on the plaster wall in the empty space between the two shelf units, directly above the row of four large labelled bottles (TOXIC, ZOMBIE, TEETH, E.T.) and below the top of the shelves, about 20 percent larger than it is now, mounted with two small brass brackets, a few fine cobwebs on its corners and a little dust on its top edge. Keep its lettering exactly "PICK YOUR POISON" in the same gold-leaf serif style, fully legible.
+
+2. On the bar counter where the plaque used to sit (the center of the bar), add a small cluster of antique potion bottles of different shapes and colors (cobalt blue, amber, green, deep red; corked, dusty, with faded unreadable labels) and four or five lit dripping candles of different heights, matching the existing candles and lighting, with the same dust on the bar around them.
+
+Do not change anything else: same camera, framing and composition; same "UPTOWN SOUND" sign and the two blank round brass medallions beside it (keep them completely blank); same shelves and bottles; same four labelled bottles; same alchemy apparatus on the left; same parchment "THE POISON LIST" menu on the right with exactly the same text; same candles, cobwebs, dust, colors and lighting.
+
+The edit copied the song labels onto the new bar bottles (one cut off as "TOXI"), so assets/plate.png is that render with
+those four labels re-lettered as faded apothecary names:
+  python tools/fade_labels.py assets/plate_v2_raw.png assets/plate.png "2168,2286,2302,2357=OPIUM" \
+    "2510,2280,2712,2347=AQUA MORTIS" "2823,2278,3017,2345=BELLADONNA" "3118,2256,3312,2329=ARSENIC"
+  python tools/find_medallions.py assets/plate.png data/medallions.js
