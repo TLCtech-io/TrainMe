@@ -112,6 +112,11 @@ uptown-airguitar/  Uptown Sound ticket push on "10.23 Fri Air Guitar Zombie" (th
                    Covers (the show frozen at the kick-in, POSE in index.html; the hook up top, series and date over the crowd):
                      3:4 TikTok          render.cjs --in index.html --query thumb --stills 0   (1080x1440)
                      9:16 Instagram      render.cjs --in index.html --query ig --stills 0      (1080x1920, design in y 240-1680)
+uptown-wall/       Video wall backdrop for the Pick Your Poison shows: a dusty apothecary bar (UPTOWN SOUND sign, labelled
+                   bottles, alchemy rig, PICK YOUR POISON plaque, the poison list). The plate is an OpenArt Nano Banana Pro
+                   render (prompt.txt; assets/plate.png is not committed); index.html engraves the QCPA logo into the two
+                   brass medallions and frames it: ?r=169 (3840x2160) or ?r=1610 (3840x2400, top and bottom carried on).
+                     render.cjs --in index.html --query r=169 --stills 0 --stills-dir <dir>
 ```
 
 Setup (once per machine): `npm install puppeteer-core@24 gsap` somewhere and point `NODE_PATH` at its `node_modules`;

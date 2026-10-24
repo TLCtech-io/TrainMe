@@ -1,0 +1,18 @@
+Plate: assets/plate.png (5504x3072, not committed). OpenArt, Nano Banana Pro, text2image, 16:9, 4K, 2 images (80 credits each).
+History 87gExFQFeTkWWlEAjyTs, project 1b0PsV34JkoUwowxev4d; the chosen image is resource cphkbYIPxJDNIHUKwMIF (the one with the
+four labelled bottles in a row in the centre). Generated 2026-10-24. Prompt, verbatim:
+
+Photorealistic cinematic 3D render, a wide 16:9 stage backdrop for a Halloween choir concert called "Pick Your Poison". A dusty, long-abandoned Victorian apothecary bar at night, seen straight-on and nearly symmetrical, camera at bar height.
+
+FOREGROUND (lower third): a long, worn, dark-wood apothecary bar counter spans the full width of the image; its top surface sits at about two-thirds of the image height and is covered in a fine grey layer of dust.
+- Center of the bar: an ornate antique wooden plaque with gold-leaf engraved serif lettering that reads exactly "PICK YOUR POISON", lying on the bar and propped at a slight angle toward the viewer so the words are fully legible.
+- To the right of the plaque, lying on the bar: an old, stained, curling parchment menu weighted down by a candle stub, hand-lettered in dark brown ink. Its heading reads "THE POISON LIST" and under it these lines, one per line, spelled exactly: TOXIC / POISON / ZOMBIE / E.T. / TEETH / DECODE / DOG DAYS / STAY AWAY / BETTER THINGS / GONNA GET OVER YOU.
+- To the left of the plaque on the bar: an archaic alchemist's chemistry apparatus with brass and copper pipes, coiled glass tubing, a retort stand, condensers, round-bottom flasks and globe vessels filled with sickly blood-red and glowing toxic-green liquids, a little vapor curling up.
+
+MIDDLE: a gap of deep shadow between the bar and the back wall, so the bar clearly stands in front of the wall.
+
+BACK WALL: dark aged plaster and old wood with tall shelves crowded with antique potion and poison bottles of every shape and size: cobalt blue, amber, bottle green and deep red glass, skull-shaped vials, corked jars, stoppered decanters, a few glowing faintly from within. Four of the larger bottles on the shelves carry legible aged paper labels with one word each: "TOXIC", "ZOMBIE", "TEETH" and "E.T.". All other labels are faded and unreadable, so the shelves do not feel busy.
+
+TOP: above the highest shelf, a long carved and gilded wooden sign board, centered, with large ornate gold letters reading exactly "UPTOWN SOUND". At the far left and far right ends of that sign board, two plain, round, polished brass medallions with nothing on them (completely blank).
+
+ATMOSPHERE: dozens of lit candles of different heights with dripping wax on the bar and on the shelves; realistic photographic cobwebs made of fine, silky, translucent strands draped across shelf corners, between bottles and hanging from the sign (not cartoon spider webs); a thick layer of dust on every surface; floating dust motes catching the candlelight; warm amber candlelight mixed with eerie toxic-green and blood-red glows from the liquids; deep shadows, rich contrast, soft vignette. No people. Keep all important objects and all lettering inside the central 90 percent of the width, away from the left and right edges.
