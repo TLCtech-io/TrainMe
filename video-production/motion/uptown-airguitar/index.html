@@ -61,6 +61,20 @@
   <div class="metal" id="m3" style="top:70px; font-size:190px; --glow: rgba(63,216,255,0.8)"><span>LAST CALL</span></div>
   <div class="metal" id="m4" style="top:262px; font-size:120px; --glow: rgba(63,216,255,0.8)"><span>FOR TICKETS</span></div>
 
+  <!-- covers (?thumb 3:4, ?ig 9:16): the show frozen at the kick-in, the hook up top, series and date over the crowd -->
+  <div id="cover" style="display:none">
+    <div id="cScrim" style="position:absolute; left:0; width:1080px; height:620px; background:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.62) 35%, rgba(0,0,0,0.8))"></div>
+    <div class="metal" id="cM1" style="opacity:1"><span>ROCK ISN'T</span></div>
+    <div class="metal" id="cM2" style="opacity:1; font-size:200px"><span>DEAD</span></div>
+    <div class="scrawl" id="cJoke" style="opacity:1; font-size:60px">(he just looks<br>&nbsp;&nbsp;like it)</div>
+    <svg id="cArrow" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+    <div id="cBase" style="position:absolute; left:0; width:1080px; background:linear-gradient(rgba(0,0,0,0), #000 120px)"></div>
+    <div class="ransom" id="cT1"></div>
+    <div class="ransom" id="cT2"></div>
+    <div class="metal" id="cDate" style="opacity:1; font:400 108px/1.05 'Anton'; letter-spacing:0.04em; --glow: rgba(255,178,58,0.85)"><span>OCT 24 &amp; 25</span></div>
+    <div class="end-line" id="cWk" style="opacity:1; font:400 58px/1 'Anton'; letter-spacing:0.16em; color:var(--amber); text-shadow:0 0 18px rgba(255,178,58,0.6), 0 5px 0 rgba(0,0,0,0.85)">THIS WEEKEND</div>
+  </div>
+
   <!-- end card: name and title up top, when and where in the lower band, the logo over the crowd -->
   <div id="end">
     <div class="end-line" id="eUp" style="top:62px; font:400 96px/1 'Anton'; letter-spacing:0.08em; color:#fff; text-shadow:0 0 20px rgba(255,43,214,0.6), 0 6px 0 rgba(0,0,0,0.75)">UPTOWN SOUND</div>
@@ -80,6 +94,13 @@
 <script>
   const F = window.FEATURES, FPS = F.fps, D = F.env.length / FPS, NF = F.env.length;
   const FRAMES = "assets/frames/f_%05d.jpg";
+  // Output: the 9:16 reel, or a cover (?thumb = 3:4 for TikTok, ?ig = 9:16 for Instagram, whose grid shows the middle
+  // 3:4, so the ig cover keeps the whole design in the band OY..OY+1440). Covers freeze the show at the kick-in (POSE):
+  // the prop at rest (frameT), magenta wash, beams crossing, pyro up, a zap on the strings, every hand up.
+  const MODE = location.search.includes("thumb") ? "thumb" : location.search.includes("ig") ? "ig" : "video";
+  const LAY = { video: { H: 1920, OY: 0 }, thumb: { H: 1440, OY: 0 }, ig: { H: 1920, OY: 240 } }[MODE];
+  const POSTER = MODE !== "video";
+  const POSE = { frameT: 5.0, beamsT: 8.62, fxT: 7.75, crowdT: 8.05, stageDY: -80, crowdDY: 60 };
   const rnd = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const span = (a, b, t) => clamp((t - a) / (b - a), 0, 1);
@@ -101,7 +122,7 @@
   // the prop moves with the handheld camera: pin everything on it to the tracked skull (offset from frame 120)
   const SK = window.SKULL, REF = SK.xy[120 - SK.first];
   function pin(t) {
-    const i = clamp(Math.floor(t * FPS + 1e-6) + 1 - SK.first, 0, SK.xy.length - 1), p = SK.xy[i];
+    const i = clamp(Math.floor((POSTER ? POSE.frameT : t) * FPS + 1e-6) + 1 - SK.first, 0, SK.xy.length - 1), p = SK.xy[i];
     return [p[0] - REF[0], p[1] - REF[1]];
   }
   const PICK = [400, 1205], NUT = [902, 985], LAMP = [522, 318], SKULL0 = REF;
@@ -109,7 +130,7 @@
   // ---------- stage colour: magenta for the first riff, ice blue for the second, then it cycles every two beats ----------
   const COLS = { hot: [1.0, 0.17, 0.84], ice: [0.25, 0.85, 1.0], amber: [1.0, 0.62, 0.18] };
   function washAt(t) {
-    if (t < T.stab2) return COLS.hot;
+    if (POSTER || t < T.stab2) return COLS.hot;
     if (t < T.kick) return COLS.ice;
     const n = after(t).length, seq = [COLS.amber, COLS.hot, COLS.ice];
     return seq[Math.floor(Math.max(0, n - 1) / 2) % 3];
@@ -155,7 +176,7 @@
     gl.uniform3f(U.wash, ...w);
     gl.uniform1f(U.washK, 0.55 + 0.15 * pulse(t, BEATS, 5));
     gl.uniform2f(U.spot, SKULL0[0] + ox, SKULL0[1] + oy + 520);
-    gl.uniform1f(U.flash, 0.55 * flashAt(t));
+    gl.uniform1f(U.flash, POSTER ? 0 : 0.55 * flashAt(t));
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
 
@@ -242,7 +263,7 @@
     // the flame lamp on the pillar breathes with the beat
     glow(LAMP[0] + o[0], LAMP[1] + o[1], 210 + 70 * pulse(t, BEATS, 5), [1, 0.45, 0.85], 0.35 + 0.2 * pulse(t, BEATS, 5));
     // zaps: big on the stabs, small on each riff note, then on every beat after the kick-in
-    const zk = Math.max(pulse(t, STABS, 5), 0.6 * pulse(t, RIFF, 14), t > T.kick ? 0.55 * pulse(t, BEATS, 9) : 0);
+    const zk = POSTER ? 0.9 : Math.max(pulse(t, STABS, 5), 0.6 * pulse(t, RIFF, 14), t > T.kick ? 0.55 * pulse(t, BEATS, 9) : 0);
     if (zk > 0.04) zap(t, zk, 0, o);
     // pyro: a small pair on the first stab, bigger on the second, everything on the kick-in (and again 4 bars later)
     [[T.stab1, 0.55], [T.stab2, 0.75], [T.kick, 1.1], [T.kick + 3.5, 0.8]].forEach(([t0, p], k) => {
@@ -333,9 +354,10 @@
   }
   const fimg = new Image();
   let lastSrc = "";
-  async function seek(t) {
-    tl.seek(t, false);
-    const n = Math.min(NF, Math.floor(t * FPS + 1e-6) + 1);
+  async function seek(t0) {
+    const t = POSTER ? POSE.fxT : t0, ft = POSTER ? POSE.frameT : t0;
+    if (!POSTER) tl.seek(t, false);
+    const n = Math.min(NF, Math.floor(ft * FPS + 1e-6) + 1);
     const src = FRAMES.replace("%05d", String(n).padStart(5, "0"));
     if (src !== lastSrc) {
       fimg.src = src; lastSrc = src;
@@ -343,14 +365,30 @@
     }
     // the whole stage punches in on the stabs and on every beat after the kick-in
     const bump = Math.max(0.035 * pulse(t, STABS, 6), t > T.kick ? 0.014 * pulse(t, BEATS, 8) : 0);
-    byId("stage").style.transform = `scale(${(1 + bump).toFixed(4)})`;
-    drawGrade(t); drawBeams(t); drawFx(t); drawCrowd(t); drawGrain(t);
-    byId("flash").style.opacity = (0.22 * flashAt(t)).toFixed(3);
+    byId("stage").style.transform = POSTER ? `translateY(${LAY.OY + POSE.stageDY}px)` : `scale(${(1 + bump).toFixed(4)})`;
+    drawGrade(t); drawBeams(POSTER ? POSE.beamsT : t); drawFx(t); drawCrowd(POSTER ? POSE.crowdT : t); drawGrain(t);
+    byId("flash").style.opacity = POSTER ? 0 : (0.22 * flashAt(t)).toFixed(3);
   }
 
   (async () => {
     await Promise.all(["400 100px 'Metal Mania'", "400 60px 'Permanent Marker'", "400 60px Anton", "400 60px 'Special Elite'", "400 60px 'Bowlby One SC'"].map((f) => document.fonts.load(f)));
     await document.fonts.ready;
+    if (POSTER) {
+      const OY = LAY.OY;
+      document.documentElement.style.height = document.body.style.height = LAY.H + "px";
+      byId("grain").style.height = LAY.H + "px";
+      byId("crowd").style.top = OY + 1440 - 1920 + POSE.crowdDY + "px";
+      ["m1", "m2", "joke", "arrow", "m3", "m4", "end", "qcpa"].forEach((id) => (byId(id).style.display = "none"));
+      byId("cover").style.display = "block";
+      ransom(byId("cT1"), "PICK YOUR", 54, 41); ransom(byId("cT2"), "POISON", 68, 43);
+      document.querySelectorAll("#cover .rl").forEach((el) => (el.style.opacity = 1));
+      [["cM1", 30], ["cM2", 176], ["cJoke", 418], ["cScrim", 900], ["cT1", 1084], ["cT2", 1152], ["cDate", 1236], ["cWk", 1360]]
+        .forEach(([id, y]) => (byId(id).style.top = OY + y + "px"));
+      byId("cJoke").style.left = "640px";
+      Object.assign(byId("cBase").style, { top: OY + 1440 - 120 + "px", height: LAY.H - OY - 1440 + 120 + "px", display: OY ? "block" : "none" });   // ig: below the band
+      byId("cArrow").innerHTML = `<path d="M 668 ${OY + 548} C 636 ${OY + 572} 604 ${OY + 560} 584 ${OY + 528}" stroke="#ffb23a" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M 576 ${OY + 553} L 583 ${OY + 526} L 607 ${OY + 541}" stroke="#ffb23a" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    }
     document.querySelectorAll(".metal").forEach((el) => {      // fit to the frame (measured unscaled)
       const prev = el.style.transform; el.style.transform = "none";
       const w = el.firstElementChild.getBoundingClientRect().width, base = parseFloat(getComputedStyle(el).fontSize);
@@ -358,7 +396,7 @@
       el.style.transform = prev;
     });
     window.__tl = tl;
-    window.__meta = { duration: D, width: 1080, height: 1920 };
+    window.__meta = { duration: POSTER ? 0.1 : D, width: 1080, height: LAY.H };
     window.__seek = seek;
     await seek(0);
   })();

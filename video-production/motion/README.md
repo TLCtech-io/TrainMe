@@ -109,6 +109,9 @@ uptown-airguitar/  Uptown Sound ticket push on "10.23 Fri Air Guitar Zombie" (th
                    strings on the riff notes (pinned to the tracked skull), pyro on the stabs, sparks on the kick-in.
                    Chrome Metal Mania lettering (shared/fonts, OFL): ROCK ISN'T DEAD (he just looks like it), LAST CALL
                    FOR TICKETS, end card. Clip and audio used as delivered. Build: ./build.sh
+                   Covers (the show frozen at the kick-in, POSE in index.html; the hook up top, series and date over the crowd):
+                     3:4 TikTok          render.cjs --in index.html --query thumb --stills 0   (1080x1440)
+                     9:16 Instagram      render.cjs --in index.html --query ig --stills 0      (1080x1920, design in y 240-1680)
 ```
 
 Setup (once per machine): `npm install puppeteer-core@24 gsap` somewhere and point `NODE_PATH` at its `node_modules`;
