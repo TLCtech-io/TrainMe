@@ -1,0 +1,47 @@
+/* TMA (TrainMe) motion design tokens and base styles.
+   Values come from the reference IMP lesson (see TMA_VIDEO_GUIDE.md section 2).
+   Compositions are authored at 1920x1080 logical px and rendered at 2x for 4K. */
+@font-face { font-family: "Roboto"; font-weight: 400; src: url("fonts/roboto-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Roboto"; font-weight: 500; src: url("fonts/roboto-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Roboto"; font-weight: 700; src: url("fonts/roboto-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Roboto"; font-weight: 900; src: url("fonts/roboto-latin-900-normal.woff2") format("woff2"); }
+
+:root {
+  --bg: #efefed;          /* TMA light grey (239,239,237) */
+  --ink: #1d2633;
+  --slate: #485563;
+  --muted: #6b7785;
+  --line: #9aa6b2;
+  --faint: #d6dbe0;
+  --blue: #2c7ef4;        /* TMA blue (44,126,244) */
+  --amber: #ffcb73;       /* TMA amber (255,203,115) */
+  --amber-deep: #f2a93b;
+  --red: #e62324;
+  --white: #ffffff;
+  --shadow: 0 10px 30px rgba(29, 38, 51, 0.1), 0 2px 6px rgba(29, 38, 51, 0.06);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 1920px; height: 1080px; overflow: hidden;
+  background: var(--bg); color: var(--ink);
+  font-family: "Roboto", sans-serif; -webkit-font-smoothing: antialiased;
+}
+.abs { position: absolute; }
+
+/* Bottom 22% stays clear for Descript captions and their scrim (captions sit at y ~84%). */
+.kicker {
+  position: absolute; left: 120px; top: 96px; display: flex; align-items: center; gap: 16px;
+  font: 700 22px/1 "Roboto"; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue);
+}
+.kicker .bar { width: 48px; height: 6px; border-radius: 3px; background: var(--amber); }
+.title { position: absolute; left: 120px; top: 136px; font: 900 72px/1.05 "Roboto"; letter-spacing: -0.01em; }
+
+.card { position: absolute; background: var(--white); border-radius: 20px; box-shadow: var(--shadow); }
+.chip {
+  display: inline-flex; align-items: center; height: 56px; padding: 0 24px; border-radius: 999px;
+  font: 700 26px/1 "Roboto"; white-space: nowrap;
+}
+.chip.blue { background: var(--blue); color: var(--white); }
+.chip.red { background: var(--red); color: var(--white); }
+.chip.amber { background: var(--amber); color: var(--ink); }

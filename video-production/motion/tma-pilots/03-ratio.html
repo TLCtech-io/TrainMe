@@ -1,0 +1,128 @@
+<!doctype html>
+<!-- IMP - Span of Control, WORKING 6:44-7:23. NIMS optimal 1:5, then Rick's search-and-rescue examples (12 vs 4). -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="../shared/tma.css" />
+<style>
+  .ratio { position: absolute; left: 120px; top: 300px; display: flex; align-items: baseline; gap: 26px; font: 900 250px/1 "Roboto"; letter-spacing: -0.02em; }
+  .ratio .colon { color: var(--line); }
+  .ratio .five { color: var(--blue); min-width: 150px; }
+  .ratio-label { position: absolute; left: 124px; top: 580px; font: 500 34px/1.2 "Roboto"; color: var(--slate); }
+  .node { position: absolute; height: 76px; border-radius: 14px; background: var(--white); border: 3px solid var(--blue);
+          display: flex; align-items: center; justify-content: center; font: 700 24px/1 "Roboto"; box-shadow: var(--shadow); }
+  .node.sup { background: var(--blue); color: var(--white); font-size: 28px; height: 86px; }
+  .ln { position: absolute; background: var(--line); }
+  #chip1 { position: absolute; left: 120px; top: 690px; }
+
+  .frow { position: absolute; left: 120px; width: 1680px; height: 190px; display: flex; align-items: center; padding: 0 44px; gap: 30px; }
+  .frow .lab { width: 470px; flex: none; }
+  .frow .lab h3 { font: 700 36px/1.15 "Roboto"; }
+  .frow .lab p { font: 400 26px/1.25 "Roboto"; color: var(--slate); margin-top: 8px; }
+  .people { display: flex; gap: 10px; flex: none; }
+  .person { position: relative; width: 66px; height: 92px; color: var(--faint); }
+  .person .head { position: absolute; left: 18px; top: 0; width: 30px; height: 30px; border-radius: 50%; background: currentColor; }
+  .person .body { position: absolute; left: 6px; top: 36px; width: 54px; height: 50px; border-radius: 27px 27px 10px 10px; background: currentColor; }
+  .person .fill { position: absolute; inset: 0; }
+  .count { font: 900 104px/1 "Roboto"; width: 150px; text-align: right; flex: none; }
+</style>
+</head>
+<body>
+  <!-- Phase 1: NIMS 1:5 -->
+  <div id="p1">
+    <div class="kicker" id="k1"><span class="bar"></span>FEMA · National Incident Management System</div>
+    <div class="title" id="t1">Optimal span of control</div>
+    <div class="ratio" id="ratio"><span id="one">1</span><span class="colon" id="colon">:</span><span class="five" id="five">0</span></div>
+    <div class="ratio-label" id="rlab">supervisor : subordinates</div>
+    <div id="chart"></div>
+    <div class="chip amber" id="chip1">It depends on the factors</div>
+  </div>
+
+  <!-- Phase 2: search and rescue -->
+  <div id="p2">
+    <div class="kicker" id="k2"><span class="bar"></span>In the field · Search and rescue</div>
+    <div class="title" id="t2">Same leader. Different span.</div>
+    <div class="card frow" id="rowA" style="top: 300px">
+      <div class="lab"><h3>Level ground,<br/>little underbrush</h3><p>Over a hundred acres</p></div>
+      <div class="people" id="peopleA"></div>
+      <div class="count" id="countA" style="color: var(--blue)">0</div>
+    </div>
+    <div class="card frow" id="rowB" style="top: 530px">
+      <div class="lab"><h3>Challenging terrain</h3><p>Less experience, dangerous weather</p></div>
+      <div class="people" id="peopleB"></div>
+      <div class="count" id="countB" style="color: var(--red)">0</div>
+    </div>
+  </div>
+
+<script src="../shared/gsap.min.js"></script>
+<script src="../shared/motion.js"></script>
+<script>
+  const D = 39;
+  // Seconds from clip start (WORKING 6:44). Phase 2 starts where Rick begins the search-and-rescue story (7:04).
+  const T = { kicker: 0.3, title: 7.3, supervisor: 10.0, subs: 11.4, depends: 13.5, p2: 20.0, rowA: 21.2, fillA: 27.4, rowB: 32.0, fillB: 35.8 };
+
+  // Org chart: one supervisor, five subordinates.
+  const chart = document.getElementById("chart");
+  const add = (cls, css, html = "") => { const d = document.createElement("div"); d.className = cls; Object.assign(d.style, css); d.innerHTML = html; chart.appendChild(d); return d; };
+  const supX = 1310, subW = 160, gap = 30, subY = 540;
+  const subXs = [0, 1, 2, 3, 4].map((i) => supX - (5 * subW + 4 * gap) / 2 + subW / 2 + i * (subW + gap));
+  add("node sup", { left: `${supX - 140}px`, top: "300px", width: "280px" }, "Supervisor").id = "sup";
+  add("ln", { left: `${supX - 2}px`, top: "386px", width: "4px", height: "66px" }).id = "stem";
+  add("ln", { left: `${subXs[0]}px`, top: "450px", width: `${subXs[4] - subXs[0]}px`, height: "4px" }).id = "bus";
+  subXs.forEach((x, i) => {
+    add("ln", { left: `${x - 2}px`, top: "450px", width: "4px", height: `${subY - 450}px` }).id = `stub${i}`;
+    add("node", { left: `${x - subW / 2}px`, top: `${subY}px`, width: `${subW}px` }, "Subordinate").id = `sub${i}`;
+  });
+
+  // People rows: 12 slots each; row A fills all 12, row B fills only 4.
+  const person = (color) => `<div class="person"><div class="head"></div><div class="body"></div>
+    <div class="fill" style="color:${color}"><div class="head"></div><div class="body"></div></div></div>`;
+  document.getElementById("peopleA").innerHTML = Array.from({ length: 12 }, () => person("var(--blue)")).join("");
+  document.getElementById("peopleB").innerHTML = Array.from({ length: 12 }, () => person("var(--red)")).join("");
+
+  const tl = gsap.timeline({ paused: true });
+  const inUp = (sel, t, d = 0.6) => tl.fromTo(sel, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: d, ease: "power3.out" }, t);
+
+  // Phase 1
+  tl.fromTo("#k1", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, T.kicker);
+  inUp("#t1", T.title);
+  tl.set(["#ratio", "#rlab"], { opacity: 0 }, 0);
+  tl.fromTo("#sup", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2)" }, T.supervisor);
+  tl.to("#ratio", { opacity: 1, duration: 0.4 }, T.supervisor);
+  tl.fromTo("#one", { scale: 0.5 }, { scale: 1, duration: 0.5, ease: "back.out(2)", transformOrigin: "50% 80%" }, T.supervisor);
+  tl.fromTo("#stem", { scaleY: 0 }, { scaleY: 1, duration: 0.3, transformOrigin: "50% 0%" }, T.supervisor + 0.4);
+  tl.fromTo("#bus", { scaleX: 0 }, { scaleX: 1, duration: 0.5, transformOrigin: "50% 50%" }, T.subs - 0.3);
+  subXs.forEach((_, i) => {
+    const t = T.subs + i * 0.3;
+    tl.fromTo(`#stub${i}`, { scaleY: 0 }, { scaleY: 1, duration: 0.25, transformOrigin: "50% 0%" }, t);
+    tl.fromTo(`#sub${i}`, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.45, ease: "back.out(1.8)" }, t + 0.1);
+  });
+  tl.to("#rlab", { opacity: 1, duration: 0.5 }, T.subs + 1.4);
+  tl.fromTo("#chip1", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2)", transformOrigin: "0% 50%" }, T.depends);
+  tl.to("#p1", { opacity: 0, duration: 0.5 }, T.p2);
+
+  // Phase 2
+  tl.set("#p2", { opacity: 0 }, 0);
+  tl.to("#p2", { opacity: 1, duration: 0.01 }, T.p2 + 0.3);
+  tl.fromTo("#k2", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, T.p2 + 0.3);
+  inUp("#t2", T.p2 + 0.45);
+  inUp("#rowA", T.rowA);
+  inUp("#rowB", T.rowB);
+  const fills = (row, n, t0, span) => {
+    document.querySelectorAll(`#${row} .person .fill`).forEach((el, i) => {
+      tl.set(el, { opacity: 0 }, 0);
+      if (i < n) tl.fromTo(el, { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2.5)", transformOrigin: "50% 100%" }, t0 + (i * span) / n);
+    });
+  };
+  fills("peopleA", 12, T.fillA, 2.2);
+  fills("peopleB", 4, T.fillB, 0.9);
+
+  const five = document.getElementById("five"), cA = document.getElementById("countA"), cB = document.getElementById("countB");
+  M.register(tl, { duration: D, width: 1920, height: 1080 }, (t) => {
+    five.textContent = Math.max(1, Math.round(M.keys([[T.subs, 1], [T.subs + 1.3, 5]], t)));
+    cA.textContent = Math.round(M.keys([[T.fillA, 0], [T.fillA + 2.2, 12]], t));
+    cB.textContent = Math.round(M.keys([[T.fillB, 0], [T.fillB + 0.9, 4]], t));
+  });
+</script>
+</body>
+</html>
