@@ -28,7 +28,7 @@ cp "$OUT_DIR/wall-16x10.png" assets/base_1610.png
 # (ipratio/pbratio near 1, no scene cuts) so the wall does not shimmer once a second where each keyframe lands.
 tools/render_loop.sh "$TMP/loop-4k.mp4" "" 4
 tools/render_loop.sh "$TMP/loop-hd.mp4" "w=1920" 4
-X264=(-c:v libx264 -preset slow -crf 12 -tune film -pix_fmt yuv420p -x264-params "keyint=60:min-keyint=60:scenecut=0:ipratio=1.1:pbratio=1.05" -movflags +faststart -an)
+X264=(-c:v libx264 -preset faster -crf 12 -tune film -pix_fmt yuv420p -x264-params "keyint=60:min-keyint=60:scenecut=0:ipratio=1.1:pbratio=1.05" -movflags +faststart -an)
 ffmpeg -v error -y -i "$TMP/loop-4k.mp4" "${X264[@]}" "$OUT_DIR/loop-16x10-3840x2400.mp4"
 ffmpeg -v error -y -i "$TMP/loop-4k.mp4" -vf "crop=3840:2160:0:120" "${X264[@]}" "$OUT_DIR/loop-16x9-3840x2160.mp4"
 ffmpeg -v error -y -i "$TMP/loop-hd.mp4" "${X264[@]}" "$OUT_DIR/loop-16x10-1920x1200.mp4"

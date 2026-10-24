@@ -12,7 +12,6 @@
     liquids     the glowing flasks and bottles pulse, bubbles rise through the flasks and pop at the surface
     vapour      wisps curl up from the green flasks (value-noise smoke, cross-faded across the loop point)
     dust        motes drift through the candlelight
-    gleam       a glint runs along UPTOWN SOUND, later along PICK YOUR POISON
   ?w=1920 renders a half-size preview (all positions scale). The 16:9 cut is the centre 2160 rows of the 16:10 frame.
 -->
 <style>
@@ -54,8 +53,6 @@
   ];
   // vapour: source x, source y, height, width
   const SMOKE = [[1350, 1705, 620, 70], [1216, 1445, 260, 50]];
-  // gleams: letter box (plate) and when the glint crosses it (s)
-  const GLEAMS = [{ box: [1380, 220, 4120, 520], t0: 3.0, dur: 2.6 }, { box: [2140, 1080, 3360, 1240], t0: 12.0, dur: 2.0 }];
 
   // ---------- flame motion: every term completes whole cycles in the loop ----------
   function flame(f, t) {
@@ -80,7 +77,6 @@
     uniform vec4 fl[NF]; uniform vec4 fs[NF];        // flame x, y, w, h (frame px); f, sway, stretch, kind
     uniform vec4 gw[NG]; uniform vec3 gc[NG];         // glow x, y, r, strength; colour
     uniform vec4 sm[NS];                              // smoke x, y, height, width
-    uniform vec4 gbox; uniform vec2 gband;            // gleam letter box; band centre and width (0 width = off)
     varying vec2 v;
     float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
     float noise(vec2 p) {
@@ -135,13 +131,6 @@
         float dens = mask * smoothstep(0.42, 0.78, n) * 0.42;
         c = 1.0 - (1.0 - c) * (1.0 - dens * vec3(0.78, 0.88, 0.78));
       }
-      // a glint along the gold lettering
-      if (gband.y > 0.0 && px.x > gbox.x && px.x < gbox.z && px.y > gbox.y && px.y < gbox.w) {
-        vec3 b = texture2D(base, px / res).rgb;
-        float gold = smoothstep(0.08, 0.22, b.r - b.b) * smoothstep(0.28, 0.55, dot(b, vec3(0.299, 0.587, 0.114)));
-        float u = px.x + 0.45 * (px.y - gbox.y);
-        c += gold * exp(-pow((u - gband.x) / gband.y, 2.0)) * vec3(1.0, 0.86, 0.58) * 0.6;
-      }
       gl_FragColor = vec4(c, 1.0);
     }`;
   function shader(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s)); return s; }
@@ -166,13 +155,6 @@
     gl.uniform4fv(U("fs"), st.flatMap((s, i) => [s.f, s.sway, s.stretch, FL[i].kind]));
     gl.uniform1f(U("lightAll"), 1 + 0.012 * wave(t, 7, 0.4) + 0.008 * wave(t, 29, 1.1));
     gl.uniform4fv(U("gw"), GLOWS.flatMap(([x, y, r, , a, n], i) => [...P(x, y), r * S, a * (0.75 + 0.25 * wave(t, n, i * 1.7))]));
-    const g = GLEAMS.find((g) => t >= g.t0 && t <= g.t0 + g.dur);
-    if (g) {
-      const [x0, y0] = P(g.box[0], g.box[1]), [x1, y1] = P(g.box[2], g.box[3]);
-      const k = (t - g.t0) / g.dur, bw = 60 * S * 3;
-      gl.uniform4f(U("gbox"), x0, y0, x1, y1);
-      gl.uniform2f(U("gband"), x0 - 3 * bw + (x1 - x0 + 6 * bw + 0.45 * (y1 - y0)) * k, bw);
-    } else gl.uniform2f(U("gband"), 0, 0);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
 
