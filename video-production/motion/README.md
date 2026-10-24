@@ -102,6 +102,13 @@ uptown-zombiecall/ Uptown Sound ticket push on "10.23 Fri Zombie" (the venue's g
                    flare with lightning on each one. DEAD / LAST / CHANCE and GET / YOUR / TICKETS slam in on the ZOMBIEs,
                    ONLY THE DEAD / MISS THIS SHOW on "what's in your head"; the series' zombie hands climb out of the fog
                    and drag TICKETS under before the end card. Clip and audio used as delivered. Build: ./build.sh
+uptown-airguitar/  Uptown Sound ticket push on "10.23 Fri Air Guitar Zombie" (the reaper prop under the riff the ensemble
+                   air-guitars; 9:16, 24000/1001 fps). User's asks: darken the edges only, look different from the Zombie
+                   post. A rock show: stage washes that change with the music (magenta, ice, then cycling every two beats
+                   after the 7.4 s kick-in), moving-head beams, a horns-up crowd in the foreground, zaps down the guitar
+                   strings on the riff notes (pinned to the tracked skull), pyro on the stabs, sparks on the kick-in.
+                   Chrome Metal Mania lettering (shared/fonts, OFL): ROCK ISN'T DEAD (he just looks like it), LAST CALL
+                   FOR TICKETS, end card. Clip and audio used as delivered. Build: ./build.sh
 ```
 
 Setup (once per machine): `npm install puppeteer-core@24 gsap` somewhere and point `NODE_PATH` at its `node_modules`;

@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Uptown Sound: rock isn't dead</title>
+<!--
+  Uptown Sound "Pick Your Poison" ticket push on "10.23 Fri Air Guitar Zombie": the venue's guitar-playing reaper prop
+  under the opening riff the ensemble air-guitars (1080x1920 from 4K, 24000/1001 fps, 13.5 s). The clip is used as
+  delivered and its audio is copied untouched. The user's asks: darken the edges, not the whole background, and make it
+  look different from the Zombie post.
+  A rock show: stage colour washes that change with the music, moving-head beams, a crowd in the foreground throwing
+  horns, electric zaps down the guitar strings on the riff notes, pyro on the two stabs, and the full-band kick-in
+  (7.4 s) goes off: fire columns, sparks raining down, beams wide, every hand up. Chrome heavy-metal lettering:
+  ROCK ISN'T DEAD (he just looks like it), LAST CALL FOR TICKETS, then the end card. No lyrics in this section.
+-->
+<style>
+  @font-face { font-family: "Metal Mania"; src: url("../shared/fonts/metal-mania-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Permanent Marker"; src: url("../shared/fonts/permanent-marker-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Special Elite"; src: url("../shared/fonts/special-elite-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Anton"; src: url("../shared/fonts/anton-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Rubik Mono One"; src: url("../shared/fonts/rubik-mono-one-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Bowlby One SC"; src: url("../shared/fonts/bowlby-one-sc-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Abril Fatface"; src: url("../shared/fonts/abril-fatface-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Creepster"; src: url("../shared/fonts/creepster-latin-400-normal.woff2") format("woff2"); }
+  :root { --hot: #ff2bd6; --ice: #3fd8ff; --amber: #ffb23a; --bone: #f2ecdf; --ink: #0a0a0a; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; color: #fff; }
+  canvas, svg { position: absolute; left: 0; top: 0; }
+  #stage { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-origin: 540px 900px; }
+  #beams { mix-blend-mode: screen; filter: blur(5px); }
+  #fx { mix-blend-mode: screen; }
+  #grain { width: 1080px; height: 1920px; opacity: 0.07; mix-blend-mode: overlay; }
+  #flash { position: absolute; inset: 0; background: #fff; opacity: 0; mix-blend-mode: screen; }
+  /* chrome heavy-metal lettering */
+  .metal { position: absolute; left: 0; width: 1080px; text-align: center; white-space: nowrap; opacity: 0;
+           font: 400 150px/1.05 "Metal Mania"; letter-spacing: 0.02em; }
+  .metal span { background: linear-gradient(180deg, #ffffff 0%, #dfe6ee 30%, #7b8792 48%, #2c333a 52%, #c9d3dc 70%, #ffffff 100%);
+                -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-stroke: 2px #0b0b0b;
+                filter: drop-shadow(0 0 2px #000) drop-shadow(0 6px 0 #000) drop-shadow(0 0 22px var(--glow, rgba(255,43,214,0.75))); padding: 0 12px; }
+  .scrawl { position: absolute; opacity: 0; font: 400 52px/1 "Permanent Marker"; color: var(--amber); transform: rotate(-7deg);
+            text-shadow: 0 0 8px #000, 0 3px 0 #000, 0 0 2px #000; white-space: nowrap; }
+  .ransom { position: absolute; left: 0; width: 1080px; display: flex; justify-content: center; flex-wrap: nowrap; gap: 6px; }
+  .rl { display: inline-flex; align-items: center; justify-content: center; padding: 2px 10px 4px; line-height: 1; box-shadow: 0 6px 14px rgba(0,0,0,0.5); opacity: 0; }
+  .gap { width: 30px; }
+  .end-line { position: absolute; left: 0; width: 1080px; text-align: center; opacity: 0; }
+  #qcpa { position: absolute; opacity: 0; }
+</style>
+</head>
+<body>
+  <div id="stage">
+    <canvas id="gl" width="1080" height="1920"></canvas>
+    <canvas id="beams" width="540" height="960" style="width:1080px; height:1920px"></canvas>
+    <canvas id="fx" width="1080" height="1920"></canvas>
+  </div>
+  <svg id="crowd" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+
+  <div class="metal" id="m1" style="top:70px"><span>ROCK ISN'T</span></div>
+  <div class="metal" id="m2" style="top:222px; font-size:200px"><span>DEAD</span></div>
+  <div class="scrawl" id="joke" style="left:610px; top:430px; font-size:62px">(he just looks<br>&nbsp;&nbsp;like it)</div>
+  <svg id="arrow" width="1080" height="1920" viewBox="0 0 1080 1920" style="opacity:0"></svg>
+  <div class="metal" id="m3" style="top:70px; font-size:190px; --glow: rgba(63,216,255,0.8)"><span>LAST CALL</span></div>
+  <div class="metal" id="m4" style="top:262px; font-size:120px; --glow: rgba(63,216,255,0.8)"><span>FOR TICKETS</span></div>
+
+  <!-- end card: name and title up top, when and where in the lower band, the logo over the crowd -->
+  <div id="end">
+    <div class="end-line" id="eUp" style="top:62px; font:400 96px/1 'Anton'; letter-spacing:0.08em; color:#fff; text-shadow:0 0 20px rgba(255,43,214,0.6), 0 6px 0 rgba(0,0,0,0.75)">UPTOWN SOUND</div>
+    <div class="ransom" id="eTitle1" style="top:178px"></div>
+    <div class="ransom" id="eTitle2" style="top:252px"></div>
+    <div class="metal" id="eDate" style="top:1330px; font:400 140px/1.05 'Anton'; letter-spacing:0.04em; --glow: rgba(255,178,58,0.85)"><span>OCT 24 &amp; 25</span></div>
+    <div class="end-line" id="eWk" style="top:1492px; font:400 70px/1 'Anton'; letter-spacing:0.16em; color:var(--amber); text-shadow:0 0 18px rgba(255,178,58,0.6), 0 5px 0 rgba(0,0,0,0.85)">THIS WEEKEND</div>
+    <div class="end-line" id="eCta" style="top:1590px"><span style="display:inline-block; background:#0a0a0a; color:var(--bone); border:3px solid var(--hot); font:400 40px/1 'Special Elite'; padding:12px 26px; border-radius:8px; letter-spacing:0.06em; box-shadow:0 0 22px rgba(255,43,214,0.55)">TICKETS &middot; LINK IN BIO</span></div>
+  </div>
+  <img id="qcpa" src="../shared/brand/qcpa-logo-white.svg" alt="Queen City Performing Arts" />
+  <canvas id="grain" width="540" height="960"></canvas>
+  <div id="flash"></div>
+
+<script src="../shared/gsap.min.js"></script>
+<script src="data/features.js"></script>
+<script src="data/tracks.js"></script>
+<script>
+  const F = window.FEATURES, FPS = F.fps, D = F.env.length / FPS, NF = F.env.length;
+  const FRAMES = "assets/frames/f_%05d.jpg";
+  const rnd = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const span = (a, b, t) => clamp((t - a) / (b - a), 0, 1);
+  const ease = (p) => (p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
+  const lerp = (a, b, k) => a + (b - a) * k;
+  const byId = (id) => document.getElementById(id);
+  const env = (t) => F.env[clamp(Math.floor(t * FPS), 0, NF - 1)];
+
+  // The music (no words): two big stabs, each followed by the riff, then the full ensemble kicks in at 7.4 s.
+  // BEATS from a beat tracker (~136 bpm), extended to the end; RIFF are the riff's note onsets.
+  const T = { stab1: 0.22, m1: 0.22, isnt: 1.39, dead: 2.21, joke: 2.75, aOut: 3.5, stab2: 3.76, m4: 4.74, bOut: 7.2, kick: 7.4 };
+  const BEATS = [0.51, 0.95, 1.39, 1.81, 2.21, 2.6, 3.02, 3.44, 3.85, 4.3, 4.74, 5.18, 5.62, 6.06, 6.52, 6.97, 7.41, 7.83, 8.24, 8.66,
+                 9.08, 9.52, 9.94, 10.38, 10.82, 11.26, 11.7, 12.14, 12.58, 13.02, 13.46];
+  const RIFF = [0.95, 1.21, 1.37, 1.63, 1.81, 2.53, 3.02, 3.18, 3.41, 4.53, 4.78, 4.99, 5.41, 6.06, 6.29, 6.52, 6.73, 6.97];
+  const STABS = [T.stab1, T.stab2, T.kick];
+  const pulse = (t, list, k = 6, att = 0.03) => list.reduce((m, h) => Math.max(m, t >= h - att ? (t < h ? (t - h + att) / att : Math.exp(-(t - h) * k)) : 0), 0);
+  const after = (t) => BEATS.filter((b) => b >= T.kick - 0.05 && b <= t);
+
+  // the prop moves with the handheld camera: pin everything on it to the tracked skull (offset from frame 120)
+  const SK = window.SKULL, REF = SK.xy[120 - SK.first];
+  function pin(t) {
+    const i = clamp(Math.floor(t * FPS + 1e-6) + 1 - SK.first, 0, SK.xy.length - 1), p = SK.xy[i];
+    return [p[0] - REF[0], p[1] - REF[1]];
+  }
+  const PICK = [400, 1205], NUT = [902, 985], LAMP = [522, 318], SKULL0 = REF;
+
+  // ---------- stage colour: magenta for the first riff, ice blue for the second, then it cycles every two beats ----------
+  const COLS = { hot: [1.0, 0.17, 0.84], ice: [0.25, 0.85, 1.0], amber: [1.0, 0.62, 0.18] };
+  function washAt(t) {
+    if (t < T.stab2) return COLS.hot;
+    if (t < T.kick) return COLS.ice;
+    const n = after(t).length, seq = [COLS.amber, COLS.hot, COLS.ice];
+    return seq[Math.floor(Math.max(0, n - 1) / 2) % 3];
+  }
+  const css = (c, a) => `rgba(${Math.round(c[0] * 255)},${Math.round(c[1] * 255)},${Math.round(c[2] * 255)},${a})`;
+
+  // ---------- the grade (WebGL): punchy, the stage wash on the room, the edges darkened ----------
+  const glc = byId("gl"), gl = glc.getContext("webgl", { preserveDrawingBuffer: true, antialias: false });
+  const VS = "attribute vec2 p; varying vec2 v; void main(){ v = vec2(p.x * 0.5 + 0.5, 0.5 - p.y * 0.5); gl_Position = vec4(p, 0.0, 1.0); }";
+  const FS = `precision highp float;
+    uniform sampler2D img; uniform vec3 wash; uniform float washK; uniform vec2 spot; uniform float flash; uniform vec3 view; varying vec2 v;
+    void main() {
+      vec2 px = v * vec2(1080.0, 1920.0);
+      vec3 c = texture2D(img, view.xy + (v - 0.5) / view.z).rgb;
+      float l = dot(c, vec3(0.299, 0.587, 0.114));
+      vec3 n = pow(c, vec3(1.18)) * 0.92;
+      n = mix(vec3(dot(n, vec3(0.299, 0.587, 0.114))), n, 0.72);          // a little less of the room's own colour
+      n *= mix(vec3(1.0), 0.45 + 1.1 * wash, washK);                      // the stage wash
+      float sp = 1.0 - smoothstep(0.2, 1.0, length((px - spot) / vec2(520.0, 900.0)));
+      n *= 0.78 + 0.42 * sp;                                              // the light lands on the reaper
+      vec2 q = v - 0.5;
+      float edge = smoothstep(0.3, 0.75, length(q * vec2(1.35, 0.95)));
+      n *= 1.0 - 0.88 * edge;                                             // darkened edges (the user's ask)
+      n += flash * (0.25 + 0.6 * l) * vec3(1.0, 0.97, 0.92);
+      gl_FragColor = vec4(n, 1.0);
+    }`;
+  function shader(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s)); return s; }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, shader(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog); gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW);
+  const pLoc = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(pLoc); gl.vertexAttribPointer(pLoc, 2, gl.FLOAT, false, 0, 0);
+  gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+  [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]].forEach(([k, v]) => gl.texParameteri(gl.TEXTURE_2D, k, v));
+  const U = Object.fromEntries(["wash", "washK", "spot", "flash", "view"].map((n) => [n, gl.getUniformLocation(prog, n)]));
+  gl.viewport(0, 0, 1080, 1920);
+  gl.uniform3f(U.view, 0.5, 0.5, 1);
+  // flashes: the stabs, then a short strobe on the first beats of the kick-in (kept to the beat, about 2 per second)
+  const flashAt = (t) => Math.max(0.9 * pulse(t, [T.stab1, T.stab2], 9), 0.75 * pulse(t, [T.kick], 6),
+                                  0.35 * pulse(t, BEATS.filter((b) => b > T.kick + 0.1 && b < T.kick + 2.0), 12));
+  function drawGrade(t) {
+    const w = washAt(t), [ox, oy] = pin(t);
+    gl.uniform3f(U.wash, ...w);
+    gl.uniform1f(U.washK, 0.55 + 0.15 * pulse(t, BEATS, 5));
+    gl.uniform2f(U.spot, SKULL0[0] + ox, SKULL0[1] + oy + 520);
+    gl.uniform1f(U.flash, 0.55 * flashAt(t));
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+  }
+
+  // ---------- moving-head beams from the rig above ----------
+  const bx = byId("beams").getContext("2d");
+  const HEADS = [[90, -10, 0.0], [330, -20, 1.7], [750, -20, 3.1], [990, -10, 4.4]];
+  function drawBeams(t) {
+    bx.clearRect(0, 0, 540, 960);
+    bx.globalCompositeOperation = "lighter";
+    const w = washAt(t), kick = span(T.kick - 0.05, T.kick + 0.3, t), b = pulse(t, BEATS, 4);
+    HEADS.forEach(([x, y, ph], i) => {
+      // a slow sweep for the riffs; after the kick-in the heads swing wider and faster, crossing on the beat
+      const sweep = Math.sin(t * (0.9 + 0.9 * kick) + ph) * (0.22 + 0.3 * kick);
+      const aim = Math.atan2(1100 - y, 540 - x) - Math.PI / 2 + sweep;
+      const len = 2300, ang = aim, a = (0.16 + 0.12 * b + 0.12 * kick) * (t < T.stab1 ? 0.3 : 1);
+      [[1, 1], [1.8, 0.35], [2.8, 0.14]].forEach(([wm, am]) => {
+        const w0 = 14 * wm, w1 = 260 * wm, dx = Math.sin(-ang), dy = Math.cos(ang);
+        const ex = x + dx * len, ey = y + dy * len, nx = Math.cos(ang), ny = Math.sin(ang);
+        const g = bx.createLinearGradient(x / 2, y / 2, ex / 2, ey / 2);
+        g.addColorStop(0, css(w, (a * am).toFixed(3))); g.addColorStop(0.55, css(w, (a * am * 0.35).toFixed(3))); g.addColorStop(1, css(w, 0));
+        bx.fillStyle = g; bx.beginPath();
+        bx.moveTo((x - nx * w0) / 2, (y - ny * w0) / 2); bx.lineTo((x + nx * w0) / 2, (y + ny * w0) / 2);
+        bx.lineTo((ex + nx * w1) / 2, (ey + ny * w1) / 2); bx.lineTo((ex - nx * w1) / 2, (ey - ny * w1) / 2); bx.closePath(); bx.fill();
+      });
+      const hg = bx.createRadialGradient(x / 2, (y + 20) / 2, 0, x / 2, (y + 20) / 2, 40);   // the lens of the head
+      hg.addColorStop(0, `rgba(255,255,255,${(0.6 * a / 0.28).toFixed(3)})`); hg.addColorStop(1, "rgba(255,255,255,0)");
+      bx.fillStyle = hg; bx.fillRect(x / 2 - 40, y / 2 - 30, 80, 80);
+    });
+    bx.globalCompositeOperation = "source-over";
+  }
+
+  // ---------- effects: lamp bloom, guitar zaps, pyro, sparks ----------
+  const fx = byId("fx").getContext("2d");
+  function glow(x, y, r, col, a) {
+    const g = fx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, css(col, a)); g.addColorStop(1, css(col, 0));
+    fx.fillStyle = g; fx.fillRect(x - r, y - r, 2 * r, 2 * r);
+  }
+  // electricity down the strings, from the picking hand to the nut, jittered fresh every frame
+  function zap(t, k, seed, [ox, oy]) {
+    const f = Math.floor(t * FPS), x0 = PICK[0] + ox, y0 = PICK[1] + oy, x1 = NUT[0] + ox, y1 = NUT[1] + oy;
+    const nx = -(y1 - y0), ny = x1 - x0, nl = Math.hypot(nx, ny);
+    const pts = [];
+    for (let i = 0; i <= 14; i++) {
+      const u = i / 14, j = i === 0 || i === 14 ? 0 : (rnd(f * 31 + i + seed) - 0.5) * 46 * k;
+      pts.push([lerp(x0, x1, u) + (nx / nl) * j, lerp(y0, y1, u) + (ny / nl) * j]);
+    }
+    [[16, `rgba(63,216,255,${(0.28 * k).toFixed(3)})`], [7, `rgba(140,235,255,${(0.6 * k).toFixed(3)})`], [2.5, `rgba(255,255,255,${(0.95 * k).toFixed(3)})`]].forEach(([w, c]) => {
+      fx.strokeStyle = c; fx.lineWidth = w; fx.lineJoin = "round"; fx.beginPath();
+      pts.forEach(([x, y], i) => (i ? fx.lineTo(x, y) : fx.moveTo(x, y))); fx.stroke();
+    });
+    glow(x0, y0, 90 * k, COLS.ice, 0.55 * k);
+  }
+  // a pyro column: flame particles thrown up from the stage edge, white-hot to orange to red, then gone
+  function pyro(t, t0, x, power, seed) {
+    const s = t - t0; if (s < 0 || s > 1.8) return;
+    for (let i = 0; i < 150; i++) {
+      const born = rnd(seed + i) * 0.7 * power, a = s - born, life = 0.55 + 0.35 * rnd(seed + i + 300);
+      if (a < 0 || a > life) continue;
+      const vy = (1500 + 900 * rnd(seed + i + 600)) * power, vx = (rnd(seed + i + 900) - 0.5) * 220;
+      const y = 1960 - vy * a + 1300 * a * a, xx = x + vx * a + Math.sin(a * 14 + i) * 18;
+      const k = a / life, r = (40 + 50 * rnd(seed + i + 1200)) * (1 - 0.6 * k) * power;
+      const col = k < 0.25 ? [1, 0.95, 0.75] : k < 0.6 ? [1, 0.55, 0.12] : [0.85, 0.15, 0.03];
+      glow(xx, y, r, col, 0.55 * (1 - k));
+    }
+    glow(x, 1900, 340 * power, [1, 0.5, 0.1], 0.35 * Math.max(0, 1 - s / 1.2));
+  }
+  // sparks raining down from the rig at the kick-in
+  function sparks(t, t0) {
+    const s = t - t0; if (s < 0 || s > 3.2) return;
+    fx.lineCap = "round";
+    for (let i = 0; i < 160; i++) {
+      const born = rnd(i + 70) * 1.6, a = s - born; if (a < 0 || a > 1.6) continue;
+      const x0 = [180, 540, 900][i % 3] + (rnd(i + 170) - 0.5) * 200, vx = (rnd(i + 270) - 0.5) * 300, vy = 200 + rnd(i + 370) * 300;
+      const x = x0 + vx * a, y = -10 + vy * a + 0.5 * 1500 * a * a, dy = vy + 1500 * a;
+      const al = (1 - a / 1.6) * (0.6 + 0.4 * rnd(Math.floor(t * FPS) + i));
+      fx.strokeStyle = `rgba(255,${Math.round(200 + 50 * rnd(i))},${Math.round(120 * rnd(i + 5))},${al.toFixed(3)})`; fx.lineWidth = 3;
+      fx.beginPath(); fx.moveTo(x, y); fx.lineTo(x - vx * 0.03, y - dy * 0.03); fx.stroke();
+    }
+  }
+  function drawFx(t) {
+    fx.clearRect(0, 0, 1080, 1920);
+    const o = pin(t), w = washAt(t);
+    // the flame lamp on the pillar breathes with the beat
+    glow(LAMP[0] + o[0], LAMP[1] + o[1], 210 + 70 * pulse(t, BEATS, 5), [1, 0.45, 0.85], 0.35 + 0.2 * pulse(t, BEATS, 5));
+    // zaps: big on the stabs, small on each riff note, then on every beat after the kick-in
+    const zk = Math.max(pulse(t, STABS, 5), 0.6 * pulse(t, RIFF, 14), t > T.kick ? 0.55 * pulse(t, BEATS, 9) : 0);
+    if (zk > 0.04) zap(t, zk, 0, o);
+    // pyro: a small pair on the first stab, bigger on the second, everything on the kick-in (and again 4 bars later)
+    [[T.stab1, 0.55], [T.stab2, 0.75], [T.kick, 1.1], [T.kick + 3.5, 0.8]].forEach(([t0, p], k) => {
+      pyro(t, t0, 110, p, 1000 * k + 11); pyro(t, t0 + 0.05, 970, p, 1000 * k + 517);
+    });
+    sparks(t, T.kick);
+  }
+
+  // ---------- the crowd: silhouettes in the foreground, horns up ----------
+  // A horned hand (index and little finger up, thumb across the curled fingers) or a phone, on a raised arm.
+  const HORNS = "M -30 0 L -30 -46 Q -30 -58 -18 -58 L 22 -58 Q 34 -58 34 -46 L 34 0 Z M -30 -40 L -30 -128 Q -30 -138 -20 -138 Q -12 -138 -12 -128 L -12 -52 Z"
+    + " M 18 -50 L 18 -112 Q 18 -122 26 -122 Q 34 -122 34 -112 L 34 -40 Z M -34 -30 Q -40 -40 -30 -46 L 12 -44 Q 18 -36 10 -30 Z";
+  const PEOPLE = [   // head x, head y, scale, arm: [hand dx, phone?] or null
+    [70, 1790, 1.15, [40, 0]], [205, 1830, 1.0, null], [330, 1770, 1.1, [-30, 0]], [470, 1850, 0.95, null], [600, 1800, 1.12, null],
+    [735, 1840, 1.0, [35, 0]], [860, 1780, 1.1, [-20, 0]], [1010, 1820, 1.15, [10, 0]], [140, 1900, 1.3, null], [930, 1910, 1.3, null],
+  ];
+  byId("crowd").innerHTML = `<defs><linearGradient id="rim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.55"/><stop offset="0.3" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>`
+    + PEOPLE.map(([x, y, s, arm], i) => `<g id="p${i}">
+      ${arm ? `<g id="arm${i}"><path d="M ${x + 40 * s} ${y + 120} L ${x + (40 + arm[0]) * s} ${y - 150 * s}" stroke="#050505" stroke-width="${38 * s}" stroke-linecap="round"/>
+        <g transform="translate(${x + (40 + arm[0]) * s} ${y - 150 * s}) scale(${s})">${arm[1]
+          ? '<rect x="-24" y="-92" width="48" height="84" rx="8" fill="#050505"/><rect class="screen" x="-19" y="-86" width="38" height="70" rx="5" fill="#e9f6ff"/>'
+          : `<path d="${HORNS}" fill="#050505"/>`}</g></g>` : ""}
+      <ellipse cx="${x}" cy="${y + 175 * s}" rx="${120 * s}" ry="${110 * s}" fill="#050505"/>
+      <ellipse cx="${x}" cy="${y}" rx="${50 * s}" ry="${60 * s}" fill="#050505"/>
+      <ellipse class="rimlight" cx="${x}" cy="${y}" rx="${50 * s}" ry="${60 * s}" fill="url(#rim)" opacity="0.5"/></g>`).join("");
+  function drawCrowd(t) {
+    const kick = span(T.kick - 0.1, T.kick + 0.25, t), w = washAt(t);
+    PEOPLE.forEach(([x, y, s, arm], i) => {
+      // heads bob on the beat (harder after the kick-in); arms are half up for the riff and shoot up on the kick-in
+      const bob = (6 + 14 * kick) * pulse(t + 0.02 * i, BEATS, 7) + Math.sin(t * 2.2 + i) * 3;
+      byId(`p${i}`).setAttribute("transform", `translate(0 ${(bob + 30 * (1 - kick) * (i % 2)).toFixed(1)})`);
+      if (arm) {
+        const lift = (1 - kick) * (140 + 30 * Math.sin(t * 1.4 + i)) - kick * 26 * pulse(t, BEATS, 6);
+        byId(`arm${i}`).setAttribute("transform", `translate(0 ${lift.toFixed(1)})`);
+      }
+    });
+    document.querySelectorAll("#crowd .rimlight").forEach((el) => el.setAttribute("opacity", (0.3 + 0.4 * pulse(t, BEATS, 5)).toFixed(3)));
+  }
+
+  // ---------- lettering ----------
+  const FONTS = ["Anton", "Rubik Mono One", "Bowlby One SC", "Abril Fatface", "Special Elite", "Permanent Marker", "Creepster"];
+  const SWATCH = [["#f2ecdf", "#111"], ["#111", "#ff2bd6"], ["#ff2bd6", "#fff"], ["#3fd8ff", "#111"], ["#111", "#f2ecdf"], ["#ffb23a", "#111"]];
+  function ransom(el, text, size, seed) {
+    el.innerHTML = [...text].map((ch, i) => {
+      if (ch === " ") return '<span class="gap"></span>';
+      const r = (k) => rnd(seed * 100 + i * 7 + k);
+      const [bg, fg] = SWATCH[Math.floor(r(1) * SWATCH.length)];
+      const font = FONTS[Math.floor(r(2) * FONTS.length)];
+      const s = Math.round(size * (0.86 + r(3) * 0.3)), rot = (r(4) - 0.5) * 16;
+      return `<span class="rl" style="background:${bg}; color:${fg}; font:400 ${s}px/1 '${font}'; transform:rotate(${rot.toFixed(1)}deg)">${ch}</span>`;
+    }).join("");
+  }
+  ransom(byId("eTitle1"), "PICK YOUR", 60, 41);
+  ransom(byId("eTitle2"), "POISON", 76, 43);
+  // the joke's arrow, hand-drawn, from the note to the skull
+  byId("arrow").innerHTML = `<path id="arrowPath" d="M 660 575 C 625 615 610 625 590 612" stroke="#ffb23a" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path id="arrowHead" d="M 604 594 L 588 612 L 612 620" stroke="#ffb23a" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+  // ---------- timeline (type) ----------
+  const tl = gsap.timeline({ paused: true });
+  const slam = (sel, at, from = 2.2) => tl.fromTo(sel, { opacity: 0, scale: from }, { opacity: 1, scale: 1, duration: 0.13, ease: "power4.in" }, at - 0.08);
+  // ROCK ISN'T DEAD: the words land on the stab and the riff
+  byId("m1").innerHTML = '<span id="wRock">ROCK</span> <span id="wIsnt" style="opacity:0">ISN\'T</span>';
+  tl.set("#m1", { opacity: 1 }, 0);
+  slam("#wRock", T.m1); slam("#wIsnt", T.isnt);
+  slam("#m2", T.dead, 2.6);
+  tl.fromTo("#joke", { opacity: 0, x: 30 }, { opacity: 1, x: 0, duration: 0.25, ease: "back.out(2)" }, T.joke);
+  tl.fromTo("#arrow", { opacity: 0 }, { opacity: 1, duration: 0.2 }, T.joke + 0.2);
+  tl.to(["#m1", "#m2", "#joke", "#arrow"], { opacity: 0, y: -30, duration: 0.25, ease: "power2.in" }, T.aOut);
+  // LAST CALL FOR TICKETS on the second stab
+  slam("#m3", T.stab2, 2.6); slam("#m4", T.m4);
+  tl.to(["#m3", "#m4"], { opacity: 0, scale: 1.3, duration: 0.2, ease: "power2.in" }, T.bOut);
+  // end card on the kick-in
+  tl.fromTo("#eUp", { opacity: 0, y: -30 }, { opacity: 1, y: 0, duration: 0.3, ease: "back.out(2)" }, T.kick);
+  document.querySelectorAll("#eTitle1 .rl, #eTitle2 .rl").forEach((el, i) => slam(el, T.kick + 0.4 + i * 0.05, 2.4));
+  slam("#eDate", T.kick + 0.9, 1.8);
+  tl.fromTo("#eWk", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, ease: "power3.out" }, T.kick + 1.3);
+  tl.fromTo("#eCta", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2.2)" }, T.kick + 1.75);
+  tl.fromTo("#qcpa", { opacity: 0 }, { opacity: 1, duration: 0.5 }, T.kick + 2.2);
+  const qcpa = byId("qcpa"), ASPECT = 253.262 / 340.77;
+  Object.assign(qcpa.style, { height: "150px", width: `${150 * ASPECT}px`, left: `${540 - 75 * ASPECT}px`, top: "1720px" });
+
+  // ---------- per frame ----------
+  function drawGrain(t) {
+    const gx = byId("grain").getContext("2d"), img = gx.createImageData(540, 960), dd = img.data, seed = Math.floor(t * FPS) * 7919;
+    for (let p = 0; p < dd.length; p += 4) { const v = (rnd(seed + p * 0.25) * 255) | 0; dd[p] = dd[p + 1] = dd[p + 2] = v; dd[p + 3] = 255; }
+    gx.putImageData(img, 0, 0);
+  }
+  const fimg = new Image();
+  let lastSrc = "";
+  async function seek(t) {
+    tl.seek(t, false);
+    const n = Math.min(NF, Math.floor(t * FPS + 1e-6) + 1);
+    const src = FRAMES.replace("%05d", String(n).padStart(5, "0"));
+    if (src !== lastSrc) {
+      fimg.src = src; lastSrc = src;
+      try { await fimg.decode(); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, fimg); } catch (e) { console.error("frame", n, e.message); }
+    }
+    // the whole stage punches in on the stabs and on every beat after the kick-in
+    const bump = Math.max(0.035 * pulse(t, STABS, 6), t > T.kick ? 0.014 * pulse(t, BEATS, 8) : 0);
+    byId("stage").style.transform = `scale(${(1 + bump).toFixed(4)})`;
+    drawGrade(t); drawBeams(t); drawFx(t); drawCrowd(t); drawGrain(t);
+    byId("flash").style.opacity = (0.22 * flashAt(t)).toFixed(3);
+  }
+
+  (async () => {
+    await Promise.all(["400 100px 'Metal Mania'", "400 60px 'Permanent Marker'", "400 60px Anton", "400 60px 'Special Elite'", "400 60px 'Bowlby One SC'"].map((f) => document.fonts.load(f)));
+    await document.fonts.ready;
+    document.querySelectorAll(".metal").forEach((el) => {      // fit to the frame (measured unscaled)
+      const prev = el.style.transform; el.style.transform = "none";
+      const w = el.firstElementChild.getBoundingClientRect().width, base = parseFloat(getComputedStyle(el).fontSize);
+      if (w > 1040) el.style.fontSize = (base * 1040 / w).toFixed(1) + "px";
+      el.style.transform = prev;
+    });
+    window.__tl = tl;
+    window.__meta = { duration: D, width: 1080, height: 1920 };
+    window.__seek = seek;
+    await seek(0);
+  })();
+</script>
+</body>
+</html>
