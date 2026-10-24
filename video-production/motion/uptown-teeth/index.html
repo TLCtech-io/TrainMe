@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Uptown Sound: sink your teeth in</title>
+<!--
+  Uptown Sound "Pick Your Poison" last-minute ticket push, built on "10.23 Fri Teeth" (dress rehearsal, house lights up;
+  1080x1920 from 4K, 24000/1001 fps, 15 s). The clip is used as delivered and its audio is copied untouched.
+  Dark and creepy: we look out from inside a vampire's mouth. The jaws open on the floor shot, frame the stage, chomp
+  in on the strongest beats (red flash, shake, blood dripping off the fangs), snap shut to black for the last bite and
+  open on the end card. A cold, nearly colourless grade with a flickering stage light on the soloist. The title carries
+  the first Teeth reel's look (mint TEETH, white IN MY NECK).
+-->
+<style>
+  @font-face { font-family: "Special Elite"; src: url("../shared/fonts/special-elite-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Anton"; src: url("../shared/fonts/anton-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Rubik Mono One"; src: url("../shared/fonts/rubik-mono-one-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Bowlby One SC"; src: url("../shared/fonts/bowlby-one-sc-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Abril Fatface"; src: url("../shared/fonts/abril-fatface-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Permanent Marker"; src: url("../shared/fonts/permanent-marker-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Creepster"; src: url("../shared/fonts/creepster-latin-400-normal.woff2") format("woff2"); }
+  :root { --mint: #3cda82; --blood: #e0142f; --bone: #f2ecdf; --ink: #111; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; }
+  canvas, svg { position: absolute; left: 0; top: 0; }
+  #scrim { position: absolute; inset: 0; opacity: 0; background: radial-gradient(ellipse 70% 40% at 50% 46%, rgba(0,0,0,0.55), rgba(0,0,0,0.85)); }
+  #redflash { position: absolute; inset: 0; opacity: 0; background: radial-gradient(ellipse 75% 55% at 50% 50%, rgba(120,0,10,0) 40%, rgba(200,0,24,0.9)); }
+  #qcpa { position: absolute; opacity: 0; }
+  .ransom { position: absolute; left: 0; width: 1080px; display: flex; justify-content: center; flex-wrap: nowrap; gap: 6px; }
+  .rl { display: inline-flex; align-items: center; justify-content: center; padding: 2px 10px 4px; line-height: 1; box-shadow: 0 6px 14px rgba(0,0,0,0.5); }
+  .gap { width: 30px; }
+  .head { position: absolute; left: 0; width: 1080px; text-align: center; opacity: 0; }
+  .slam { font: 400 92px/1 "Anton"; color: #fff; letter-spacing: 0.03em; text-shadow: 0 6px 0 rgba(0,0,0,0.75), 0 0 24px rgba(0,0,0,0.7); }
+  .creep { font: 400 118px/0.95 "Creepster"; letter-spacing: 0.03em; }
+  .mint { color: var(--mint); text-shadow: 0 0 26px rgba(60,218,130,0.55), 0 6px 0 rgba(0,0,0,0.75); }
+  .blood { color: var(--blood); text-shadow: 0 0 10px rgba(0,0,0,0.95), 0 0 26px rgba(224,20,47,0.55), 0 6px 0 rgba(0,0,0,0.85); }
+  .end-line { position: absolute; left: 0; width: 1080px; text-align: center; opacity: 0; }
+  #eTitle1 .rl, #eTitle2 .rl { opacity: 0; }
+</style>
+</head>
+<body>
+  <canvas id="gl" width="1080" height="1920"></canvas>
+  <canvas id="grain" width="540" height="960" style="width:1080px; height:1920px; opacity:0.09; mix-blend-mode:overlay"></canvas>
+  <div id="scrim"></div>
+  <div id="shut" style="position:absolute; inset:0; background:#000; opacity:0"></div>
+
+  <!-- title, in the first Teeth reel's look -->
+  <div id="title" style="position:absolute; left:0; top:0; width:1080px; height:1920px; opacity:0">
+    <div class="ransom" id="t1" style="top:640px"></div>
+    <div class="ransom" id="t2" style="top:716px"></div>
+    <svg id="tFangs" width="1080" height="420" viewBox="0 0 1080 420" style="top:800px"></svg>
+    <div class="head creep mint" style="top:852px; opacity:1; font-size:230px">TEETH</div>
+    <div class="head" style="top:1072px; opacity:1; font:400 92px/1 'Anton'; color:#fff; letter-spacing:0.04em; transform:rotate(-6deg); text-shadow:0 6px 0 rgba(0,0,0,0.8)">IN MY NECK</div>
+  </div>
+  <div id="h1" class="head" style="top:520px"><div class="slam">LAST CHANCE TO</div><div class="creep blood" style="font-size:112px; margin-top:6px">SINK YOUR TEETH IN</div></div>
+  <div id="h2" class="head" style="top:520px"><div style="font:400 104px/1 'Bowlby One SC'" class="mint">OCT 24 &amp; 25</div><div class="creep blood" style="font-size:96px; margin-top:12px">THIS WEEKEND ONLY</div></div>
+
+  <img id="qcpa" src="../shared/brand/qcpa-logo-white.svg" alt="Queen City Performing Arts" />
+  <div id="end">
+    <div class="end-line" id="eUp" style="top:640px; font:400 92px/1 'Anton'; letter-spacing:0.08em; color:#fff; text-shadow:0 0 18px rgba(224,20,47,0.5), 0 6px 0 rgba(0,0,0,0.6)">UPTOWN SOUND</div>
+    <div class="ransom" id="eTitle1" style="top:746px"></div>
+    <div class="ransom" id="eTitle2" style="top:818px"></div>
+    <div class="end-line" id="eDate" style="top:918px; font:400 86px/1 'Bowlby One SC'; color:var(--mint); text-shadow:0 0 26px rgba(60,218,130,0.6), 0 5px 0 rgba(0,0,0,0.7)">OCT 24 &amp; 25</div>
+    <div class="end-line" id="eWk" style="top:1018px; font:400 64px/1 'Creepster'; letter-spacing:0.06em; color:var(--blood); text-shadow:0 0 20px rgba(224,20,47,0.6), 0 4px 0 rgba(0,0,0,0.7)">THIS WEEKEND</div>
+    <div class="end-line" id="eCta" style="top:1110px"><span style="display:inline-block; background:#0a0a0a; color:var(--bone); border:2px solid var(--blood); font:400 38px/1 'Special Elite'; padding:12px 24px; border-radius:8px; letter-spacing:0.06em">TICKETS &middot; LINK IN BIO</span></div>
+  </div>
+  <div id="redflash"></div>
+  <svg id="jaws" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+
+<script src="../shared/gsap.min.js"></script>
+<script src="data/features.js"></script>
+<script>
+  const F = window.FEATURES, FPS = F.fps, D = F.env.length / FPS, NF = F.env.length;
+  const FRAMES = "assets/frames/f_%05d.jpg";
+  const rnd = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const span = (a, b, t) => clamp((t - a) / (b - a), 0, 1);
+  const ease = (p) => (p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
+  const easeOut = (p) => 1 - Math.pow(1 - p, 3);
+  const lerp = (a, b, k) => a + (b - a) * k;
+  const byId = (id) => document.getElementById(id);
+  const f1 = (v) => v.toFixed(1);
+  const env = (t) => F.env[clamp(Math.floor(t * FPS), 0, NF - 1)];
+
+  // Cue times (seconds). The jaws chomp on the strongest beats (vocal onsets at the loudness peaks); the last bite
+  // shuts to black and they open on the end card.
+  const T = { open: [0.15, 1.0], title: 0.45, titleOut: 3.7, h1: 4.2, h2: 7.75, close: [10.72, 10.93], reopen: [11.2, 11.75] };
+  const BITES = [2.08, 2.48, 5.66, 6.22, 6.72, 9.86, 10.4];
+
+  // ---------- series lettering ----------
+  const FONTS = ["Anton", "Rubik Mono One", "Bowlby One SC", "Abril Fatface", "Special Elite", "Permanent Marker"];
+  const SWATCH = [["#f2ecdf", "#111"], ["#111", "#3cda82"], ["#3cda82", "#111"], ["#b3001b", "#f2ecdf"], ["#111", "#f2ecdf"], ["#111", "#e0142f"]];
+  function ransom(el, text, size, seed) {
+    el.innerHTML = [...text].map((ch, i) => {
+      if (ch === " ") return '<span class="gap"></span>';
+      const r = (k) => rnd(seed * 100 + i * 7 + k);
+      const [bg, fg] = SWATCH[Math.floor(r(1) * SWATCH.length)];
+      const font = FONTS[Math.floor(r(2) * FONTS.length)];
+      const s = Math.round(size * (0.86 + r(3) * 0.3)), rot = (r(4) - 0.5) * 16;
+      return `<span class="rl" style="background:${bg}; color:${fg}; font:400 ${s}px/1 '${font}'; transform:rotate(${rot.toFixed(1)}deg)">${ch}</span>`;
+    }).join("");
+  }
+  ransom(byId("t1"), "PICK YOUR", 56, 31);
+  ransom(byId("t2"), "POISON", 70, 33);
+  ransom(byId("eTitle1"), "PICK YOUR", 60, 15);
+  ransom(byId("eTitle2"), "POISON", 74, 17);
+  // white fangs behind TEETH, as in the first reel
+  byId("tFangs").innerHTML = [[250, 250, -8], [830, 250, 8]].map(([x, h, r]) =>
+    `<path d="M ${x - 70} 30 Q ${x} 0 ${x + 70} 30 Q ${x + 52} ${h * 0.6} ${x + 4} ${h + 60} Q ${x - 46} ${h * 0.6} ${x - 70} 30 Z" transform="rotate(${r} ${x} 30)" fill="rgba(242,236,223,0.82)"/>`).join("");
+
+  // ---------- the grade (WebGL): cold and nearly colourless, a flickering stage light, red creeping in at the edges ----------
+  const glc = byId("gl"), gl = glc.getContext("webgl", { preserveDrawingBuffer: true, antialias: false });
+  const VS = "attribute vec2 p; varying vec2 v; void main(){ v = vec2(p.x * 0.5 + 0.5, 0.5 - p.y * 0.5); gl_Position = vec4(p, 0.0, 1.0); }";
+  const FS = `precision highp float;
+    uniform sampler2D img; uniform vec2 spot; uniform vec2 spotR; uniform float spotK; uniform float dark; uniform float red; varying vec2 v;
+    void main() {
+      vec2 px = v * vec2(1080.0, 1920.0);
+      vec3 c = texture2D(img, v).rgb;
+      float mx = max(c.r, max(c.g, c.b)), mn = min(c.r, min(c.g, c.b)), sat = (mx - mn) / (mx + 1e-4);
+      float l = dot(c, vec3(0.299, 0.587, 0.114));
+      float lime = smoothstep(0.10, 0.30, sat) * smoothstep(0.02, 0.10, c.g - c.b) * smoothstep(-0.10, 0.02, c.g - c.r) * smoothstep(0.22, 0.5, l);
+      vec3 n = pow(c, vec3(1.65)) * 0.42;
+      float ln = dot(n, vec3(0.299, 0.587, 0.114));
+      float sp = spotK * (1.0 - smoothstep(0.4, 1.1, length((px - spot) / spotR)));
+      n = mix(n, ln * vec3(0.78, 0.84, 0.98), 0.85 - 0.3 * sp);            // almost colourless, cold
+      n *= 1.0 + 1.5 * sp;                                                // the soloist in a hard, cold light
+      n = mix(n, c * vec3(0.24, 0.85, 0.5) * 1.2, lime * 0.85);           // the lime wig glows mint
+      vec2 q = v - vec2(0.5, 0.5);
+      float edge = smoothstep(0.28, 0.8, length(q * vec2(1.3, 0.92)));
+      n *= mix(1.0, 0.12, edge);
+      n += edge * vec3(0.16, 0.0, 0.015) * (0.5 + red);                   // blood creeping in from the edges
+      n *= dark;
+      gl_FragColor = vec4(n, 1.0);
+    }`;
+  function shader(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s)); return s; }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, shader(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog); gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW);
+  const pLoc = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(pLoc); gl.vertexAttribPointer(pLoc, 2, gl.FLOAT, false, 0, 0);
+  gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+  [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]].forEach(([k, v]) => gl.texParameteri(gl.TEXTURE_2D, k, v));
+  const U = Object.fromEntries(["spot", "spotR", "spotK", "dark", "red"].map((n) => [n, gl.getUniformLocation(prog, n)]));
+  gl.viewport(0, 0, 1080, 1920);
+  // the light follows the soloist (keyframes read off the footage)
+  const SPOT = [[3.6, 500, 950, 520, 600], [5.6, 590, 1000, 520, 640], [7.5, 650, 1150, 560, 760], [9.4, 595, 1250, 560, 800],
+                [11.2, 450, 1250, 560, 700], [13.1, 450, 1180, 560, 620], [15.1, 480, 1200, 560, 620]];
+  function spotAt(t) {
+    let i = 0; while (i < SPOT.length - 2 && t > SPOT[i + 1][0]) i++;
+    const a = SPOT[i], b = SPOT[i + 1], k = ease(span(a[0], b[0], t));
+    return [1, 2, 3, 4].map((j) => lerp(a[j], b[j], k));
+  }
+  const bite = (t) => BITES.reduce((m, h) => Math.max(m, t >= h - 0.06 ? (t < h ? (t - h + 0.06) / 0.06 : Math.exp(-(t - h) * 7)) : 0), 0);
+  // a failing light: a steady buzz with the odd dropout, frame-locked so every render matches
+  const flick = (t) => { const f = Math.floor(t * FPS); return 0.93 + 0.07 * rnd(f) - (rnd(f * 3 + 1) < 0.05 ? 0.35 : 0); };
+  function drawGrade(t) {
+    const [sx, sy, rx, ry] = spotAt(t);
+    gl.uniform2f(U.spot, sx, sy); gl.uniform2f(U.spotR, rx, ry);
+    gl.uniform1f(U.spotK, span(2.8, 4.0, t));
+    gl.uniform1f(U.dark, flick(t) * (0.85 + 0.15 * span(0.4, 1.2, t)));
+    gl.uniform1f(U.red, 1.2 * bite(t));
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+  }
+
+  // ---------- the jaws ----------
+  // We look out from inside the mouth: upper teeth hang from the gum along the top edge (long canines at x 300 and
+  // 780), the lower jaw mirrors it with shorter teeth. Aged enamel (stained at the root, greyish and translucent at
+  // the tip, dark where teeth meet), a wet, dark gum over the roots, and blood that builds up on the fangs bite by
+  // bite. "open" 1 = jaws at the frame edges, 0 = shut in the middle of the frame.
+  const W = { m: 104, p: 96, c: 86, i: 92 };
+  const jitter = (arr, seed) => arr.map(([x, len, k], i) => ({
+    x: x + (rnd(seed + i) - 0.5) * 8, len: len * (k === "c" ? 1.12 : 1.25) * (0.93 + rnd(seed + i + 50) * 0.12), k,
+    w: W[k] * (0.94 + rnd(seed + i + 90) * 0.1), rot: k === "c" ? 0 : (rnd(seed + i + 130) - 0.5) * 6 }));
+  const UP = jitter([[-20, 110, "m"], [80, 130, "m"], [178, 150, "p"], [300, 330, "c"], [410, 175, "i"], [505, 190, "i"], [600, 190, "i"], [690, 175, "i"], [780, 330, "c"], [902, 150, "p"], [1000, 130, "m"], [1100, 110, "m"]], 11);
+  const LO = jitter([[-10, 100, "m"], [92, 118, "m"], [196, 130, "p"], [330, 210, "c"], [440, 135, "i"], [540, 145, "i"], [640, 135, "i"], [750, 210, "c"], [884, 130, "p"], [988, 118, "m"], [1090, 100, "m"]], 61);
+  function toothPath({ x, len, k, w }) {
+    // a tooth hanging down from the gum: a crown that narrows to a tip (a needle for the canines)
+    const hw = w / 2, tip = k === "c" ? 2 : k === "i" ? hw * 0.38 : k === "p" ? hw * 0.5 : hw * 0.7;
+    return `M ${f1(x - hw)} -40 L ${f1(x - hw)} ${f1(len * 0.45)} C ${f1(x - hw)} ${f1(len * 0.8)} ${f1(x - tip)} ${f1(len)} ${f1(x)} ${f1(len + (k === "c" ? 6 : 0))} `
+      + `C ${f1(x + tip)} ${f1(len)} ${f1(x + hw)} ${f1(len * 0.8)} ${f1(x + hw)} ${f1(len * 0.45)} L ${f1(x + hw)} -40 Z`;
+  }
+  const tooth = (t) => { const d = toothPath(t); return `<g transform="rotate(${f1(t.rot)} ${f1(t.x)} 40)">
+      <path d="${d}" fill="url(#enamel)" stroke="#24150c" stroke-width="3"/><path d="${d}" fill="url(#side)"/>
+      ${t.k === "c" ? `<path class="bloodTip" d="${d}" fill="url(#bloodTip)" opacity="0"/>` : ""}
+      <path d="M ${f1(t.x - t.w * 0.2)} 46 Q ${f1(t.x - t.w * 0.25)} ${f1(t.len * 0.5)} ${f1(t.x - t.w * 0.08)} ${f1(t.len * 0.84)}" stroke="rgba(255,255,255,0.5)" stroke-width="5" stroke-linecap="round" fill="none"/></g>`; };
+  // the gum edge arches over each tooth and dips to a point between neighbours
+  function gumEdge(teeth, seed) {
+    let d = "M 1160 62";
+    for (let i = teeth.length - 1; i >= 0; i--) {
+      const r = i < teeth.length - 1 ? (teeth[i].x + teeth[i + 1].x) / 2 : 1160, l = i > 0 ? (teeth[i - 1].x + teeth[i].x) / 2 : -80;
+      d += ` L ${f1(r)} 64 Q ${f1(teeth[i].x)} ${f1(4 + rnd(seed + i) * 12)} ${f1(l)} 64`;
+    }
+    return d;
+  }
+  const jaw = (id, teeth, seed, extra) => { const e = gumEdge(teeth, seed); return `<g id="${id}">${teeth.map(tooth).join("")}
+      <path d="${e}" stroke="rgba(25,0,3,0.8)" stroke-width="26" fill="none" filter="url(#soft)"/>
+      <path d="M -80 -1100 L 1160 -1100 L 1160 62 ${e.slice(e.indexOf("L"))} L -80 -1100 Z" fill="url(#gum)"/>
+      <path d="${e}" stroke="rgba(255,150,160,0.3)" stroke-width="3" fill="none"/>${extra}</g>`; };
+  byId("jaws").innerHTML = `<defs>
+      <linearGradient id="enamel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5e4a2c"/><stop offset="0.3" stop-color="#b19c72"/><stop offset="0.55" stop-color="#e4d9bf"/><stop offset="0.86" stop-color="#f3eee1"/><stop offset="1" stop-color="#c3c8c4"/></linearGradient>
+      <linearGradient id="side" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#28180a" stop-opacity="0.7"/><stop offset="0.24" stop-color="#28180a" stop-opacity="0"/><stop offset="0.76" stop-color="#28180a" stop-opacity="0"/><stop offset="1" stop-color="#28180a" stop-opacity="0.75"/></linearGradient>
+      <linearGradient id="bloodTip" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#78000c" stop-opacity="0"/><stop offset="0.45" stop-color="#78000c" stop-opacity="0"/><stop offset="0.78" stop-color="#9a0014" stop-opacity="0.8"/><stop offset="1" stop-color="#5e0009"/></linearGradient>
+      <linearGradient id="gum" gradientUnits="userSpaceOnUse" x1="0" y1="-760" x2="0" y2="64"><stop offset="0" stop-color="#070001"/><stop offset="0.7" stop-color="#240207"/><stop offset="0.93" stop-color="#46050e"/><stop offset="1" stop-color="#6e0e1b"/></linearGradient>
+      <filter id="soft" x="-5%" y="-50%" width="110%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
+    </defs>
+    <g id="spit"></g>
+    ${jaw("upper", UP, 7, '<g id="drips"></g>')}
+    ${jaw("lower", LO, 37, "")}`;
+  const bloodTips = [...document.querySelectorAll(".bloodTip")];
+  const SHUT = 760;        // how far each jaw travels to meet the other
+  function openAt(t) {
+    let o = easeOut(span(T.open[0], T.open[1], t));                       // the mouth opens on the floor shot
+    o *= 1 - 0.3 * bite(t);                                               // chomps
+    o *= 1 - ease(span(T.close[0], T.close[1], t)) * (1 - easeOut(span(T.reopen[0], T.reopen[1], t)) * 0.82);  // last bite, then open on the end card
+    return o;
+  }
+  // saliva: strands between upper and lower teeth stretch as the mouth opens and snap (opening and end card only)
+  const SPIT = [[4, 4, -26, 640], [5, 5, 30, 780], [7, 6, -18, 900]];
+  function drawSpit(t, dy, jx, jy) {
+    if (!(t < 1.8 || (t > T.reopen[0] - 0.1 && t < 12.4))) { byId("spit").innerHTML = ""; return; }
+    byId("spit").innerHTML = SPIT.map(([ui, li, sag, brk]) => {
+      const u = UP[ui], l = LO[li], ux = u.x + jx, uy = dy + jy + u.len - 4, lx = l.x + jx, ly = 1920 - dy + jy - l.len + 4;
+      const gap = ly - uy, s = (gap - 60) / (brk - 60);
+      if (s < 1) {
+        const w = lerp(9, 1.4, Math.pow(clamp(s, 0, 1), 0.6)), mx = (ux + lx) / 2 + sag * s, my = (uy + ly) / 2 + 30 * s;
+        return `<path d="M ${f1(ux)} ${f1(uy)} Q ${f1(mx)} ${f1(my)} ${f1(lx)} ${f1(ly)}" stroke="rgba(222,216,200,0.55)" stroke-width="${f1(w)}" fill="none" stroke-linecap="round"/>`
+          + `<path d="M ${f1(ux + 1.5)} ${f1(uy)} Q ${f1(mx + 1.5)} ${f1(my)} ${f1(lx + 1.5)} ${f1(ly)}" stroke="rgba(255,255,255,0.55)" stroke-width="${f1(Math.max(0.8, w * 0.25))}" fill="none"/>`
+          + `<ellipse cx="${f1(ux)}" cy="${f1(uy + 4)}" rx="${f1(w * 0.9)}" ry="${f1(w * 1.3)}" fill="rgba(222,216,200,0.5)"/><ellipse cx="${f1(lx)}" cy="${f1(ly - 4)}" rx="${f1(w * 0.9)}" ry="${f1(w * 1.3)}" fill="rgba(222,216,200,0.5)"/>`;
+      }
+      const k = clamp((s - 1) / 0.45, 0, 1), a = (1 - k).toFixed(3), hu = 140 * (1 - k * k), hl = 50 * (1 - k);
+      return `<path d="M ${f1(ux)} ${f1(uy)} Q ${f1(ux + sag * 0.3)} ${f1(uy + hu * 0.6)} ${f1(ux + sag * 0.2)} ${f1(uy + hu)}" stroke="rgba(222,216,200,0.55)" stroke-width="2.4" fill="none" stroke-linecap="round" opacity="${a}"/>`
+        + `<circle cx="${f1(ux + sag * 0.2)}" cy="${f1(uy + hu + 3)}" r="4.5" fill="rgba(230,224,210,0.6)" opacity="${a}"/>`
+        + `<path d="M ${f1(lx)} ${f1(ly)} L ${f1(lx - sag * 0.1)} ${f1(ly - hl)}" stroke="rgba(222,216,200,0.5)" stroke-width="2.4" fill="none" stroke-linecap="round" opacity="${a}"/>`;
+    }).join("");
+  }
+  // blood: a drop gathers on each upper fang after a chomp and falls; the fangs stay redder with every bite
+  const FANGS = UP.filter((u) => u.k === "c");
+  function drawJaws(t) {
+    const o = openAt(t), dy = (1 - o) * SHUT, sh = 10 * bite(t);
+    const jx = sh * Math.sin(t * 90), jy = sh * Math.cos(t * 70);
+    byId("upper").setAttribute("transform", `translate(${f1(jx)} ${f1(dy + jy)})`);
+    byId("lower").setAttribute("transform", `translate(${f1(jx)} ${f1(1920 - dy + jy)}) scale(1 -1)`);
+    drawSpit(t, dy, jx, jy);
+    const stain = Math.min(0.95, BITES.reduce((m, h) => m + 0.22 * span(h, h + 0.4, t), 0));
+    bloodTips.forEach((el) => el.setAttribute("opacity", stain.toFixed(3)));
+    let d = "";
+    FANGS.forEach(({ x, len }, j) => {
+      const y = len + 6;
+      BITES.forEach((h) => {
+        const s = t - h - 0.1 * j; if (s < 0 || s > 1.6) return;
+        const grow = Math.min(1, s / 0.35), fall = Math.max(0, s - 0.45), r = 5 + 6 * grow, yy = y + 4 + 14 * grow + 900 * fall * fall;
+        const top = fall > 0 ? Math.max(y, yy - r * 3.4) : y, a = (1 - span(1.1, 1.6, s)).toFixed(3);
+        d += `<path d="M ${f1(x - 2)} ${f1(top)} Q ${f1(x)} ${f1(yy - r * 2.2)} ${f1(x - r * 0.9)} ${f1(yy)} A ${f1(r)} ${f1(r)} 0 1 0 ${f1(x + r * 0.9)} ${f1(yy)} Q ${f1(x)} ${f1(yy - r * 2.2)} ${f1(x + 2)} ${f1(top)} Z" fill="#a00018" opacity="${a}"/>`
+          + `<circle cx="${f1(x - r * 0.3)}" cy="${f1(yy - r * 0.2)}" r="${f1(r * 0.25)}" fill="rgba(255,190,190,0.7)" opacity="${a}"/>`;
+      });
+    });
+    byId("drips").innerHTML = d;
+    byId("redflash").style.opacity = (0.75 * bite(t)).toFixed(3);
+    // the last bite shuts out the light; the end card is waiting when the jaws open again
+    byId("shut").style.opacity = (ease(span(T.close[0], T.close[1], t)) * (1 - span(T.reopen[0], T.reopen[0] + 0.35, t))).toFixed(3);
+  }
+
+  function drawGrain(t) {
+    const gx = byId("grain").getContext("2d"), img = gx.createImageData(540, 960), dd = img.data, seed = Math.floor(t * FPS) * 7919;
+    for (let p = 0; p < dd.length; p += 4) { const v = (rnd(seed + p * 0.25) * 255) | 0; dd[p] = dd[p + 1] = dd[p + 2] = v; dd[p + 3] = 255; }
+    gx.putImageData(img, 0, 0);
+  }
+
+  // ---------- timeline (type) ----------
+  const tl = gsap.timeline({ paused: true });
+  tl.fromTo("#title", { opacity: 0, scale: 1.3, filter: "blur(12px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.55, ease: "power3.out", transformOrigin: "50% 48%" }, T.title);
+  tl.fromTo("#scrim", { opacity: 0 }, { opacity: 0.6, duration: 0.6 }, T.title);
+  tl.to("#title", { opacity: 0, scale: 0.6, filter: "blur(8px)", duration: 0.4, ease: "power2.in" }, T.titleOut);
+  tl.to("#scrim", { opacity: 0.35, duration: 0.5 }, T.titleOut);
+  tl.fromTo("#h1", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.35, ease: "back.out(1.8)" }, T.h1);
+  tl.to("#h1", { opacity: 0, duration: 0.15 }, T.h2 - 0.15);
+  tl.fromTo("#h2", { opacity: 0, scale: 1.5 }, { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(1.8)" }, T.h2);
+  tl.to("#h2", { opacity: 0, duration: 0.15 }, T.close[0]);
+  tl.to("#scrim", { opacity: 1, duration: 0.3 }, T.reopen[0]);
+  // the end card is waiting behind the teeth when they open
+  const flicker = (sel, at) => [0, 1, 0.15, 1, 0.4, 1].forEach((o, i) => tl.set(sel, { opacity: o }, at + i * 0.06));
+  flicker("#eUp", T.reopen[0]);
+  document.querySelectorAll("#eTitle1 .rl, #eTitle2 .rl").forEach((el, i) => flicker(el, T.reopen[0] + 0.12 + i * 0.025));
+  flicker("#eDate", T.reopen[0] + 0.5);
+  flicker("#eWk", T.reopen[0] + 0.75);
+  flicker("#eCta", T.reopen[0] + 1.0);
+  tl.fromTo("#qcpa", { opacity: 0 }, { opacity: 1, duration: 0.5 }, T.reopen[0] + 1.25);
+  const qcpa = byId("qcpa"), ASPECT = 253.262 / 340.77;
+  Object.assign(qcpa.style, { height: "140px", width: `${140 * ASPECT}px`, left: `${540 - 70 * ASPECT}px`, top: "1196px" });
+
+  // ---------- per frame ----------
+  const fimg = new Image();
+  let lastSrc = "";
+  async function seek(t) {
+    tl.seek(t, false);
+    const n = Math.min(NF, Math.floor(t * FPS + 1e-6) + 1);
+    const src = FRAMES.replace("%05d", String(n).padStart(5, "0"));
+    if (src !== lastSrc) {
+      fimg.src = src; lastSrc = src;
+      try { await fimg.decode(); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, fimg); } catch (e) { console.error("frame", n, e.message); }
+    }
+    drawGrade(t); drawJaws(t); drawGrain(t);
+  }
+
+  (async () => {
+    await Promise.all(["400 60px Creepster", "400 60px Anton", "400 60px 'Bowlby One SC'", "400 60px 'Special Elite'"].map((f) => document.fonts.load(f)));
+    await document.fonts.ready;
+    window.__tl = tl;
+    window.__meta = { duration: D, width: 1080, height: 1920 };
+    window.__seek = seek;
+    await seek(0);
+  })();
+</script>
+</body>
+</html>

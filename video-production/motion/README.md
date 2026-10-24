@@ -86,6 +86,12 @@ uptown-getover/    Uptown Sound ticket push on "10.23 Fri Get Over" (dress rehea
                    Covers (clock, two posed ghosts, lit pumpkins; LAY in index.html):
                      3:4 TikTok          render.cjs --in index.html --query thumb --stills 0   (1080x1440)
                      9:16 Instagram      render.cjs --in index.html --query ig --stills 0      (1080x1920, design in y 240-1680)
+uptown-teeth/      Uptown Sound ticket push on "10.23 Fri Teeth" (dress rehearsal, house lights up; 9:16, 24000/1001 fps).
+                   From inside a vampire's mouth: SVG jaws (aged teeth, wet gum, long fangs) open on the floor shot with
+                   saliva strands snapping, chomp on the strongest beats (BITES: red flash, shake, a blood drop off each
+                   fang, the fangs redder every bite), shut to black for the last bite and open on the end card. Cold,
+                   nearly colourless WebGL grade with a flickering stage light on the soloist and the lime wig glowing
+                   mint. Title in the first Teeth reel's look. Clip and audio used as delivered. Build: ./build.sh
 ```
 
 Setup (once per machine): `npm install puppeteer-core@24 gsap` somewhere and point `NODE_PATH` at its `node_modules`;
