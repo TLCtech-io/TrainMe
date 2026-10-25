@@ -125,6 +125,10 @@ uptown-dogdays/    Uptown Sound last-show push on "10.24 2nd Show Dog Days" (the
                    (T in index.html, the train's moves in TR).
                    Clip and audio used as delivered; the frames are tone mapped from the iPhone HLG original (a plain
                    extract left the stage washed out). Build: ./build.sh
+                   Covers (the train standing at the board with the lantern up over the full line-up, the user's line
+                   over the house; POSE in index.html):
+                     3:4 TikTok          render.cjs --in index.html --query thumb --stills 0   (1080x1440)
+                     9:16 Instagram      render.cjs --in index.html --query ig --stills 0      (1080x1920, design in y 240-1680)
 uptown-wall/       Video wall backdrop for the Pick Your Poison shows: a dusty apothecary bar (UPTOWN SOUND sign, labelled
                    bottles, alchemy rig, PICK YOUR POISON plaque on the wall above the bottles so it clears the singers'
                    heads, the poison list). The plate is an OpenArt Nano Banana Pro render plus one edit (prompt.txt has

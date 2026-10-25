@@ -81,6 +81,14 @@
   <div class="ransom" id="eT1" style="top:724px"></div>
   <div class="ransom" id="eT2" style="top:798px"></div>
 
+  <!-- covers (?thumb 3:4, ?ig 9:16): the train standing at the board over the stage, the user's line over the house.
+       Placed in video coordinates; the cover shows video y 200-1640 (see LAY) -->
+  <div id="cover" style="display:none">
+    <div id="cBase" class="layer" style="background:linear-gradient(180deg, rgba(0,0,0,0) 1300px, rgba(0,0,0,0.72) 1460px, rgba(0,0,0,0.85) 1920px)"></div>
+    <div class="line" id="cSub1" style="opacity:1; top:1390px; font:400 60px/1 'Anton'; letter-spacing:0.04em; color:#fff; text-shadow:0 4px 0 rgba(0,0,0,0.8), 0 0 18px rgba(0,0,0,0.9)">DON'T LET MISSING THE SHOW</div>
+    <div class="line" id="cSub2" style="opacity:1; top:1452px; font:400 112px/1 'Permanent Marker'; color:var(--amber); transform:rotate(-3deg); text-shadow:0 5px 0 rgba(0,0,0,0.85), 0 0 24px rgba(0,0,0,0.9)">RUIN YOUR DAY</div>
+  </div>
+
   <div id="board">
     <div class="label">DEPARTURES</div>
     <div class="label2">PLATFORM 13</div>
@@ -404,6 +412,14 @@
   const vc = byId("v").getContext("2d");
   const FOOT_DY = 120;                                      // the footage sits 120 px low: the singers stay below the train
   if (location.search.includes("safe")) byId("safe").style.display = "block";
+  // Output: the 9:16 reel, or a cover (?thumb = 3:4 for TikTok, ?ig = 9:16 for Instagram, whose grid shows the middle
+  // 3:4, so the ig cover keeps the design in y 240-1680). Both show video y 200-1640 (DY moves the page to put it there).
+  // Covers freeze the train standing at the board at POSE.t (lantern up, ALL ABOARD, FINAL CALL lit) over the full
+  // line-up at POSE.frameT.
+  const MODE = location.search.includes("thumb") ? "thumb" : location.search.includes("ig") ? "ig" : "video";
+  const LAY = { video: { H: 1920, DY: 0 }, thumb: { H: 1440, DY: -200 }, ig: { H: 1920, DY: 40 } }[MODE];
+  const POSTER = MODE !== "video";
+  const POSE = { t: 8.32, frameT: 9.0 };
   const fimg = new Image();
   let lastSrc = "";
   function drawGrain(t) {
@@ -411,9 +427,10 @@
     for (let p = 0; p < dd.length; p += 4) { const v = (rnd(seed + p * 0.25) * 255) | 0; dd[p] = dd[p + 1] = dd[p + 2] = v; dd[p + 3] = 255; }
     gx.putImageData(img, 0, 0);
   }
-  async function seek(t) {
+  async function seek(t0) {
+    const t = POSTER ? POSE.t : t0, ft = POSTER ? POSE.frameT : t0;
     tl.seek(t, false);
-    const n = Math.min(NF, Math.floor(t * FPS + 1e-6) + 1);
+    const n = Math.min(NF, Math.floor(ft * FPS + 1e-6) + 1);
     const src = FRAMES.replace("%05d", String(n).padStart(5, "0"));
     if (src !== lastSrc) { fimg.src = src; lastSrc = src; try { await fimg.decode(); } catch (e) { console.error("frame", n, e.message); } }
     vc.filter = "contrast(1.03) saturate(1.05)";               // the frames are tone mapped from the HLG original (build.sh)
@@ -430,10 +447,15 @@
   (async () => {
     await Promise.all(["400 60px 'Rubik Mono One'", "400 60px Anton", "400 60px 'Permanent Marker'", "400 60px 'Bowlby One SC'", "400 60px 'Abril Fatface'", "400 60px 'Special Elite'", "400 60px Creepster"].map((f) => document.fonts.load(f)));
     await document.fonts.ready;
+    if (POSTER) {
+      document.documentElement.style.height = LAY.H + "px";   // the body keeps its 1920 px and moves (it clips at its own box)
+      document.body.style.transform = `translateY(${LAY.DY}px)`;
+      byId("cover").style.display = "block";
+    }
     window.__seek = seek;
     await seek(0);
     window.__tl = tl;
-    window.__meta = { duration: D, width: 1080, height: 1920 };
+    window.__meta = { duration: POSTER ? 0.1 : D, width: 1080, height: LAY.H };
   })();
 </script>
 </body>
