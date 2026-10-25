@@ -306,7 +306,25 @@ Source lives in `video-production/motion/` (see its README). HTML + GSAP composi
 - **Open decision:** the beat sheet's pipes sentence on the disclaimer card is off (`DISCLAIMER_PIPES` in
   index.html).
 
-## 11. Open items
+## 11. Safe area for Reels and TikTok (rule from 2026-10-25)
+
+The user flagged that text in the bottom third sits in the IG/TikTok "danger zone". Neither platform publishes one
+official organic spec, and third-party guides disagree, so we use the overlap of the most-cited numbers for a
+1080x1920 frame:
+
+| Edge | Keep clear | Why |
+|---|---|---|
+| Top | 0-250 px | Instagram's header (guides give 108-250); TikTok's top bar is about 130-150. |
+| Bottom | 1400-1920 px (bottom 520) | TikTok's caption, music and profile block is about 484 px and grows with a long caption; Instagram is about 320-450. Meta's ad guidance is stricter (bottom 35%, i.e. above y 1248); use that for ads. |
+| Right | x 940-1080, below y 840 | TikTok's like/comment/share column (Instagram's sits lower on the right too). |
+| Left | 0-60 px | A small margin both platforms suggest. |
+
+So every word, date, logo and CTA lives in **x 60-940 (to 1020 above y 840), y 250-1400**. Footage, effects and art can
+run edge to edge. Each composition can draw the zone with `?safe` (first in `motion/uptown-dogdays/index.html`).
+Sources checked: outfy.com, campaignswift.com, adchecklab.com, reelsafezone.com, postplanify.com, bevyl.ai,
+imagevideofit.com (Instagram and TikTok safe-zone guides, 2026).
+
+## 12. Open items
 
 - [ ] **PREPARE Vid 5 footage:** either approve the private publish/download of "Prepare_Vid 5 Claude Base", or export it from Descript and run `./build.sh base.mp4` locally. Then import the render into the Prepare_Vid 5 project as a new composition (requested by the user).
 - [ ] **Review the four TMA pilot graphics.** On approval, import them into IMP - Span of Control and place them in a VISUAL composition.

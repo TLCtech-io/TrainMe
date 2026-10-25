@@ -21,12 +21,16 @@
   @font-face { font-family: "Permanent Marker"; src: url("../shared/fonts/permanent-marker-latin-400-normal.woff2") format("woff2"); }
   @font-face { font-family: "Creepster"; src: url("../shared/fonts/creepster-latin-400-normal.woff2") format("woff2"); }
   :root { --amber: #ffb23a; --bone: #f4efe2; --red: #ff4a3d; }
+  /* Safe area for Reels and TikTok (1080x1920): every word stays in y 250-1400 (Instagram's header and TikTok's top bar
+     above, the caption, music and profile block below, which TikTok grows with a long caption), clear of the right-hand
+     button column (x > 940) below y 840 and 60 px off the left edge. ?safe draws it. */
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; color: #fff; }
   canvas { position: absolute; left: 0; top: 0; }
   .layer { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
   #scrimTop { background: linear-gradient(180deg, rgba(0,0,0,0.82) 0px, rgba(0,0,0,0.55) 330px, rgba(0,0,0,0) 600px); opacity: 0; }
-  #scrimBot { background: linear-gradient(180deg, rgba(0,0,0,0) 1250px, rgba(0,0,0,0.7) 1500px, rgba(0,0,0,0.85) 1920px); }
+  #scrimBot { background: linear-gradient(180deg, rgba(0,0,0,0) 1450px, rgba(0,0,0,0.45) 1920px); }
+  #safe { display: none; pointer-events: none; }
   #grain { width: 1080px; height: 1920px; opacity: 0.06; mix-blend-mode: overlay; }
   /* split-flap tiles */
   .row { position: absolute; left: 0; width: 1080px; display: flex; justify-content: center; gap: 5px; }
@@ -40,12 +44,13 @@
   .tile span { position: absolute; left: 0; width: 100%; text-align: center; }
   .amber { color: var(--amber); } .red { color: var(--red); }
   /* an old station board: walnut frame, brass inlay and rivets, cobwebs in the corners */
-  #board { position: absolute; left: 14px; width: 1052px; top: 1384px; height: 446px; border-radius: 16px; opacity: 0;
+  #head { z-index: 5; }
+  #board { position: absolute; left: 30px; width: 1020px; top: 250px; height: 430px; border-radius: 16px; opacity: 0;
            background: linear-gradient(#0d0a08, #050403); border: 9px solid #4a2c16;
            box-shadow: inset 0 0 0 3px #b8913f, inset 0 0 30px rgba(0,0,0,0.9), 0 18px 40px rgba(0,0,0,0.75), 0 0 0 2px #1d1007; }
-  #board .label { position: absolute; left: 34px; top: 12px; font: 400 36px/1 "Abril Fatface"; letter-spacing: 0.12em; color: #e2b55a;
+  #board .label { position: absolute; left: 30px; top: 8px; font: 400 32px/1 "Abril Fatface"; letter-spacing: 0.12em; color: #e2b55a;
                   text-shadow: 0 2px 0 #000; }
-  #board .label2 { position: absolute; right: 34px; top: 16px; font: 400 30px/1 "Special Elite"; letter-spacing: 0.12em; color: #bba98a; }
+  #board .label2 { position: absolute; right: 30px; top: 12px; font: 400 27px/1 "Special Elite"; letter-spacing: 0.12em; color: #bba98a; }
   #board .rivet { position: absolute; width: 12px; height: 12px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #f1d38a, #8a6424 70%); }
   #board svg { position: absolute; }
   #train { position: absolute; left: 0; top: 0; overflow: visible;
@@ -71,10 +76,10 @@
   <div id="bubble">ALL ABOARD!</div>
 
   <div id="head" class="row"></div>
-  <div class="line" id="sub1" style="top:262px; font:400 60px/1 'Anton'; letter-spacing:0.04em; color:#fff; text-shadow:0 4px 0 rgba(0,0,0,0.8), 0 0 18px rgba(0,0,0,0.9)">DON'T LET MISSING THE SHOW</div>
-  <div class="line" id="sub2" style="top:338px; font:400 120px/1 'Permanent Marker'; color:var(--amber); transform:rotate(-3deg); text-shadow:0 5px 0 rgba(0,0,0,0.85), 0 0 24px rgba(0,0,0,0.9)">RUIN YOUR DAY</div>
-  <div class="ransom" id="eT1" style="top:262px"></div>
-  <div class="ransom" id="eT2" style="top:336px"></div>
+  <div class="line" id="sub1" style="top:734px; font:400 58px/1 'Anton'; letter-spacing:0.04em; color:#fff; text-shadow:0 4px 0 rgba(0,0,0,0.8), 0 0 18px rgba(0,0,0,0.9)">DON'T LET MISSING THE SHOW</div>
+  <div class="line" id="sub2" style="top:806px; font:400 104px/1 'Permanent Marker'; color:var(--amber); transform:rotate(-3deg); text-shadow:0 5px 0 rgba(0,0,0,0.85), 0 0 24px rgba(0,0,0,0.9)">RUIN YOUR DAY</div>
+  <div class="ransom" id="eT1" style="top:724px"></div>
+  <div class="ransom" id="eT2" style="top:798px"></div>
 
   <div id="board">
     <div class="label">DEPARTURES</div>
@@ -94,12 +99,18 @@
         <path d="M0 50 Q20 58 30 62 Q46 70 56 82 Q72 90 84 106 Q92 114 98 120"/>
         <path d="M0 84 Q14 88 22 92 Q34 98 42 106 Q52 112 58 120"/>
       </g></svg>
-    <div id="r1" class="row" style="left:-22px; top:70px"></div>
-    <div id="r2" class="row" style="left:-22px; top:180px"></div>
-    <div id="r3" class="row" style="left:-22px; top:290px"></div>
+    <div id="r1" class="row" style="left:-39px; top:161px"></div>
+    <div id="r2" class="row" style="left:-39px; top:243px"></div>
+    <div id="r3" class="row" style="left:-39px; top:325px"></div>
   </div>
   <img id="qcpa" src="../shared/brand/qcpa-logo-white.svg" alt="Queen City Performing Arts" />
   <canvas id="grain" width="540" height="960"></canvas>
+  <svg id="safe" class="layer" width="1080" height="1920" viewBox="0 0 1080 1920">
+    <rect x="0" y="0" width="1080" height="250" fill="rgba(255,0,0,0.28)"/><rect x="0" y="1400" width="1080" height="520" fill="rgba(255,0,0,0.28)"/>
+    <rect x="940" y="840" width="140" height="560" fill="rgba(255,0,0,0.28)"/><rect x="0" y="250" width="60" height="1150" fill="rgba(255,0,0,0.18)"/>
+    <text x="540" y="140" text-anchor="middle" font-family="Anton" font-size="44" fill="#fff">TOP UI (0-250)</text>
+    <text x="540" y="1680" text-anchor="middle" font-family="Anton" font-size="44" fill="#fff">CAPTION / MUSIC / PROFILE (1400-1920)</text>
+  </svg>
 
 <script src="../shared/gsap.min.js"></script>
 <script src="data/features.js"></script>
@@ -163,8 +174,8 @@
       if (fbot !== null) { sFB.textContent = fbot; tile.flaps[1].style.transform = `scaleY(${(2 * p - 1).toFixed(3)})`; }
     });
   }
-  const HEAD = makeRow(byId("head"), 14, 70, 104, 73);
-  const R1 = makeRow(byId("r1"), 18, 52, 90, 54), R2 = makeRow(byId("r2"), 18, 52, 90, 54), R3 = makeRow(byId("r3"), 18, 52, 90, 54);
+  const HEAD = makeRow(byId("head"), 14, 66, 100, 70);
+  const R1 = makeRow(byId("r1"), 18, 50, 74, 46), R2 = makeRow(byId("r2"), 18, 50, 74, 46), R3 = makeRow(byId("r3"), 18, 50, 74, 46);
   setRow(HEAD, "ONE LAST SHOW", T.headLand - 1.2, 1.2, "", 3);
   setRow(HEAD, "DON'T MISS OUT", T.miss, 0.55, "amber", 5);
   setRow(HEAD, "UPTOWN SOUND", T.end, 0.5, "", 7);
@@ -192,8 +203,8 @@
 
   // ---------- timeline ----------
   const tl = gsap.timeline({ paused: true });
-  gsap.set("#head", { top: 820 });
-  tl.to("#head", { top: 128, duration: 0.5, ease: "power3.inOut" }, T.headUp);
+  gsap.set("#head", { top: 760 });
+  tl.to("#head", { top: 296, duration: 0.5, ease: "power3.inOut" }, T.headUp);
   tl.to("#scrimTop", { opacity: 1, duration: 0.5 }, T.headUp);
   tl.fromTo("#board", { opacity: 0, y: 120 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, T.board);
   tl.fromTo("#sub1", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" }, T.sub);
@@ -204,14 +215,14 @@
   });
   tl.fromTo("#qcpa", { opacity: 0 }, { opacity: 1, duration: 0.4 }, T.logo);
   const qcpa = byId("qcpa"), ASPECT = 253.262 / 340.77;
-  Object.assign(qcpa.style, { height: "84px", width: `${84 * ASPECT}px`, left: `${540 - 42 * ASPECT}px`, top: "1830px" });
+  Object.assign(qcpa.style, { height: "120px", width: `${120 * ASPECT}px`, left: `${540 - 60 * ASPECT}px`, top: "888px" });
 
   // ---------- the phantom train ----------
   // A 4-4-0 steam locomotive facing left (front at local x 0, rail at local y 0) with its tender: cowcatcher, headlamp,
   // balloon stack, brass-banded boiler, red cab with a skeleton conductor swinging a lantern, UPTOWN SOUND on the tender.
   // It rides spectral rails through the rafters, rolls in on "like a train", stops, and pulls out on DON'T MISS OUT.
-  const RAIL_Y = 806, TRAIN_LEN = 820, STOP_X = 130;
-  const TR = { in0: 3.6, stop: 5.6, out0: 9.14, gone: 11.9 };
+  const RAIL_Y = 990, TRAIN_LEN = 820, STOP_X = 130;
+  const TR = { in0: 3.6, stop: 5.6, out0: 9.14, gone: 10.5 };
   const DRV = [[270, -50, 50], [390, -50, 50]], PILOT = [[112, -26, 26], [172, -26, 26]], TEND = [[604, -24, 24], [664, -24, 24], [732, -24, 24], [792, -24, 24]];
   function wheel(id, [x, y, r], spokes) {
     return `<g transform="translate(${x} ${y})"><circle r="${r}" fill="#0d0d0d" stroke="#3a3a3a" stroke-width="5"/>
@@ -385,12 +396,14 @@
   }
 
   // the conductor calls it while the train stands
-  gsap.set("#bubble", { left: STOP_X + 470, top: RAIL_Y - 372 });
+  gsap.set("#bubble", { left: STOP_X + 560, top: 700 });
   tl.fromTo("#bubble", { opacity: 0, scale: 0.4, rotation: -8, transformOrigin: "20% 100%" }, { opacity: 1, scale: 1, rotation: -4, duration: 0.3, ease: "back.out(2.4)" }, 6.0);
   tl.to("#bubble", { opacity: 0, scale: 0.8, duration: 0.2 }, TR.out0 - 0.25);
 
   // ---------- per frame ----------
   const vc = byId("v").getContext("2d");
+  const FOOT_DY = 120;                                      // the footage sits 120 px low: the singers stay below the train
+  if (location.search.includes("safe")) byId("safe").style.display = "block";
   const fimg = new Image();
   let lastSrc = "";
   function drawGrain(t) {
@@ -404,7 +417,8 @@
     const src = FRAMES.replace("%05d", String(n).padStart(5, "0"));
     if (src !== lastSrc) { fimg.src = src; lastSrc = src; try { await fimg.decode(); } catch (e) { console.error("frame", n, e.message); } }
     vc.filter = "contrast(1.07) saturate(1.1) brightness(1.03)";
-    vc.drawImage(fimg, 0, 0, 1080, 1920);
+    vc.fillStyle = "#000"; vc.fillRect(0, 0, 1080, FOOT_DY);
+    vc.drawImage(fimg, 0, FOOT_DY, 1080, 1920);
     drawTrain(t);
     drawRow(HEAD, t); drawRow(R1, t); drawRow(R2, t); drawRow(R3, t);
     // FINAL CALL blinks once it has landed, until the end card turns the row over
