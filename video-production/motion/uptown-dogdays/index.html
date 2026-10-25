@@ -6,10 +6,11 @@
 <!--
   Uptown Sound "Pick Your Poison" last-show push on "10.24 2nd Show Dog Days" (the Saturday night show, from the house;
   1080x1920 from 1440x2560, 30 fps, 14.9 s). The clip is used as delivered and its audio is copied untouched.
-  The verse here runs "...like a train on a track", so the post is a station departure board: split-flap letters clatter
-  into ONE LAST SHOW in the dark opening, the board below lists PICK YOUR POISON / SUN 10/25 1:00 PM / FINAL CALL as the
-  ensemble comes into view, the header flips to DON'T MISS OUT with the user's line (don't let missing the show ruin
-  your day), and everything flips over to the end card. Flaps land on the vocal onsets.
+  The verse here runs "...like a train on a track", so the post is an old haunted railway: split-flap letters clatter
+  into ONE LAST SHOW in the dark opening, a phantom steam locomotive (skeleton conductor, lantern, glowing headlamp) rolls
+  into the rafters on "like a train" and stops in a blast of steam (ALL ABOARD!), the station board below lists PICK YOUR
+  POISON / SUN 10/25 1:00 PM / FINAL CALL, the train pulls out as the header flips to DON'T MISS OUT with the user's line
+  (don't let missing the show ruin your day), and everything flips over to the end card. Flaps land on the vocal onsets.
 -->
 <style>
   @font-face { font-family: "Rubik Mono One"; src: url("../shared/fonts/rubik-mono-one-latin-400-normal.woff2") format("woff2"); }
@@ -38,10 +39,20 @@
   .flap.bot { transform-origin: 50% 0%; background: linear-gradient(#141414, #0c0c0c); }
   .tile span { position: absolute; left: 0; width: 100%; text-align: center; }
   .amber { color: var(--amber); } .red { color: var(--red); }
-  #board { position: absolute; left: 22px; width: 1036px; top: 1392px; height: 430px; border-radius: 18px; opacity: 0;
-           background: linear-gradient(#0c0c0c, #050505); border: 3px solid #2b2b2b; box-shadow: 0 18px 40px rgba(0,0,0,0.7); }
-  #board .label { position: absolute; left: 28px; top: 16px; font: 400 30px/1 "Anton"; letter-spacing: 0.32em; color: var(--amber); }
-  #board .label2 { position: absolute; right: 28px; top: 16px; font: 400 30px/1 "Anton"; letter-spacing: 0.2em; color: #8d8d8d; }
+  /* an old station board: walnut frame, brass inlay and rivets, cobwebs in the corners */
+  #board { position: absolute; left: 14px; width: 1052px; top: 1384px; height: 446px; border-radius: 16px; opacity: 0;
+           background: linear-gradient(#0d0a08, #050403); border: 9px solid #4a2c16;
+           box-shadow: inset 0 0 0 3px #b8913f, inset 0 0 30px rgba(0,0,0,0.9), 0 18px 40px rgba(0,0,0,0.75), 0 0 0 2px #1d1007; }
+  #board .label { position: absolute; left: 34px; top: 12px; font: 400 36px/1 "Abril Fatface"; letter-spacing: 0.12em; color: #e2b55a;
+                  text-shadow: 0 2px 0 #000; }
+  #board .label2 { position: absolute; right: 34px; top: 16px; font: 400 30px/1 "Special Elite"; letter-spacing: 0.12em; color: #bba98a; }
+  #board .rivet { position: absolute; width: 12px; height: 12px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #f1d38a, #8a6424 70%); }
+  #board svg { position: absolute; }
+  #train { position: absolute; left: 0; top: 0; overflow: visible;
+           filter: drop-shadow(0 0 7px rgba(120,255,170,0.55)) drop-shadow(0 0 24px rgba(120,255,170,0.22)); }
+  #bubble { position: absolute; opacity: 0; font: 400 52px/1 "Creepster"; letter-spacing: 0.04em; color: var(--bone); white-space: nowrap;
+            background: rgba(10,8,6,0.88); border: 3px solid #e2b55a; border-radius: 22px; padding: 12px 22px 10px; }
+  #bubble::after { content: ""; position: absolute; left: 34px; bottom: -22px; border: 12px solid transparent; border-top: 14px solid #e2b55a; }
   .line { position: absolute; left: 0; width: 1080px; text-align: center; white-space: nowrap; opacity: 0; }
   .ransom { position: absolute; left: 0; width: 1080px; display: flex; justify-content: center; flex-wrap: nowrap; gap: 6px; }
   .rl { display: inline-flex; align-items: center; justify-content: center; padding: 2px 10px 4px; line-height: 1; box-shadow: 0 6px 14px rgba(0,0,0,0.5); opacity: 0; }
@@ -54,6 +65,11 @@
   <div id="scrimTop" class="layer"></div>
   <div id="scrimBot" class="layer"></div>
 
+  <svg id="track" width="1080" height="1920" viewBox="0 0 1080 1920" style="position:absolute; left:0; top:0; opacity:0"></svg>
+  <svg id="train" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+  <canvas id="smoke" width="1080" height="1920"></canvas>
+  <div id="bubble">ALL ABOARD!</div>
+
   <div id="head" class="row"></div>
   <div class="line" id="sub1" style="top:262px; font:400 60px/1 'Anton'; letter-spacing:0.04em; color:#fff; text-shadow:0 4px 0 rgba(0,0,0,0.8), 0 0 18px rgba(0,0,0,0.9)">DON'T LET MISSING THE SHOW</div>
   <div class="line" id="sub2" style="top:338px; font:400 120px/1 'Permanent Marker'; color:var(--amber); transform:rotate(-3deg); text-shadow:0 5px 0 rgba(0,0,0,0.85), 0 0 24px rgba(0,0,0,0.9)">RUIN YOUR DAY</div>
@@ -62,7 +78,22 @@
 
   <div id="board">
     <div class="label">DEPARTURES</div>
-    <div class="label2">UPTOWN SOUND</div>
+    <div class="label2">PLATFORM 13</div>
+    <div class="rivet" style="left:8px; top:8px"></div><div class="rivet" style="right:8px; top:8px"></div>
+    <div class="rivet" style="left:8px; bottom:8px"></div><div class="rivet" style="right:8px; bottom:8px"></div>
+    <svg width="170" height="150" viewBox="0 0 170 150" style="right:-4px; top:-4px">
+      <g stroke="rgba(235,235,225,0.42)" stroke-width="1.3" fill="none">
+        <path d="M170 0 L40 0 M170 0 L170 120 M170 0 L60 70 M170 0 L110 110 M170 0 L150 140 M170 0 L95 30"/>
+        <path d="M70 0 Q95 22 98 34 Q120 52 128 72 Q146 86 158 104 Q162 118 170 124"/>
+        <path d="M110 0 Q122 18 132 26 Q142 44 152 54 Q160 70 170 76"/>
+        <path d="M140 0 Q146 10 152 16 Q160 26 170 30"/>
+      </g></svg>
+    <svg width="130" height="120" viewBox="0 0 130 120" style="left:-4px; bottom:-4px">
+      <g stroke="rgba(235,235,225,0.36)" stroke-width="1.2" fill="none">
+        <path d="M0 120 L0 20 M0 120 L110 120 M0 120 L80 50 M0 120 L40 30 M0 120 L105 92"/>
+        <path d="M0 50 Q20 58 30 62 Q46 70 56 82 Q72 90 84 106 Q92 114 98 120"/>
+        <path d="M0 84 Q14 88 22 92 Q34 98 42 106 Q52 112 58 120"/>
+      </g></svg>
     <div id="r1" class="row" style="left:-22px; top:70px"></div>
     <div id="r2" class="row" style="left:-22px; top:180px"></div>
     <div id="r3" class="row" style="left:-22px; top:290px"></div>
@@ -175,6 +206,189 @@
   const qcpa = byId("qcpa"), ASPECT = 253.262 / 340.77;
   Object.assign(qcpa.style, { height: "84px", width: `${84 * ASPECT}px`, left: `${540 - 42 * ASPECT}px`, top: "1830px" });
 
+  // ---------- the phantom train ----------
+  // A 4-4-0 steam locomotive facing left (front at local x 0, rail at local y 0) with its tender: cowcatcher, headlamp,
+  // balloon stack, brass-banded boiler, red cab with a skeleton conductor swinging a lantern, UPTOWN SOUND on the tender.
+  // It rides spectral rails through the rafters, rolls in on "like a train", stops, and pulls out on DON'T MISS OUT.
+  const RAIL_Y = 806, TRAIN_LEN = 820, STOP_X = 130;
+  const TR = { in0: 3.6, stop: 5.6, out0: 9.14, gone: 11.9 };
+  const DRV = [[270, -50, 50], [390, -50, 50]], PILOT = [[112, -26, 26], [172, -26, 26]], TEND = [[604, -24, 24], [664, -24, 24], [732, -24, 24], [792, -24, 24]];
+  function wheel(id, [x, y, r], spokes) {
+    return `<g transform="translate(${x} ${y})"><circle r="${r}" fill="#0d0d0d" stroke="#3a3a3a" stroke-width="5"/>
+      <circle r="${r - 4}" fill="none" stroke="#b8913f" stroke-width="2.5" opacity="0.8"/>
+      <g id="${id}">${[...Array(spokes)].map((_, k) => `<line x1="0" y1="0" x2="${((r - 6) * Math.cos(k * 2 * Math.PI / spokes)).toFixed(1)}" y2="${((r - 6) * Math.sin(k * 2 * Math.PI / spokes)).toFixed(1)}" stroke="#2c2c2c" stroke-width="${r > 40 ? 6 : 4}"/>`).join("")}
+      ${r > 40 ? `<circle cx="${(r * 0.55).toFixed(1)}" cy="0" r="7" fill="#5b5b5b"/>` : ""}</g>
+      <circle r="${r * 0.22}" fill="#6b1414" stroke="#b8913f" stroke-width="2"/></g>`;
+  }
+  byId("track").innerHTML = `<g stroke="rgba(150,255,190,0.55)" fill="none">
+      <line x1="0" y1="${RAIL_Y + 1}" x2="1080" y2="${RAIL_Y + 1}" stroke-width="3"/><line x1="0" y1="${RAIL_Y + 9}" x2="1080" y2="${RAIL_Y + 9}" stroke-width="2"/></g>
+    <g fill="rgba(120,220,160,0.28)">${[...Array(28)].map((_, k) => `<rect x="${k * 40 + 4}" y="${RAIL_Y + 11}" width="26" height="7" rx="2"/>`).join("")}</g>`;
+  byId("train").innerHTML = `<defs>
+      <linearGradient id="iron" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2b2b"/><stop offset="0.45" stop-color="#151515"/><stop offset="1" stop-color="#070707"/></linearGradient>
+      <linearGradient id="cabRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a1c1c"/><stop offset="1" stop-color="#3e0a0a"/></linearGradient>
+      <linearGradient id="brass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3d58a"/><stop offset="0.5" stop-color="#b8913f"/><stop offset="1" stop-color="#6e5220"/></linearGradient>
+      <radialGradient id="lampGlow"><stop offset="0" stop-color="#fff3c4"/><stop offset="0.35" stop-color="#ffb23a"/><stop offset="1" stop-color="#ff7a00" stop-opacity="0"/></radialGradient>
+      <linearGradient id="beam" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#ffd27a" stop-opacity="0.55"/><stop offset="1" stop-color="#ffb23a" stop-opacity="0"/></linearGradient>
+    </defs>
+    <g id="loco">
+      <path id="beamCone" d="M 92 -193 L -520 -300 L -520 -60 Z" fill="url(#beam)"/>
+      <!-- tender -->
+      <rect x="556" y="-188" width="264" height="140" rx="8" fill="url(#iron)" stroke="#3a3a3a" stroke-width="3"/>
+      <rect x="556" y="-188" width="264" height="14" fill="url(#brass)" opacity="0.85"/>
+      <path d="M 566 -188 Q 600 -222 640 -206 Q 680 -230 720 -210 Q 760 -226 810 -188 Z" fill="#0a0a0a"/>
+      <text x="688" y="-106" text-anchor="middle" font-family="Abril Fatface" font-size="29" fill="#e2b55a" stroke="#3b2a0c" stroke-width="1">UPTOWN SOUND</text>
+      <text x="688" y="-72" text-anchor="middle" font-family="Special Elite" font-size="19" fill="#bba98a">PICK YOUR POISON LINE</text>
+      <rect x="560" y="-50" width="256" height="10" fill="#1a1a1a"/>
+      <!-- cab -->
+      <rect x="420" y="-250" width="132" height="188" fill="url(#cabRed)" stroke="#2a0606" stroke-width="3"/>
+      <path d="M 408 -246 Q 486 -280 564 -246 L 564 -236 L 408 -236 Z" fill="#141414" stroke="#b8913f" stroke-width="2"/>
+      <rect x="440" y="-228" width="84" height="72" rx="6" fill="#120806" stroke="#b8913f" stroke-width="3"/>
+      <text x="486" y="-96" text-anchor="middle" font-family="Abril Fatface" font-size="40" fill="#e2b55a" stroke="#3b2a0c" stroke-width="1">13</text>
+      <!-- the conductor, in the cab window -->
+      <g id="conductor" transform="translate(482 -176) scale(1.4) translate(-482 176)">
+        <path d="M 446 -158 Q 452 -178 482 -180 Q 512 -178 518 -158 Z" fill="#1d2340" stroke="#0c0f1e" stroke-width="2"/>
+        <path d="M 474 -178 L 482 -166 L 490 -178" fill="none" stroke="#ece6d6" stroke-width="3"/>
+        <circle cx="482" cy="-200" r="17" fill="#ece6d6"/>
+        <path d="M 471 -190 L 493 -190 L 492 -181 Q 482 -177 472 -181 Z" fill="#ece6d6"/>
+        <ellipse cx="476" cy="-201" rx="5" ry="6" fill="#111"/><ellipse cx="488" cy="-201" rx="5" ry="6" fill="#111"/>
+        <path d="M 482 -195 L 479 -190 L 485 -190 Z" fill="#111"/>
+        <g stroke="#555" stroke-width="1.2"><line x1="475" y1="-189" x2="475" y2="-181"/><line x1="479" y1="-189" x2="479" y2="-180"/><line x1="483" y1="-189" x2="483" y2="-180"/><line x1="487" y1="-189" x2="487" y2="-181"/></g>
+        <path d="M 464 -214 Q 466 -232 482 -233 Q 498 -232 500 -214 Z" fill="#1d2340" stroke="#0c0f1e" stroke-width="2"/>
+        <path d="M 460 -215 L 504 -215 L 500 -209 L 464 -209 Z" fill="#0a0a0a"/>
+        <circle cx="482" cy="-223" r="3.5" fill="#e2b55a"/>
+        <g id="arm">
+          <line x1="452" y1="-170" x2="424" y2="-186" stroke="#ece6d6" stroke-width="6" stroke-linecap="round"/>
+          <line x1="424" y1="-186" x2="402" y2="-212" stroke="#ece6d6" stroke-width="5" stroke-linecap="round"/>
+          <g id="lantern">
+            <line x1="402" y1="-212" x2="402" y2="-198" stroke="#888" stroke-width="2"/>
+            <circle cx="402" cy="-182" r="46" fill="url(#lampGlow)" opacity="0.95"/>
+            <rect x="393" y="-198" width="18" height="24" rx="3" fill="#ffcf6a" stroke="#3a2a10" stroke-width="3"/>
+            <rect x="390" y="-201" width="24" height="5" fill="#3a2a10"/><rect x="390" y="-176" width="24" height="5" fill="#3a2a10"/>
+          </g>
+        </g>
+      </g>
+      <!-- boiler and fittings -->
+      <rect x="160" y="-170" width="266" height="106" rx="14" fill="url(#iron)" stroke="#353535" stroke-width="3"/>
+      ${[212, 262, 312, 362].map((x) => `<rect x="${x}" y="-170" width="9" height="106" fill="url(#brass)" opacity="0.9"/>`).join("")}
+      <path d="M 222 -168 Q 222 -196 242 -196 Q 262 -196 262 -168 Z" fill="url(#iron)" stroke="#353535" stroke-width="2"/>
+      <path d="M 322 -168 Q 322 -202 344 -202 Q 366 -202 366 -168 Z" fill="url(#brass)" stroke="#6e5220" stroke-width="2"/>
+      <path d="M 284 -170 L 284 -184 Q 292 -200 300 -184 L 300 -170 Z" fill="url(#brass)"/>
+      <path d="M 404 -170 L 404 -196 L 412 -196 L 412 -170 Z" fill="url(#brass)"/>
+      <rect x="80" y="-176" width="94" height="114" rx="10" fill="url(#iron)" stroke="#353535" stroke-width="3"/>
+      <ellipse cx="84" cy="-119" rx="10" ry="54" fill="#1b1b1b" stroke="#b8913f" stroke-width="3"/>
+      <!-- balloon stack -->
+      <rect x="120" y="-238" width="28" height="64" fill="url(#iron)" stroke="#353535" stroke-width="2"/>
+      <path d="M 116 -236 L 96 -288 L 172 -288 L 152 -236 Z" fill="url(#iron)" stroke="#353535" stroke-width="3"/>
+      <rect x="90" y="-296" width="88" height="10" rx="3" fill="url(#brass)"/>
+      <g stroke="rgba(235,235,225,0.55)" stroke-width="1.1" fill="none">
+        <path d="M 96 -288 L 116 -236 M 96 -288 L 128 -258 M 96 -288 L 140 -276 M 104 -268 Q 116 -268 122 -262 M 110 -252 Q 120 -256 126 -250"/>
+        <path d="M 552 -246 L 520 -246 M 552 -246 L 552 -214 M 552 -246 L 528 -222 M 534 -246 Q 538 -236 552 -232 M 542 -246 Q 544 -240 552 -238"/>
+      </g>
+      <!-- headlamp -->
+      <rect x="90" y="-216" width="52" height="42" rx="4" fill="#151515" stroke="#b8913f" stroke-width="3"/>
+      <circle id="lampGlowC" cx="92" cy="-195" r="44" fill="url(#lampGlow)"/>
+      <circle cx="94" cy="-195" r="14" fill="#ffe7a8"/>
+      <!-- running board, cylinder, pilot -->
+      <rect x="74" y="-66" width="360" height="9" fill="#0b0b0b" stroke="#b8913f" stroke-width="1.5"/>
+      <rect x="92" y="-104" width="80" height="40" rx="6" fill="url(#iron)" stroke="#b8913f" stroke-width="2.5"/>
+      <rect x="62" y="-80" width="20" height="24" fill="#6b1414"/>
+      <g id="pumpkin" transform="translate(48 -100)">
+        <circle r="40" fill="url(#lampGlow)" opacity="0.55"/>
+        <ellipse rx="25" ry="20" fill="#e8741a" stroke="#7a3206" stroke-width="2"/>
+        <path d="M -9 -19 Q -11 0 -9 19 M 9 -19 Q 11 0 9 19 M 0 -20 L 0 20" stroke="#b9530c" stroke-width="2" fill="none"/>
+        <path d="M -2 -20 Q -1 -28 5 -30" stroke="#3d5a1a" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M -15 -6 L -7 -6 L -11 -13 Z M 7 -6 L 15 -6 L 11 -13 Z" fill="#ffe27a"/>
+        <path d="M -15 4 L 15 4 Q 10 13 0 13 Q -10 13 -15 4 Z M -6 4 L -3 8 L 0 4 L 3 8 L 6 4" fill="#ffe27a"/>
+      </g>
+      <path d="M 0 -6 L 70 -6 L 70 -60 L 60 -60 Z" fill="#6b1414" stroke="#2a0606" stroke-width="2"/>
+      ${[14, 28, 42, 56].map((x) => `<line x1="${x}" y1="-6" x2="${x + 10}" y2="${-6 - (x + 10) * 0.78}" stroke="#1a0404" stroke-width="3"/>`).join("")}
+      <!-- wheels and rods -->
+      ${PILOT.map((w, i) => wheel("wp" + i, w, 8)).join("")}${DRV.map((w, i) => wheel("wd" + i, w, 12)).join("")}${TEND.map((w, i) => wheel("wt" + i, w, 8)).join("")}
+      <line id="sideRod" stroke="#9a9a9a" stroke-width="7" stroke-linecap="round"/>
+      <line id="mainRod" stroke="#b8b8b8" stroke-width="8" stroke-linecap="round"/>
+      <line id="pistonRod" stroke="#d0d0d0" stroke-width="4"/>
+      <rect x="548" y="-70" width="16" height="8" fill="#333"/>
+    </g>
+    <g id="bats">${[0, 1, 2].map((i) => `<g id="bat${i}"><path d="M 0 0 Q -10 -10 -22 -6 Q -16 -2 -18 4 Q -10 0 -6 6 Q -3 2 0 4 Q 3 2 6 6 Q 10 0 18 4 Q 16 -2 22 -6 Q 10 -10 0 0 Z" fill="#0b0b0b" stroke="rgba(120,255,170,0.5)" stroke-width="1"/></g>`).join("")}</g>`;
+  const ease3o = (p) => 1 - Math.pow(1 - p, 3);
+  function trainX(t) {
+    if (t < TR.in0) return 1250;
+    if (t < TR.stop) return 1250 - (1250 - STOP_X) * ease3o((t - TR.in0) / (TR.stop - TR.in0));
+    if (t < TR.out0) return STOP_X;
+    return STOP_X - 1000 * Math.pow(Math.min(1, (t - TR.out0) / (TR.gone - TR.out0)), 2);
+  }
+  // puffs from the stack: one per chug (four a turn of the drivers) on the move, a slow breath while it stands
+  const PUFFS = [];
+  (() => {
+    let last = trainX(0), acc = 0, idle = 0;
+    const chug = 2 * Math.PI * 50 / 4;
+    for (let t = TR.in0; t < TR.gone; t += 1 / 120) {
+      const x = trainX(t), d = Math.abs(x - last); last = x; acc += d; idle += 1 / 120;
+      const moving = d > 0.02;
+      if ((moving && acc >= chug) || (!moving && idle >= 0.55)) { PUFFS.push({ tb: t, x: x + 134, big: moving ? 1 : 0.6 }); acc = 0; idle = 0; }
+    }
+  })();
+  const sm = byId("smoke").getContext("2d");
+  function puff(x, y, r, a, col) {
+    const g = sm.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, `rgba(${col},${a.toFixed(3)})`); g.addColorStop(1, `rgba(${col},0)`);
+    sm.fillStyle = g; sm.fillRect(x - r, y - r, 2 * r, 2 * r);
+  }
+  function drawTrain(t) {
+    const x = trainX(t), on = t >= TR.in0 - 0.1 && t <= TR.gone + 0.1;
+    byId("train").style.display = on ? "" : "none";
+    const travelled = 1250 - x;
+    byId("loco").setAttribute("transform", `translate(${x.toFixed(1)} ${RAIL_Y + (t > TR.stop && t < TR.out0 ? Math.sin(t * 9) * 0.6 : 0)})`);
+    const rot = (r) => (-travelled / r) * 180 / Math.PI;
+    PILOT.forEach(([, , r], i) => byId("wp" + i).setAttribute("transform", `rotate(${rot(r).toFixed(1)})`));
+    DRV.forEach(([, , r], i) => byId("wd" + i).setAttribute("transform", `rotate(${rot(r).toFixed(1)})`));
+    TEND.forEach(([, , r], i) => byId("wt" + i).setAttribute("transform", `rotate(${rot(r).toFixed(1)})`));
+    const th = -travelled / 50, rp = 50 * 0.55;
+    const p1 = [DRV[0][0] + rp * Math.cos(th), DRV[0][1] + rp * Math.sin(th)], p2 = [DRV[1][0] + rp * Math.cos(th), DRV[1][1] + rp * Math.sin(th)];
+    const set = (id, a, b) => { const el = byId(id); el.setAttribute("x1", a[0].toFixed(1)); el.setAttribute("y1", a[1].toFixed(1)); el.setAttribute("x2", b[0].toFixed(1)); el.setAttribute("y2", b[1].toFixed(1)); };
+    const xh = [p1[0] - 104, -84];
+    set("sideRod", p1, p2); set("mainRod", xh, p1); set("pistonRod", [172, -84], xh);
+    // the conductor swings the lantern; while the train stands he waves it overhead
+    const stand = t > TR.stop + 0.2 && t < TR.out0 - 0.1;
+    const wave = stand ? -26 + 22 * Math.sin((t - TR.stop) * 5.2) : -6 + 6 * Math.sin(t * 3.1);
+    byId("arm").setAttribute("transform", `rotate(${wave.toFixed(1)} 452 -170)`);
+    byId("lantern").setAttribute("transform", `rotate(${(-wave * 0.8 + 8 * Math.sin(t * 4.3)).toFixed(1)} 402 -212)`);
+    const fl = 0.85 + 0.15 * rnd(Math.floor(t * FPS));
+    byId("lampGlowC").setAttribute("opacity", fl.toFixed(3));
+    byId("beamCone").setAttribute("opacity", (0.85 * fl).toFixed(3));
+    byId("track").style.opacity = (Math.min(1, Math.max(0, (t - TR.in0 + 0.4) / 0.5)) * (1 - Math.min(1, Math.max(0, (t - TR.gone) / 0.5)))).toFixed(3);
+    // three bats loop around the smoke above the train
+    [0, 1, 2].forEach((i) => {
+      const bx = x + 180 + 240 * i + 70 * Math.sin(t * (1.3 + 0.2 * i) + i * 2), by = RAIL_Y - 340 - 40 * i + 30 * Math.sin(t * (2.1 + 0.3 * i) + i);
+      const flap = Math.abs(Math.sin(t * (14 + 3 * i) + i)) * 0.8 + 0.2;
+      byId("bat" + i).setAttribute("transform", `translate(${bx.toFixed(1)} ${by.toFixed(1)}) scale(${(1.3 - 0.15 * i).toFixed(2)} ${(flap * (1.3 - 0.15 * i)).toFixed(2)})`);
+    });
+    // smoke, steam and sparks
+    sm.clearRect(0, 0, 1080, 1920);
+    for (const p of PUFFS) {
+      const age = t - p.tb; if (age < 0 || age > 2.6) continue;
+      const k = age / 2.6, y = RAIL_Y - 296 - age * 120 * p.big, px = p.x + age * 70;
+      puff(px, y, (24 + 110 * k) * p.big, 0.68 * (1 - k) * p.big, "150,215,170");
+    }
+    const hiss = t - TR.stop;                                   // the brakes let go a cloud of steam at the stop
+    if (hiss > -0.05 && hiss < 1.8) for (let k = 0; k < 8; k++) {
+      const a = Math.max(0, hiss) / 1.8, sx = x + 130 + k * 20 + a * (k - 3) * 40;
+      puff(sx, RAIL_Y - 60 - a * 90, 30 + 120 * a, 0.55 * (1 - a), "235,240,236");
+    }
+    const whistle = t - TR.out0;                                // and a whistle of steam as it pulls out
+    if (whistle > 0 && whistle < 1.4) { const a = whistle / 1.4; puff(x + 408 + a * 60, RAIL_Y - 200 - a * 150, 20 + 70 * a, 0.6 * (1 - a), "240,244,240"); }
+    if (t > TR.stop - 0.6 && t < TR.stop) for (let k = 0; k < 14; k++) {   // brake sparks
+      const s = (t * 37 + k * 0.37) % 0.3, sx = x + DRV[(k % 2)][0] + 20, sy = RAIL_Y - 6;
+      sm.fillStyle = `rgba(255,${180 + (k % 3) * 25},90,${(1 - s / 0.3).toFixed(3)})`;
+      sm.beginPath(); sm.arc(sx + s * 260 + k * 3, sy - s * 140 + s * s * 900, 3, 0, 7); sm.fill();
+    }
+  }
+
+  // the conductor calls it while the train stands
+  gsap.set("#bubble", { left: STOP_X + 470, top: RAIL_Y - 372 });
+  tl.fromTo("#bubble", { opacity: 0, scale: 0.4, rotation: -8, transformOrigin: "20% 100%" }, { opacity: 1, scale: 1, rotation: -4, duration: 0.3, ease: "back.out(2.4)" }, 6.0);
+  tl.to("#bubble", { opacity: 0, scale: 0.8, duration: 0.2 }, TR.out0 - 0.25);
+
   // ---------- per frame ----------
   const vc = byId("v").getContext("2d");
   const fimg = new Image();
@@ -191,6 +405,7 @@
     if (src !== lastSrc) { fimg.src = src; lastSrc = src; try { await fimg.decode(); } catch (e) { console.error("frame", n, e.message); } }
     vc.filter = "contrast(1.07) saturate(1.1) brightness(1.03)";
     vc.drawImage(fimg, 0, 0, 1080, 1920);
+    drawTrain(t);
     drawRow(HEAD, t); drawRow(R1, t); drawRow(R2, t); drawRow(R3, t);
     // FINAL CALL blinks once it has landed, until the end card turns the row over
     const blink = t > T.r3 + 0.6 && t < T.endRows ? (Math.floor((t - T.r3) * 2.4) % 2 ? 0.25 : 1) : 1;
@@ -199,7 +414,7 @@
   }
 
   (async () => {
-    await Promise.all(["400 60px 'Rubik Mono One'", "400 60px Anton", "400 60px 'Permanent Marker'", "400 60px 'Bowlby One SC'"].map((f) => document.fonts.load(f)));
+    await Promise.all(["400 60px 'Rubik Mono One'", "400 60px Anton", "400 60px 'Permanent Marker'", "400 60px 'Bowlby One SC'", "400 60px 'Abril Fatface'", "400 60px 'Special Elite'", "400 60px Creepster"].map((f) => document.fonts.load(f)));
     await document.fonts.ready;
     window.__seek = seek;
     await seek(0);
