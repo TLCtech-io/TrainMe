@@ -115,6 +115,12 @@ uptown-airguitar/  Uptown Sound ticket push on "10.23 Fri Air Guitar Zombie" (th
                    Covers (the show frozen at the kick-in, POSE in index.html; the hook up top, series and date over the crowd):
                      3:4 TikTok          render.cjs --in index.html --query thumb --stills 0   (1080x1440)
                      9:16 Instagram      render.cjs --in index.html --query ig --stills 0      (1080x1920, design in y 240-1680)
+uptown-dogdays/    Uptown Sound last-show push on "10.24 2nd Show Dog Days" (the Saturday show from the house; 9:16,
+                   30 fps). The verse is "...like a train on a track", so it is a station departure board: split-flap
+                   tiles flip into ONE LAST SHOW in the dark opening, the board lists PICK YOUR POISON / SUN 10/25 1:00 PM
+                   / FINAL CALL, the header flips to DON'T MISS OUT with "don't let missing the show / RUIN YOUR DAY",
+                   then everything turns over to the end card. Flaps land on the vocal onsets (T in index.html).
+                   Clip and audio used as delivered. Build: ./build.sh
 uptown-wall/       Video wall backdrop for the Pick Your Poison shows: a dusty apothecary bar (UPTOWN SOUND sign, labelled
                    bottles, alchemy rig, PICK YOUR POISON plaque on the wall above the bottles so it clears the singers'
                    heads, the poison list). The plate is an OpenArt Nano Banana Pro render plus one edit (prompt.txt has
