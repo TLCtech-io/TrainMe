@@ -416,7 +416,7 @@
     const n = Math.min(NF, Math.floor(t * FPS + 1e-6) + 1);
     const src = FRAMES.replace("%05d", String(n).padStart(5, "0"));
     if (src !== lastSrc) { fimg.src = src; lastSrc = src; try { await fimg.decode(); } catch (e) { console.error("frame", n, e.message); } }
-    vc.filter = "contrast(1.07) saturate(1.1) brightness(1.03)";
+    vc.filter = "contrast(1.03) saturate(1.05)";               // the frames are tone mapped from the HLG original (build.sh)
     vc.fillStyle = "#000"; vc.fillRect(0, 0, 1080, FOOT_DY);
     vc.drawImage(fimg, 0, FOOT_DY, 1080, 1920);
     drawTrain(t);

@@ -324,6 +324,20 @@ run edge to edge. Each composition can draw the zone with `?safe` (first in `mot
 Sources checked: outfy.com, campaignswift.com, adchecklab.com, reelsafezone.com, postplanify.com, bevyl.ai,
 imagevideofit.com (Instagram and TikTok safe-zone guides, 2026).
 
+### iPhone HDR clips (rule from 2026-10-25)
+
+The venue clips come off iPhones as 10-bit HDR (HLG transfer, BT.2020, Dolby Vision). Extracting frames with a plain
+`scale` reads them as SDR, which leaves the stage grey and washed out (the user flagged it on "10.24 2nd Show Dog
+Days"). Check with `ffprobe -show_entries stream=color_transfer`; for `arib-std-b67` (HLG) tone map when extracting:
+
+```
+-vf "zscale=tin=arib-std-b67:pin=bt2020:min=bt2020nc:t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p,scale=1080:1920"
+```
+
+Hable at 100 nits kept faces and costume colours best of hable/mobius/reinhard at 100-203 nits. After this, a grade
+only needs a touch (the Dog Days post uses `contrast(1.03) saturate(1.05)`). Every Uptown clip so far except
+uptown-toxic is HLG; only uptown-dogdays has been redone this way.
+
 ## 12. Open items
 
 - [ ] **PREPARE Vid 5 footage:** either approve the private publish/download of "Prepare_Vid 5 Claude Base", or export it from Descript and run `./build.sh base.mp4` locally. Then import the render into the Prepare_Vid 5 project as a new composition (requested by the user).

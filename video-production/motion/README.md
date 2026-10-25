@@ -123,7 +123,8 @@ uptown-dogdays/    Uptown Sound last-show push on "10.24 2nd Show Dog Days" (the
                    station board (PLATFORM 13) lists PICK YOUR POISON / SUN 10/25 1:00 PM / FINAL CALL; "don't let missing
                    the show / RUIN YOUR DAY"; then everything turns over to the end card. Flaps land on the vocal onsets
                    (T in index.html, the train's moves in TR).
-                   Clip and audio used as delivered. Build: ./build.sh
+                   Clip and audio used as delivered; the frames are tone mapped from the iPhone HLG original (a plain
+                   extract left the stage washed out). Build: ./build.sh
 uptown-wall/       Video wall backdrop for the Pick Your Poison shows: a dusty apothecary bar (UPTOWN SOUND sign, labelled
                    bottles, alchemy rig, PICK YOUR POISON plaque on the wall above the bottles so it clears the singers'
                    heads, the poison list). The plate is an OpenArt Nano Banana Pro render plus one edit (prompt.txt has
