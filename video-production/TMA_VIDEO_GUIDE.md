@@ -338,8 +338,61 @@ Hable at 100 nits kept faces and costume colours best of hable/mobius/reinhard a
 only needs a touch (the Dog Days post uses `contrast(1.03) saturate(1.05)`). Every Uptown clip so far except
 uptown-toxic is HLG; only uptown-dogdays has been redone this way.
 
-## 12. Open items
+## 12. Social performance and hook rules (from 2026-10-26)
 
+Instagram was the main outreach channel for Pick Your Poison (collab posts, cross-posted to Facebook). The goal before
+the next show is to grow a TikTok audience. The user asked that every new post draw on platform feedback and on
+ongoing analysis of the FB, TikTok and IG algorithms.
+
+### Performance log
+
+The numbers are 24-hour insights from the IG Edits app's "Edits Assistant", compared with the account's recent average.
+Add every post here.
+
+| Post | Posted | Views | Likes | Shares | Comments | Skip rate (first 3 s) | First 3 seconds |
+|---|---|---|---|---|---|---|---|
+| One Last Show (uptown-dogdays) | Sat 10/24 PM | 282 (-11%) | 2 (-60%) | 3 (avg) | ? | 60.6% | Dark rafters (the camera finds the stage at 3.4 s); split-flap tiles flip in on black and land ONE LAST SHOW at 2.7 s |
+| Rock Isn't Dead (uptown-airguitar) | Sun 10/25 AM | 265 (-15%) | 4 (-80%) | 3 (avg) | 2 (avg) | 78.4% | ROCK ISN'T at 0.2 s, DEAD at 2.2 s, the joke at 2.75 s; tickets only at 4.7 s; the light show kicks in at 7.4 s |
+
+The assistant's descriptions are AI summaries and can be wrong: it named "Austin City Arts" and a "Don't miss the
+train" line, and neither is in our video. Trust its numbers more than its descriptions.
+
+### What the numbers say
+
+- **Both posts lost most viewers in the first 3 seconds.** People who kept watching still shared at the usual rate,
+  so the content works once it is seen. The weak point is stopping the scroll.
+- **Our openings made people wait.** The message took 2-3 s to animate in. The faces and the payoff (the stage, the
+  harmony, the light show) came later still. Part of the cause is the rule to use every delivered clip as is, with no
+  trimming: a post starts wherever the phone started recording, often before the camera has found the stage.
+
+### Rules for new posts
+
+1. **Faces and sound by the first second.** Open on the group singing. If the clip opens on dead footage, propose a
+   cold open: the best 1-1.5 s of faces and harmony first, then the clip. This needs the user's OK, because it bends
+   the no-trimming rule.
+2. **The hook is readable in frame 0.** Big, plain words that state the stakes ("FINAL SHOW SUNDAY 1PM"), in the safe
+   area (section 11), legible with the sound off. Animate around the text, not into it: no split-flap or letter-by-letter
+   reveals that leave frame 0 empty.
+3. **Say why to watch, then what to do.** The date and the ticket line come within the first 3 s. Jokes and set pieces
+   come after.
+4. **Keep the stakes true.** It was the last show of this run, not the group's "last show ever" (the assistant
+   suggested that wording).
+5. **Comment prompts should be real questions** ("Which song do you want to hear?"). Meta has long demoted engagement
+   bait such as "comment YES if...", and an emoji-on-command prompt ("Drop a 🚂 if you're coming") is close to that.
+   This matters most on the Facebook cross-post.
+6. **3-second QA before delivery.** Look at the frames at 0, 1 and 2 s. A muted viewer should know what it is and why
+   to stay. Report this check with every draft.
+7. Keep what worked: the themed concept (the departure board was called memorable and on-brand), the covers, and the
+   safe area.
+
+## 13. Open items
+
+- [ ] **Before planning content for the next Uptown Sound show:**
+  - Research the current FB, TikTok and IG ranking signals (hook and retention, shares and saves, TikTok search
+    keywords, original audio, posting cadence) and fold the findings into section 12.
+  - Collect the 24-hour and 7-day insights for the other posts (ET, Get Over, Teeth, Zombie, Zombie Last Call, Tickets,
+    Silence, Toxic) so their openings can be compared.
+  - Decide whether cold opens may bend the no-trimming rule.
 - [ ] **PREPARE Vid 5 footage:** either approve the private publish/download of "Prepare_Vid 5 Claude Base", or export it from Descript and run `./build.sh base.mp4` locally. Then import the render into the Prepare_Vid 5 project as a new composition (requested by the user).
 - [ ] **Review the four TMA pilot graphics.** On approval, import them into IMP - Span of Control and place them in a VISUAL composition.
 - [ ] Optional upgrades: ElevenLabs SFX and music bed (API key), word-level timestamps (whisper locally).
