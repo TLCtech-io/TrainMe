@@ -1,12 +1,19 @@
 # TMA Video Production Guide
 
-Last updated: 2026-10-23 (PREPARE Vid 6 build). First written 2026-10-09 (research session in Claude Code using the Descript connector, drive TLC_TRNG).
+Last updated: 2026-10-26 (Pick Your Poison social posts; guidelines, not rules). First written 2026-10-09 (research session in Claude Code using the Descript connector, drive TLC_TRNG).
 
 Working reference for producing TrainMe (TMA) course videos in Descript with Claude. Read this before any Descript or video work, and update it as decisions are made.
 
+**Guidelines, not rules (from the user, 2026-10-26).** Everything creative in this guide records what has worked so
+far: layouts, safe areas, hooks, grades, how clips are cut. Platforms and their algorithms keep changing, so treat
+these as starting points to test and refine, not absolutes. Break one when there is a reason, and say why. Firm lines
+are only the ones that protect the user's work and accounts: RAW compositions stay untouched (section 1), and nothing
+is published, posted or imported without the user's OK. "As delivered" in the notes below describes how a clip was
+used then, not a ban on trimming.
+
 ---
 
-## 1. Composition workflow (rules)
+## 1. Composition workflow (firm: protects the recordings)
 
 1. **Composition 1 in every project is the RAW recording. Never edit, trim, or delete it.**
 2. Duplicate RAW into a working composition for basic edits (cuts, retakes, filler removal).
@@ -306,7 +313,7 @@ Source lives in `video-production/motion/` (see its README). HTML + GSAP composi
 - **Open decision:** the beat sheet's pipes sentence on the disclaimer card is off (`DISCLAIMER_PIPES` in
   index.html).
 
-## 11. Safe area for Reels and TikTok (rule from 2026-10-25)
+## 11. Safe area for Reels and TikTok (guideline from 2026-10-25)
 
 The user flagged that text in the bottom third sits in the IG/TikTok "danger zone". Neither platform publishes one
 official organic spec, and third-party guides disagree, so we use the overlap of the most-cited numbers for a
@@ -319,12 +326,12 @@ official organic spec, and third-party guides disagree, so we use the overlap of
 | Right | x 940-1080, below y 840 | TikTok's like/comment/share column (Instagram's sits lower on the right too). |
 | Left | 0-60 px | A small margin both platforms suggest. |
 
-So every word, date, logo and CTA lives in **x 60-940 (to 1020 above y 840), y 250-1400**. Footage, effects and art can
+So by default every word, date, logo and CTA lives in **x 60-940 (to 1020 above y 840), y 250-1400**. Footage, effects and art can
 run edge to edge. Each composition can draw the zone with `?safe` (first in `motion/uptown-dogdays/index.html`).
 Sources checked: outfy.com, campaignswift.com, adchecklab.com, reelsafezone.com, postplanify.com, bevyl.ai,
 imagevideofit.com (Instagram and TikTok safe-zone guides, 2026).
 
-### iPhone HDR clips (rule from 2026-10-25)
+### iPhone HDR clips (from 2026-10-25)
 
 The venue clips come off iPhones as 10-bit HDR (HLG transfer, BT.2020, Dolby Vision). Extracting frames with a plain
 `scale` reads them as SDR, which leaves the stage grey and washed out (the user flagged it on "10.24 2nd Show Dog
@@ -338,7 +345,7 @@ Hable at 100 nits kept faces and costume colours best of hable/mobius/reinhard a
 only needs a touch (the Dog Days post uses `contrast(1.03) saturate(1.05)`). Every Uptown clip so far except
 uptown-toxic is HLG; only uptown-dogdays has been redone this way.
 
-## 12. Social performance and hook rules (from 2026-10-26)
+## 12. Social performance and hook guidelines (from 2026-10-26)
 
 Instagram was the main outreach channel for Pick Your Poison (collab posts, cross-posted to Facebook). The goal before
 the next show is to grow a TikTok audience. The user asked that every new post draw on platform feedback and on
@@ -362,14 +369,16 @@ train" line, and neither is in our video. Trust its numbers more than its descri
 - **Both posts lost most viewers in the first 3 seconds.** People who kept watching still shared at the usual rate,
   so the content works once it is seen. The weak point is stopping the scroll.
 - **Our openings made people wait.** The message took 2-3 s to animate in. The faces and the payoff (the stage, the
-  harmony, the light show) came later still. Part of the cause is the rule to use every delivered clip as is, with no
-  trimming: a post starts wherever the phone started recording, often before the camera has found the stage.
+  harmony, the light show) came later still. The user hands over clips already trimmed to what has worked before, and
+  I built each post on the clip as delivered, so it opened wherever the clip did (One Last Show opened on the camera
+  still finding the stage). Trimming was never off the table; I didn't suggest it.
 
-### Rules for new posts
+### Guidelines for new posts
 
-1. **Faces and sound by the first second.** Open on the group singing. If the clip opens on dead footage, propose a
-   cold open: the best 1-1.5 s of faces and harmony first, then the clip. This needs the user's OK, because it bends
-   the no-trimming rule.
+These are starting points from two posts' worth of data. Test them, and let the numbers move them.
+
+1. **Faces and sound by the first second.** Open on the group singing. If a clip opens on dead footage, trim it or cut
+   a cold open (the best 1-1.5 s of faces and harmony first, then the clip), and say so when delivering.
 2. **The hook is readable in frame 0.** Big, plain words that state the stakes ("FINAL SHOW SUNDAY 1PM"), in the safe
    area (section 11), legible with the sound off. Animate around the text, not into it: no split-flap or letter-by-letter
    reveals that leave frame 0 empty.
@@ -392,7 +401,7 @@ train" line, and neither is in our video. Trust its numbers more than its descri
     keywords, original audio, posting cadence) and fold the findings into section 12.
   - Collect the 24-hour and 7-day insights for the other posts (ET, Get Over, Teeth, Zombie, Zombie Last Call, Tickets,
     Silence, Toxic) so their openings can be compared.
-  - Decide whether cold opens may bend the no-trimming rule.
+  - Try opening variations (cold open, trim, text-first) and log which hold viewers past 3 s.
 - [ ] **PREPARE Vid 5 footage:** either approve the private publish/download of "Prepare_Vid 5 Claude Base", or export it from Descript and run `./build.sh base.mp4` locally. Then import the render into the Prepare_Vid 5 project as a new composition (requested by the user).
 - [ ] **Review the four TMA pilot graphics.** On approval, import them into IMP - Span of Control and place them in a VISUAL composition.
 - [ ] Optional upgrades: ElevenLabs SFX and music bed (API key), word-level timestamps (whisper locally).
