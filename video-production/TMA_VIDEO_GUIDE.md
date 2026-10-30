@@ -394,7 +394,72 @@ These are starting points from two posts' worth of data. Test them, and let the 
 7. Keep what worked: the themed concept (the departure board was called memorable and on-brand), the covers, and the
    safe area.
 
-## 13. Open items
+## 13. DST commercial: a new video type (planning, from 2026-10-30)
+
+A 30-60 s commercial-style highlight of the TLC_TRNG Decision Support Tool (DST), for a conference booth loop and the
+website. 16:9, narrated with a Descript AI voice.
+
+### The demo site
+
+- **URL:** https://tlctrng.demo-dst.com (HTTPS only). It is reachable from the cloud session, and Playwright's Chromium
+  loads it (launch with `proxy: { server: process.env.HTTPS_PROXY }`).
+- **Login:** a plain email and password form, with no Microsoft or Google sign-in buttons. Whether a phone code follows
+  sign-in is not known yet.
+- **The data is simulated.** The public overview PDF (linked from the login page, `/overview.pdf`, 10 pages) says so,
+  and says the demo works the same way as the live tool. It is safe to show in a public video.
+- **Credentials** come from environment secrets, never chat: `DST_USER` and `DST_PASSWORD` (set in the cloud
+  environment's settings, under Network secrets or as environment variables). Only a new session picks them up.
+- **Capture size:** at a 1920 px wide viewport the login card stretches edge to edge. A 1280x720 viewport with
+  `deviceScaleFactor` 1.5 (1920x1080) or 3 (3840x2160, for zooms) looks like a laptop screen and reads on a booth TV.
+
+### What the tool does (from the overview PDF)
+
+- **Critical Assets:** processes, systems and facilities. Each has a **Restoration Score**: a formula that combines the
+  operational category, the priority within that category, and the number of downstream dependencies. Higher scores
+  are addressed first.
+- **Asset Details:** score, priority, department, program office, contact, description, impact statement, clickable
+  dependencies, and Critical Questions with Short-Term Options.
+- **Scenarios:** compare several disrupted assets, ranked by Restoration Score.
+  - Each asset shows its **Direct Downstream** and **Total Cascade** impacts.
+  - Short-Term Options are ranked by asset.
+  - What-if toggles show what changes if a workaround applies or something can't be fixed.
+  - Notes are time-stamped.
+  - Scenarios can be saved.
+- **Report:** a PDF that leads with Critical Questions and Initial Actions, plus an Executive Summary. **Share Summary**
+  opens the phone's share sheet.
+- **Map and weather:**
+  - facilities on a map, with NWS current conditions and a 24-hour forecast;
+  - a radar loop, and an alert icon that turns red when an NWS alert is active nearby;
+  - a circle-radius or polygon tool that finds the facilities inside an area and adds them to a scenario.
+- **Home:** Current Scenario, Saved Scenarios, Map, Critical Contacts, and tiles for each asset type.
+
+### A possible story spine (to check against the DST session's brief)
+
+Storm warning on the map → draw the impact area → the facilities inside drop into a scenario → the tool ranks what to
+restore first and shows the cascade → a what-if toggle changes the plan → one tap shares the summary with leadership.
+
+### Working plan
+
+- **The DST Code session writes a fact brief.** It covers:
+  - the users and the problem;
+  - the top features, with exact screen names;
+  - the best demo workflow;
+  - terms to use and avoid;
+  - anything not shipped.
+- **I write the narration and storyboard from it,** and the DST session fact-checks them. At about 150 words a minute,
+  30 s is about 75 words and 60 s about 150.
+- **Built to work muted.** Booth screens usually play without sound, so on-screen text carries the message and the
+  narration supports it. The ending loops back into the opening. Export 30 s and 60 s cuts from the same shots.
+- **Voice first.** Make the Descript AI voice from the final script, then time the picture to it (word timings).
+- **Capture with Playwright:** high-resolution stills for zooms and callouts, plus short scripted clips of clicks,
+  typing and scrolling. Capture from a shot list matched to the script.
+
+## 14. Open items
+
+- [ ] **DST commercial:**
+  - The user adds `DST_USER` and `DST_PASSWORD` as environment secrets, then starts a new session for the capture.
+  - The DST Code session writes the fact brief.
+  - Then: script, voice, shot list, capture, build.
 
 - [ ] **Before planning content for the next Uptown Sound show:**
   - Research the current FB, TikTok and IG ranking signals (hook and retention, shares and saves, TikTok search
