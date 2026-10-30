@@ -1,0 +1,415 @@
+<!doctype html>
+<!-- Uptown Sound, "Pick Your Poison" show reel: Poison Preview ZOMBIE. 1080x1920 at 24 fps.
+     Footage: "5_UpS Zombie" (19.4s) used as delivered: it already starts on the chorus, and the grey grade, vignette and
+     audio fades are the user's. Theme: a 1960s B-movie zombie flick. Old-film grain, dust, scratches and projector
+     flicker; graveyard fog along the floor; decayed zombie hands climb out of the fog (a new one on each ZOMBIE) and
+     keep reaching and clawing; IN YOUR HEAD floats at head height with echoes pulsing out; the QCPA logo lurks in the
+     fog and is lifted out by the last hand for the end card.
+     Phrase timing from the vocal onsets (data/features.js) and a prompted whisper pass (data/whisper-words.json). -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<style>
+  @font-face { font-family: "Nosifer"; src: url("../shared/fonts/nosifer-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Creepster"; src: url("../shared/fonts/creepster-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Special Elite"; src: url("../shared/fonts/special-elite-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Anton"; src: url("../shared/fonts/anton-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Rubik Mono One"; src: url("../shared/fonts/rubik-mono-one-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Bowlby One SC"; src: url("../shared/fonts/bowlby-one-sc-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Abril Fatface"; src: url("../shared/fonts/abril-fatface-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Permanent Marker"; src: url("../shared/fonts/permanent-marker-latin-400-normal.woff2") format("woff2"); }
+  :root { --blood: #e0242b; --blood-dk: #9e0f14; --bone: #ece6d6; --paper: #f2ecdf; --ink: #111111; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; color: #fff; }
+  canvas { position: absolute; left: 0; top: 0; }
+  #fimg { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+  #fogBack, #fogFront, #dirt { width: 1080px; height: 1920px; }
+  #film, #grain { width: 1080px; height: 1920px; }
+  #grain { opacity: 0.08; mix-blend-mode: overlay; }
+  #flick { position: absolute; inset: 0; background: #000; opacity: 0; }
+  .zh { position: absolute; left: 0; top: 0; width: 300px; height: 900px; transform-origin: 150px 524px; }   /* pivot at the wrist */
+  .zh svg { width: 300px; height: 900px; overflow: visible; }
+  #qcpa { position: absolute; left: 0; top: 0; opacity: 0; transform-origin: 50% 50%; }
+  #qcpa img { display: block; width: 100%; height: 100%; filter: drop-shadow(0 4px 14px rgba(0,0,0,0.8)); }
+
+  /* Ransom-note lettering (series look) */
+  .ransom { position: absolute; left: 0; width: 1080px; display: flex; justify-content: center; flex-wrap: nowrap; gap: 6px; }
+  .rl { display: inline-flex; align-items: center; justify-content: center; padding: 2px 10px 4px; line-height: 1; box-shadow: 0 6px 14px rgba(0,0,0,0.45); }
+  .gap { width: 30px; }
+
+  #badge { position: absolute; left: 0; width: 1080px; top: 150px; display: flex; justify-content: center; opacity: 0; }
+  .label { background: var(--paper); color: var(--ink); border: 6px solid var(--ink); border-radius: 14px; padding: 14px 32px 18px;
+           display: flex; align-items: center; gap: 22px; box-shadow: 0 10px 24px rgba(0,0,0,0.5); }
+  .label .no { font: 400 42px/1 "Special Elite", monospace; letter-spacing: 0.06em; }
+  .label .tx { font: 400 60px/1 "Nosifer", sans-serif; color: var(--blood-dk); }
+
+  /* IN YOUR HEAD: bone-white horror lettering at head height, with echoes pulsing outward */
+  .head { position: absolute; left: 0; width: 1080px; top: 600px; height: 140px; opacity: 0; }
+  .head .w { position: absolute; left: 0; top: 0; width: 1080px; text-align: center; white-space: nowrap;
+             font: 400 112px/1 "Creepster", sans-serif; color: var(--bone); letter-spacing: 0.03em; }
+  .head .main { text-shadow: 0 5px 0 #000, 0 0 22px rgba(0,0,0,0.9); }
+  .head .echo { color: transparent; -webkit-text-stroke: 2px rgba(236,230,214,0.8); }
+
+  /* ZOMBIE: blood-red dripping letters, stacking up */
+  .z { position: absolute; left: 0; width: 1080px; text-align: center; white-space: nowrap; opacity: 0;
+       font: 400 160px/1 "Nosifer", sans-serif; color: var(--blood);
+       text-shadow: 0 0 2px #000, 0 6px 0 #000, 0 0 26px rgba(224,36,43,0.45); }
+
+  .end-line { position: absolute; left: 0; width: 1080px; text-align: center; opacity: 0; }
+</style>
+</head>
+<body>
+  <img id="fimg" alt="" />
+  <div id="bottom" style="position:absolute; left:0; top:0; width:1080px; height:1920px; transform-origin:540px 1920px">
+    <canvas id="fogBack" width="540" height="960"></canvas>
+    <div id="hands"></div>
+    <div id="qcpa"><img src="../shared/brand/qcpa-logo-white.svg" alt="Queen City Performing Arts" /></div>
+    <canvas id="dirt" width="1080" height="1920"></canvas>
+    <canvas id="fogFront" width="540" height="960"></canvas>
+  </div>
+  <div id="flick"></div>
+
+  <div id="title" style="position:absolute; left:0; top:0; width:1080px; height:1920px">
+    <div class="ransom" id="t1" style="top:300px"></div>
+    <div class="ransom" id="t2" style="top:430px"></div>
+  </div>
+  <div id="badge"><div class="label"><span class="no">POISON PREVIEW:</span><span class="tx">ZOMBIE</span></div></div>
+  <div class="head" id="head1"></div>
+  <div class="head" id="head2"></div>
+  <div id="zombies"></div>
+
+  <div id="end">
+    <div class="end-line" id="eUp" style="top:165px; font:400 92px/1 'Anton'; letter-spacing:0.08em; color:#fff; text-shadow:0 6px 0 rgba(0,0,0,0.7)">UPTOWN SOUND</div>
+    <div class="ransom" id="eTitle1" style="top:270px"></div>
+    <div class="ransom" id="eTitle2" style="top:342px"></div>
+    <div class="end-line" id="eDate" style="top:440px; font:400 86px/1 'Bowlby One SC'; color:var(--blood); text-shadow:0 5px 0 #000, 0 0 22px rgba(0,0,0,0.9)">OCT 24 &amp; 25</div>
+    <div class="end-line" id="eCta" style="top:540px"><span style="display:inline-block; background:#0a0a0a; color:var(--bone); border:2px solid var(--blood); font:400 36px/1 'Special Elite'; padding:12px 24px; border-radius:8px; letter-spacing:0.06em">TICKETS &middot; LINK IN BIO</span></div>
+  </div>
+
+  <canvas id="film" width="540" height="960"></canvas>
+  <canvas id="grain" width="540" height="960"></canvas>
+
+<script src="../shared/gsap.min.js"></script>
+<script src="data/features.js"></script>
+<script>
+  const F = window.FEATURES, FPS = F.fps, D = F.env.length / FPS;
+  const FRAMES = "assets/frames/f_%05d.jpg";
+  const rnd = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const span = (a, b, t) => clamp((t - a) / (b - a), 0, 1);
+  const ease = (p) => (p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
+  const env = (t) => F.env[clamp(Math.floor(t * FPS), 0, F.env.length - 1)];
+  const byId = (id) => document.getElementById(id);
+
+  // Output: the 9:16 reel, or a still for another shape (?thumb = 3:4 cover, ?fb = 4:5 Facebook post). Stills take the
+  // graphics from the end card (textT) and the footage from the soloist's opening close-up (frameT); footDY moves the
+  // footage, bot = [dy, scale] pins the hands/fog/logo layer to the bottom edge, push sinks the hands a little lower.
+  const MODE = location.search.includes("thumb") ? "thumb" : location.search.includes("fb") ? "fb" : "video";
+  const LAY = {
+    video: { H: 1920 },
+    thumb: { H: 1440, textT: 19.0, frameT: 1.75, footDY: -200, push: 120, bot: [-480, 0.8], ends: [50, 160, 236, 344, 446] },
+    fb:    { H: 1350, textT: 19.0, frameT: 1.75, footDY: -210, push: 150, bot: [-570, 0.78], ends: [40, 150, 226, 334, 436] },
+  }[MODE];
+  const POSTER = MODE !== "video";
+
+  // Phrase timing (seconds). The singing is sustained, so these come from the vocal onsets plus a prompted whisper pass.
+  const T = {
+    compact: 2.75, head1: [0.45, 2.85], head2: [8.05, 12.85],
+    z1: [3.15, 4.55, 6.25], z1out: 7.6, z2: [13.2, 14.3, 15.45], z2out: 16.05,
+    end: 16.25, logoIn: 1.5,
+  };
+  const ZH = [...T.z1, ...T.z2];
+
+  // ---------- ransom-note lettering ----------
+  const FONTS = ["Anton", "Rubik Mono One", "Bowlby One SC", "Abril Fatface", "Special Elite", "Permanent Marker", "Creepster"];
+  const SWATCH = [["#f2ecdf", "#111"], ["#111", "#f2ecdf"], ["#e0242b", "#fff"], ["#ece6d6", "#9e0f14"], ["#8a8a8a", "#111"], ["#111", "#e0242b"]];
+  function ransom(el, text, size, seed) {
+    el.innerHTML = [...text].map((ch, i) => {
+      if (ch === " ") return '<span class="gap"></span>';
+      const r = (k) => rnd(seed * 100 + i * 7 + k);
+      const [bg, fg] = SWATCH[Math.floor(r(1) * SWATCH.length)];
+      const font = FONTS[Math.floor(r(2) * FONTS.length)];
+      const s = Math.round(size * (0.86 + r(3) * 0.3)), rot = (r(4) - 0.5) * 16;
+      return `<span class="rl" style="background:${bg}; color:${fg}; font:400 ${s}px/1 '${font}'; transform:rotate(${rot.toFixed(1)}deg)">${ch}</span>`;
+    }).join("");
+  }
+  ransom(byId("t1"), "PICK YOUR", 92, 3);
+  ransom(byId("t2"), "POISON", 128, 7);
+  ransom(byId("eTitle1"), "PICK YOUR", 60, 11);
+  ransom(byId("eTitle2"), "POISON", 74, 13);
+
+  // IN YOUR HEAD lines: the word plus three outline echoes
+  [["head1", "IN YOUR HEAD"], ["head2", "WHAT'S IN YOUR HEAD?"]].forEach(([id, text]) => {
+    byId(id).innerHTML = [0, 1, 2].map((k) => `<div class="w echo" data-k="${k}">${text}</div>`).join("") + `<div class="w main">${text}</div>`;
+  });
+  // ZOMBIE x3, twice: stacked lines, each slightly tilted
+  const ZY = [290, 432, 574];
+  byId("zombies").innerHTML = ZH.map((_, i) => `<div class="z" id="z${i}" style="top:${ZY[i % 3]}px">ZOMBIE</div>`).join("");
+
+  // ---------- zombie hands ----------
+  // A rigged, decayed hand, palm toward us: bony three-joint fingers with knuckle bumps and broken nails (the odd patch
+  // of bone showing through), mottled rotting skin and ragged edges (SVG turbulence), sores, a torn sleeve, and an arm
+  // that runs off the bottom of the frame. Each finger bends at its joints (drawn foreshortened) to grab and claw.
+  const FING = [   // base x, base y, spread (deg), segment lengths, segment widths
+    [104, 390, -12, [60, 42, 30], [19, 15, 12]],
+    [134, 382, -3, [66, 46, 33], [20, 16, 12]],
+    [164, 386, 6, [62, 42, 30], [19, 15, 12]],
+    [193, 400, 16, [48, 34, 25], [16, 13, 10]],
+    [108, 462, -48, [56, 42], [23, 18]],         // thumb
+  ];
+  function rigHand(id, seed) {
+    const r = (k) => rnd(seed * 37 + k);
+    // one phalanx: a tapering bone-thin shape, rounded at the joint, with a slight knuckle swell
+    const seg = (wb, wt, L, k, tip) => {
+      const f = (v) => v.toFixed(1);
+      let g = `<path d="M ${f(-wb / 2)} 5 L ${f(-wt / 2)} ${f(-L + wt / 2)} A ${f(wt / 2)} ${f(wt / 2)} 0 0 1 ${f(wt / 2)} ${f(-L + wt / 2)} L ${f(wb / 2)} 5 Z" fill="url(#skin${seed})"/>`;
+      if (!tip) g += `<ellipse cx="0" cy="${f(-L)}" rx="${f(wt / 2 + 1.2)}" ry="${f(wt / 2)}" fill="url(#skin${seed})"/>`
+        + `<ellipse cx="0" cy="${f(-L - 1)}" rx="${f(wt * 0.22)}" ry="${f(wt * 0.14)}" fill="#9a9c8c" opacity="0.55"/>`;   // knuckle bone showing
+      if (r(k) < 0.12) g += `<rect x="${f(-wb * 0.13)}" y="${f(-L * 0.8)}" width="${f(wb * 0.26)}" height="${f(L * 0.5)}" rx="${f(wb * 0.13)}" fill="#a9a290"/>`;   // bone through torn skin
+      if (tip) g += `<path d="M ${f(-wt * 0.34)} ${f(-L + 11)} L ${f(-wt * 0.32)} ${f(-L + 3)} L ${f(-wt * 0.05)} ${f(-L + 1.5)} L ${f(wt * 0.1)} ${f(-L + 4)} L ${f(wt * 0.3)} ${f(-L + 2.5)} L ${f(wt * 0.34)} ${f(-L + 11)} Z" fill="#46432f" opacity="0.9"/>`;   // broken, dirty nail
+      return g;
+    };
+    const fingers = FING.map(([bx, by, , L, W], fi) => {
+      let inner = "";
+      for (let j = L.length - 1; j >= 0; j--)
+        inner = `<g id="${id}f${fi}s${j}">${seg(W[j], j < L.length - 1 ? W[j + 1] : W[j] * 0.8, L[j], fi * 5 + j, j === L.length - 1)}${inner ? `<g transform="translate(0,${-L[j]})">${inner}</g>` : ""}</g>`;
+      return `<g transform="translate(${bx},${by})">${inner}</g>`;
+    });
+    const palm = "M 92 394 C 96 378 206 380 210 400 L 207 470 C 203 498 196 512 193 528 L 107 528 C 104 508 97 488 94 470 Z";
+    const arm = "M 108 520 L 192 520 L 202 900 L 98 900 Z";
+    const sleeve = "M 92 900 L 95 668 L 106 684 L 112 652 L 124 676 L 134 646 L 146 672 L 158 642 L 170 670 L 182 648 L 194 678 L 206 656 L 208 900 Z"
+      + " M 112 652 L 108 724 L 118 702 Z M 158 642 L 162 718 L 170 694 Z M 194 678 L 200 742 L 206 708 Z";   // rags
+    const creases = "M 112 452 Q 150 438 188 448 M 118 488 Q 146 474 176 486 M 150 410 L 148 450";
+    const sores = [...Array(5)].map((_, k) => `<ellipse cx="${(108 + r(k + 60) * 84).toFixed(0)}" cy="${(405 + r(k + 70) * 210).toFixed(0)}" rx="${(4 + r(k + 80) * 8).toFixed(1)}" ry="${(3 + r(k + 90) * 6).toFixed(1)}" fill="#2a1f1c" opacity="0.7"/>`).join("");
+    return `<div class="zh" id="${id}"><svg viewBox="0 0 300 900">
+      <defs>
+        <linearGradient id="skin${seed}" x1="0" y1="250" x2="0" y2="900" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#7d8173"/><stop offset="0.35" stop-color="#585d50"/><stop offset="1" stop-color="#2a2d26"/>
+        </linearGradient>
+        <filter id="rot${seed}" x="-15%" y="-8%" width="130%" height="116%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="${seed}" result="n"/>
+          <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.16  0 0 0 0 0.15  0 0 0 0 0.11  3.2 0 0 0 -1.85" result="b"/>
+          <feComposite in="b" in2="SourceAlpha" operator="in" result="blotch"/>
+          <feTurbulence type="turbulence" baseFrequency="0.7" numOctaves="1" seed="${seed + 9}" result="g"/>
+          <feColorMatrix in="g" type="matrix" values="0 0 0 0 0.05  0 0 0 0 0.05  0 0 0 0 0.04  0.9 0 0 0 -0.25" result="g2"/>
+          <feComposite in="g2" in2="SourceAlpha" operator="in" result="wrinkle"/>
+          <feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="2" seed="${seed + 3}" result="d"/>
+          <feDisplacementMap in="SourceGraphic" in2="d" scale="5" xChannelSelector="R" yChannelSelector="G" result="ragged"/>
+          <feGaussianBlur in="SourceAlpha" stdDeviation="5" result="bl"/>
+          <feComposite in="SourceAlpha" in2="bl" operator="arithmetic" k2="1.6" k3="-1.6" result="edge"/>
+          <feFlood flood-color="#000" flood-opacity="0.75"/><feComposite in2="edge" operator="in" result="shade"/>
+          <feMorphology in="SourceAlpha" operator="dilate" radius="1.8" result="dl"/>
+          <feComposite in="dl" in2="SourceAlpha" operator="out" result="ol"/>
+          <feFlood flood-color="#dfe3d6" flood-opacity="0.5"/><feComposite in2="ol" operator="in" result="rim"/>
+          <feMerge><feMergeNode in="ragged"/><feMergeNode in="shade"/><feMergeNode in="blotch"/><feMergeNode in="wrinkle"/><feMergeNode in="rim"/></feMerge>
+        </filter>
+      </defs>
+      <g filter="url(#rot${seed})">
+        <path d="${arm}" fill="url(#skin${seed})"/>
+        <path d="${palm}" fill="url(#skin${seed})"/>
+        ${fingers.join("")}
+        ${sores}
+        <path d="${creases}" stroke="#2f322b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </g>
+      <path d="${sleeve}" fill="#151513" stroke="rgba(223,227,214,0.35)" stroke-width="1.5" stroke-linejoin="round"/>
+    </svg></div>`;
+  }
+  // The horde: a new hand climbs out on the ZOMBIEs and none of them leave; the last one brings up the logo
+  const HANDS = [
+    { s: T.z1[0] - 0.1, x: 175, k: 1.05, tilt: -10, m: false },
+    { s: T.z1[1] - 0.1, x: 905, k: 1.0, tilt: 10, m: true },
+    { s: T.z1[2] - 0.1, x: 345, k: 0.92, tilt: -4, m: false },
+    { s: T.z2[0] - 0.1, x: 735, k: 0.98, tilt: 6, m: true },
+    { s: T.z2[2] - 0.1, x: 1010, k: 1.05, tilt: 14, m: true },
+    { s: T.end + 0.05, x: 540, k: 0.95, tilt: 0, m: false, logo: true },
+  ];
+  byId("hands").innerHTML = HANDS.map((h, i) => rigHand(`zh${i}`, i + 1)).join("");
+  HANDS.forEach((h, i) => { h.el = byId(`zh${i}`); h.segs = FING.map((f, fi) => f[3].map((_, j) => byId(`zh${i}f${fi}s${j}`))); });
+
+  // ---------- timeline ----------
+  const tl = gsap.timeline({ paused: true });
+  document.querySelectorAll("#t1 .rl, #t2 .rl").forEach((el, i) => {
+    tl.fromTo(el, { opacity: 0, scale: 2.4 }, { opacity: 1, scale: 1, duration: 0.18, ease: "power4.in" }, 0.2 + i * 0.075);
+  });
+  tl.to("#title", { opacity: 0, y: -160, scale: 0.6, duration: 0.35, ease: "power3.in", transformOrigin: "50% 15%" }, T.compact);
+  tl.fromTo("#badge", { opacity: 0, y: -40 }, { opacity: 1, y: 0, duration: 0.45, ease: "back.out(2)" }, T.compact + 0.2);
+  [["#head1", T.head1], ["#head2", T.head2]].forEach(([id, [a, b]]) => {
+    tl.fromTo(id, { opacity: 0, y: 24, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.5, ease: "power2.out" }, a);
+    tl.to(id, { opacity: 0, filter: "blur(10px)", duration: 0.35 }, b - 0.2);
+  });
+  ZH.forEach((h, i) => {
+    const tilt = (rnd(i + 40) - 0.5) * 8;
+    tl.fromTo(`#z${i}`, { opacity: 0, scale: 2.3, rotation: tilt * 3 }, { opacity: 1, scale: 1, rotation: tilt, duration: 0.14, ease: "power4.in" }, h - 0.1);
+  });
+  tl.to(["#z0", "#z1", "#z2"], { opacity: 0, y: 40, duration: 0.3, ease: "power2.in" }, T.z1out);
+  tl.to(["#z3", "#z4", "#z5"], { opacity: 0, y: 40, duration: 0.25, ease: "power2.in" }, T.z2out);
+  // End card (the last hand climbs out and lifts the logo, see drawHands)
+  tl.to("#badge", { opacity: 0, duration: 0.25 }, T.end - 0.2);
+  tl.fromTo("#eUp", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, T.end);
+  document.querySelectorAll("#eTitle1 .rl, #eTitle2 .rl").forEach((el, i) => {
+    tl.fromTo(el, { opacity: 0, scale: 2.2 }, { opacity: 1, scale: 1, duration: 0.16, ease: "power4.in" }, T.end + 0.25 + i * 0.045);
+  });
+  tl.fromTo("#eDate", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2.2)" }, T.end + 1.05);
+  tl.fromTo("#eCta", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, T.end + 1.45);
+
+  // ---------- per frame: fog, dirt, hands sway, head echoes, logo, old film ----------
+  const fb = byId("fogBack").getContext("2d"), ff = byId("fogFront").getContext("2d");
+  function drawFog(ctx, t, seed, n, alpha) {
+    ctx.clearRect(0, 0, 540, 960);
+    for (let i = 0; i < n; i++) {
+      const sp = 6 + rnd(seed + i) * 14, w = 540 + 400;
+      const x = ((rnd(seed + i + 50) * w + t * sp * (i % 2 ? 1 : -1)) % w + w) % w - 200;
+      const y = (seed > 100 ? 840 : 700) + rnd(seed + i + 80) * (seed > 100 ? 120 : 260) + Math.sin(t * 0.4 + i) * 8, r = 90 + rnd(seed + i + 110) * 90;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      const a = alpha * (0.6 + 0.4 * rnd(seed + i + 140));
+      g.addColorStop(0, `rgba(215,218,210,${a})`); g.addColorStop(1, "rgba(215,218,210,0)");
+      ctx.fillStyle = g; ctx.fillRect(x - r, y - r, 2 * r, 2 * r);
+    }
+  }
+  const dx = byId("dirt").getContext("2d");
+  function drawDirt(t) {
+    dx.clearRect(0, 0, 1080, 1920);
+    const bursts = HANDS.map((h) => [h.s + 0.15, h.x]);
+    for (const [h, x0] of bursts) {
+      const dt = t - h; if (dt < 0 || dt > 1.1) continue;
+      for (let k = 0; k < 28; k++) {
+        const vx = (rnd(h * 31 + k) - 0.5) * 520, vy = 500 + rnd(h * 17 + k) * 700, r = 2 + rnd(h * 7 + k) * 5;
+        const x = x0 + (rnd(h * 3 + k) - 0.5) * 120 + vx * dt, y = 1860 - vy * dt + 0.5 * 2200 * dt * dt;
+        if (y > 1930) continue;
+        dx.fillStyle = `rgba(${40 + (k % 3) * 18},${36 + (k % 3) * 15},${30 + (k % 3) * 12},${(1 - dt / 1.1).toFixed(3)})`;
+        dx.beginPath(); dx.arc(x, y, r, 0, 7); dx.fill();
+      }
+    }
+  }
+  // Climb out in three hauls (reach with fingers open, clench, haul up), then keep reaching and clawing, creeping
+  // higher; on every ZOMBIE all the hands that are out lunge and clench together.
+  const PULL = 0.62, PULLS = 3, DEG = Math.PI / 180;
+  const lunge = (t) => clamp(ZH.reduce((a, h) => a + (t >= h ? Math.exp(-(t - h) * 4) * Math.min(1, (t - h) / 0.06) : 0), 0), 0, 1);
+  function handState(h, i, t) {
+    const p = (t - h.s) / PULL, out = p >= PULLS;
+    let rise = 0, grip = 0;
+    if (p > 0 && !out) {
+      const k = Math.floor(p), f = p - k;
+      rise = (k + 0.1 * Math.min(f / 0.45, 1) + 0.9 * ease(clamp((f - 0.45) / 0.4, 0, 1))) / PULLS;
+      grip = Math.sin(Math.PI * clamp((f - 0.35) / 0.6, 0, 1));
+    } else if (out) rise = 1;
+    const L = out ? lunge(t) : 0;
+    const restY = (h.logo ? 1800 : 1700) + (POSTER ? LAY.push : 0) - Math.min(70, Math.max(0, t - h.s - PULL * PULLS) * 9);
+    const hidden = 1700 + 660 * h.k;
+    const wristY = hidden + (restY - hidden) * rise - 34 * L + (out ? Math.sin(t * 1.6 + i) * 10 : 0);
+    const tilt = h.tilt + Math.sin(t * 1.2 + i * 1.3) * 6 - L * 5 * (h.m ? -1 : 1);
+    return { wristY, tilt, grip, out, L };
+  }
+  function drawHands(t) {
+    HANDS.forEach((h, i) => {
+      const st = handState(h, i, t);
+      if (st.wristY > 1920 + 330 * h.k) { h.el.style.display = "none"; return; }
+      h.el.style.display = "";
+      h.el.style.transform = `translate(${h.x - 150}px, ${(st.wristY - 524).toFixed(1)}px) rotate(${st.tilt.toFixed(2)}deg) scale(${h.m ? -h.k : h.k}, ${h.k})`;
+      h.segs.forEach((segs, fi) => {
+        // clawing: a grasp that ripples from little finger to index; the logo hand keeps a loose grip
+        const claw = h.logo ? 0.35 + 0.12 * Math.sin(t * 2.4 + fi) : st.out ? 0.5 + 0.45 * Math.sin((t - h.s) * 5.4 + (3 - fi) * 0.5 + i) : st.grip;
+        const curl = clamp(Math.max(claw, st.L), 0, 1), thumb = fi === 4;
+        const spread = FING[fi][2], inward = thumb ? 0 : (fi < 2 ? 1 : -1) * 6 * curl;
+        segs.forEach((el, j) => {
+          const bend = [55, 72, 55][j] * (thumb ? 0.6 : 1) * curl;
+          const rot = j === 0 ? (thumb ? spread + 34 * curl : spread * (1 + 0.35 * (1 - curl)) + inward) : inward * 0.6;
+          el.setAttribute("transform", `rotate(${rot.toFixed(2)}) scale(1,${Math.max(0.28, Math.cos(bend * DEG)).toFixed(3)})`);
+        });
+      });
+      h.state = st;
+    });
+  }
+  function drawHeads(t) {
+    // echoes ripple outward from the words, faster while the line is being sung
+    document.querySelectorAll(".head .echo").forEach((el) => {
+      const k = +el.dataset.k, ph = (t * 0.7 + k / 3) % 1;
+      el.style.transform = `scale(${(1 + 0.22 * ph).toFixed(3)})`; el.style.opacity = ((1 - ph) * 0.45).toFixed(3);
+    });
+    const bump = F.onsets.reduce((s, o) => s + (t >= o ? Math.exp(-(t - o) * 9) : 0), 0);
+    document.querySelectorAll(".head .main").forEach((el) => {
+      el.style.transform = `scale(${(1 + 0.035 * Math.min(1, bump)).toFixed(3)}) translateX(${(Math.sin(t * 2.2) * 6).toFixed(1)}px)`;
+    });
+  }
+  const qcpa = byId("qcpa"), ASPECT = 253.262 / 340.77;
+  function drawLogo(t) {
+    // lurks in the fog until the last hand climbs up under it, then rides up in its grip
+    const fin = 1 - Math.pow(1 - span(T.logoIn, T.logoIn + 0.9, t), 2);
+    const lh = HANDS[HANDS.length - 1], held = lh.state ? lh.state.wristY - 375 * lh.k : 1e9;
+    const fogY = 1590 + Math.sin(t * 1.2) * 10 + (1 - fin) * 50;
+    const lifted = held < fogY, cy = Math.min(fogY, held);
+    const h = 220, w = h * ASPECT, cx = 540 + (lifted ? 0 : Math.sin(t * 0.7) * 10);
+    const rot = lifted ? lh.state.tilt * 0.6 : Math.sin(t * 0.9) * 4;
+    qcpa.style.opacity = fin.toFixed(3); qcpa.style.width = w + "px"; qcpa.style.height = h + "px";
+    qcpa.style.transform = `translate(${(cx - w / 2).toFixed(1)}px, ${(cy - h / 2).toFixed(1)}px) rotate(${rot.toFixed(2)}deg)`;
+  }
+  const fl = byId("film").getContext("2d"), flick = byId("flick");
+  function drawFilm(t) {
+    const fr = Math.floor(t * FPS);
+    fl.clearRect(0, 0, 540, 960);
+    for (let k = 0; k < 16; k++) {     // dust specks
+      const x = rnd(fr * 13 + k) * 540, y = rnd(fr * 29 + k) * 960, r = 0.6 + rnd(fr * 7 + k) * 1.8;
+      fl.fillStyle = rnd(fr * 3 + k) < 0.7 ? "rgba(0,0,0,0.55)" : "rgba(235,235,225,0.5)";
+      fl.beginPath(); fl.arc(x, y, r, 0, 7); fl.fill();
+    }
+    if (rnd(fr * 5 + 1) < 0.4) {       // a scratch down the frame
+      const x = rnd(fr * 11 + 2) * 540, b = (rnd(fr * 19 + 3) - 0.5) * 10;
+      fl.strokeStyle = `rgba(230,230,220,${(0.18 + rnd(fr) * 0.25).toFixed(2)})`; fl.lineWidth = 0.7;
+      fl.beginPath(); fl.moveTo(x, 0); fl.quadraticCurveTo(x + b, 480, x + b * 0.4, 960); fl.stroke();
+    }
+    if (rnd(fr * 41 + 5) < 0.06) {     // the odd hair in the gate
+      const x = rnd(fr * 43) * 540, y = rnd(fr * 47) * 960;
+      fl.strokeStyle = "rgba(0,0,0,0.5)"; fl.lineWidth = 0.8;
+      fl.beginPath(); fl.moveTo(x, y); fl.bezierCurveTo(x + 20, y - 15, x + 30, y + 25, x + 45, y + 5); fl.stroke();
+    }
+    // projector flicker; the reel starts like a film warming up in the gate
+    const start = Math.pow(1 - span(0, 0.6, t), 2);
+    flick.style.opacity = (0.03 + 0.05 * rnd(fr * 3 + 7) + start * 0.7 * rnd(fr * 17 + 3)).toFixed(3);
+  }
+  function drawGrain(t) {
+    const gx = byId("grain").getContext("2d"), img = gx.createImageData(540, 960), d = img.data, seed = Math.floor(t * FPS) * 7919;
+    for (let p = 0; p < d.length; p += 4) { const v = (rnd(seed + p * 0.25) * 255) | 0; d[p] = d[p + 1] = d[p + 2] = v; d[p + 3] = 255; }
+    gx.putImageData(img, 0, 0);
+  }
+
+  const fimg = byId("fimg");
+  let lastSrc = "";
+  async function seek(t0) {
+    const t = POSTER ? LAY.textT : t0, ft = POSTER ? LAY.frameT : t0;   // graphics moment, footage moment
+    tl.seek(t, false);
+    if (POSTER) {
+      LAY.ends.forEach((y, i) => (byId(["eUp", "eTitle1", "eTitle2", "eDate", "eCta"][i]).style.top = y + "px"));
+      gsap.set("#eCta", { scale: 1 });
+    }
+    const fr = Math.floor(t * FPS);
+    fimg.style.translate = `${((rnd(fr * 3 + 1) - 0.5) * 3).toFixed(1)}px ${((rnd(fr * 5 + 2) - 0.5) * 3).toFixed(1)}px`;  // gate weave
+    drawFog(fb, t, 1, 14, 0.2); drawFog(ff, t, 300, 10, 0.22);
+    drawDirt(t); drawHands(t); drawHeads(t); drawLogo(t); drawFilm(t); drawGrain(t);
+    const n = Math.min(F.env.length, Math.floor(ft * FPS) + 1);
+    const src = FRAMES.replace("%05d", String(n).padStart(5, "0"));
+    if (src !== lastSrc) { fimg.src = src; lastSrc = src; try { await fimg.decode(); } catch (e) { console.error("frame", n, e.message); } }
+  }
+
+  (async () => {
+    await Promise.all(["400 100px Nosifer", "400 100px Creepster", "400 100px Anton"].map((f) => document.fonts.load(f)));
+    await document.fonts.ready;
+    document.querySelectorAll(".head .w, .z").forEach((el) => {   // fit lines to the frame width
+      const r = document.createRange(); r.selectNodeContents(el);
+      const w = r.getBoundingClientRect().width, base = parseFloat(getComputedStyle(el).fontSize);
+      if (w > 1000) el.style.fontSize = (base * 1000 / w).toFixed(1) + "px";
+    });
+    if (POSTER) {
+      document.documentElement.style.height = document.body.style.height = LAY.H + "px";
+      ["film", "grain"].forEach((id) => (byId(id).style.height = LAY.H + "px"));
+      byId("fimg").style.top = LAY.footDY + "px";
+      byId("bottom").style.transform = `translateY(${LAY.bot[0]}px) scale(${LAY.bot[1]})`;
+      if (MODE === "fb") byId("eCta").querySelector("span").innerHTML = "TICKETS &middot; LINK IN POST";
+    }
+    window.__tl = tl;
+    window.__meta = { duration: D, width: 1080, height: LAY.H };
+    window.__seek = seek;
+    await seek(0);
+  })();
+</script>
+</body>
+</html>

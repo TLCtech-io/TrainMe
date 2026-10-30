@@ -1,0 +1,4 @@
+# Footage, frames, mattes, generated audio and renders stay out of git; rebuild with ./build.sh
+assets/
+sfx/
+out/

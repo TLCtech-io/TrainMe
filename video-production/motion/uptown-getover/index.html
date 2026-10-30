@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Uptown Sound: the clock is ticking</title>
+<!--
+  Uptown Sound "Pick Your Poison" ticket push, built on "10.23 Fri Get Over" (dress rehearsal, house lights up; 1080x1920
+  from 4K, 24 fps). The clip is used as delivered and its audio is copied untouched.
+  Haunted countdown: the same night grade as the E.T. ticket push (moonlit blue, a stage light on the singers, the floor
+  sunk into the dark, the lime wig and webbing glowing like blacklight). The opening floor shot splits along its real
+  crack (tracked) with fire light, bats burst out of it; a row of jack-o'-lanterns in the foreground lights up on the
+  beat; a haunted clock ticks toward midnight with the beat and strikes on the second "tonight"; ghosts drift through;
+  lightning on both "tonight"s; the "bye"s at the end blow the pumpkins out one by one as the end card comes on.
+-->
+<style>
+  @font-face { font-family: "Special Elite"; src: url("../shared/fonts/special-elite-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Anton"; src: url("../shared/fonts/anton-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Rubik Mono One"; src: url("../shared/fonts/rubik-mono-one-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Bowlby One SC"; src: url("../shared/fonts/bowlby-one-sc-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Abril Fatface"; src: url("../shared/fonts/abril-fatface-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Permanent Marker"; src: url("../shared/fonts/permanent-marker-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Creepster"; src: url("../shared/fonts/creepster-latin-400-normal.woff2") format("woff2"); }
+  :root { --lime: #c6ff3d; --orange: #ff8a1f; --bone: #f2ecdf; --ink: #111; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; }
+  canvas, svg { position: absolute; left: 0; top: 0; }
+  #scrim { position: absolute; left: 0; top: 0; width: 1080px; height: 900px; opacity: 0;
+           background: linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0) 100%); }
+  #flash { position: absolute; inset: 0; background: #e6efff; opacity: 0; mix-blend-mode: screen; }
+  #qcpa { position: absolute; opacity: 0; }
+  .ransom { position: absolute; left: 0; width: 1080px; display: flex; justify-content: center; flex-wrap: nowrap; gap: 6px; }
+  .rl { display: inline-flex; align-items: center; justify-content: center; padding: 2px 10px 4px; line-height: 1; box-shadow: 0 6px 14px rgba(0,0,0,0.5); }
+  .gap { width: 30px; }
+  #badge { position: absolute; left: 0; width: 1080px; top: 92px; display: flex; justify-content: center; opacity: 0; }
+  .label { background: var(--bone); color: var(--ink); border: 6px solid var(--ink); border-radius: 14px; padding: 10px 28px 12px;
+           display: flex; align-items: center; gap: 16px; box-shadow: 0 10px 24px rgba(0,0,0,0.55); }
+  .label .no { font: 400 40px/1 "Special Elite", monospace; letter-spacing: 0.08em; }
+  .label .tx { font: 400 44px/1 "Bowlby One SC"; color: #3a1d5c; }
+  .head { position: absolute; left: 0; width: 1080px; text-align: center; opacity: 0; }
+  .creep { font: 400 112px/0.95 "Creepster"; color: var(--lime); letter-spacing: 0.03em;
+           text-shadow: 0 0 26px rgba(198,255,61,0.55), 0 6px 0 rgba(0,0,0,0.75), 0 0 2px #000; }
+  .slam { font: 400 100px/1 "Anton"; color: #fff; letter-spacing: 0.03em; text-shadow: 0 6px 0 rgba(0,0,0,0.7), 0 0 22px rgba(0,0,0,0.6); }
+  .slam em { font-style: normal; color: var(--orange); text-shadow: 0 0 26px rgba(255,138,31,0.6), 0 6px 0 rgba(0,0,0,0.7); }
+  .slam b { font-weight: 400; color: var(--lime); text-shadow: 0 0 26px rgba(198,255,61,0.55), 0 6px 0 rgba(0,0,0,0.7); }
+  .end-line { position: absolute; left: 0; width: 1080px; text-align: center; opacity: 0; }
+  #eTitle1 .rl, #eTitle2 .rl { opacity: 0; }
+</style>
+</head>
+<body>
+  <canvas id="gl" width="1080" height="1920"></canvas>
+  <canvas id="crack" width="1080" height="1920"></canvas>
+  <canvas id="warm" width="1080" height="1920" style="mix-blend-mode:screen"></canvas>
+  <svg id="ghosts" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+  <canvas id="fog" width="540" height="960" style="width:1080px; height:1920px"></canvas>
+  <svg id="pumps" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+  <svg id="webs" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+  <svg id="bats" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+  <svg id="bolt" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+  <canvas id="grain" width="540" height="960" style="width:1080px; height:1920px; opacity:0.06; mix-blend-mode:overlay"></canvas>
+  <div id="scrim"></div>
+
+  <div id="title" style="position:absolute; left:0; top:0; width:1080px; height:1920px; opacity:0">
+    <div class="ransom" id="t1" style="top:560px"></div>
+    <div class="ransom" id="t2" style="top:690px"></div>
+  </div>
+  <div id="badge"><div class="label"><span class="no">LAST CALL:</span><span class="tx">OCT 24 &amp; 25</span></div></div>
+  <svg id="clock" width="1080" height="1920" viewBox="0 0 1080 1920" style="opacity:0"></svg>
+  <div id="h1" class="head creep" style="top:524px">THE CLOCK IS<br>TICKING...</div>
+  <div id="h2" class="head slam" style="top:526px">DON’T GET LEFT<br><em>IN THE DARK</em></div>
+  <div id="h3" class="head slam" style="top:526px">GET YOUR<br><b>TICKETS NOW</b></div>
+
+  <img id="qcpa" src="../shared/brand/qcpa-logo-white.svg" alt="Queen City Performing Arts" />
+  <div id="end">
+    <div class="end-line" id="eUp" style="top:150px; font:400 92px/1 'Anton'; letter-spacing:0.08em; color:#fff; text-shadow:0 0 18px rgba(198,255,61,0.5), 0 6px 0 rgba(0,0,0,0.6)">UPTOWN SOUND</div>
+    <div class="ransom" id="eTitle1" style="top:256px"></div>
+    <div class="ransom" id="eTitle2" style="top:328px"></div>
+    <div class="end-line" id="eDate" style="top:428px; font:400 86px/1 'Bowlby One SC'; color:var(--lime); text-shadow:0 0 26px rgba(198,255,61,0.7), 0 5px 0 rgba(0,0,0,0.7)">OCT 24 &amp; 25</div>
+    <div class="end-line" id="eWk" style="top:528px; font:400 62px/1 'Creepster'; letter-spacing:0.06em; color:var(--orange); text-shadow:0 0 20px rgba(255,138,31,0.6), 0 4px 0 rgba(0,0,0,0.7)">THIS WEEKEND</div>
+    <div class="end-line" id="eCta" style="top:618px"><span style="display:inline-block; background:#0a0a0a; color:var(--bone); border:2px solid var(--lime); font:400 38px/1 'Special Elite'; padding:12px 24px; border-radius:8px; letter-spacing:0.06em">TICKETS &middot; LINK IN BIO</span></div>
+  </div>
+  <div id="flash"></div>
+  <div id="cover" style="display:none">
+    <div class="ransom" id="cT1"></div>
+    <div class="ransom" id="cT2"></div>
+    <div id="cHead" class="head creep" style="opacity:1; font-size:104px">THE CLOCK IS<br>TICKING...</div>
+    <div id="cDate" class="end-line" style="opacity:1"><span style="font:400 56px/1 'Bowlby One SC'; color:var(--lime); text-shadow:0 0 22px rgba(198,255,61,0.6), 0 5px 0 rgba(0,0,0,0.7)">OCT 24 &amp; 25</span><span style="font:400 52px/1 'Creepster'; letter-spacing:0.05em; color:var(--orange); text-shadow:0 0 18px rgba(255,138,31,0.6), 0 4px 0 rgba(0,0,0,0.7)">&nbsp; · THIS WEEKEND</span></div>
+  </div>
+
+<script src="../shared/gsap.min.js"></script>
+<script src="data/features.js"></script>
+<script src="data/tracks.js"></script>
+<script>
+  const F = window.FEATURES, FPS = F.fps, D = F.env.length / FPS, NF = F.env.length;
+  // Output: the 9:16 reel, or a cover (?thumb = 3:4 for TikTok, ?ig = 9:16 for Instagram, whose grid shows the middle
+  // 3:4, so the ig cover keeps the whole design in the band OY..OY+1440). Covers show the scene at frameT with the clock,
+  // two ghosts posed and the pumpkins lit; the pumpkins come up PDY so they sit on the band's bottom edge.
+  const MODE = location.search.includes("thumb") ? "thumb" : location.search.includes("ig") ? "ig" : "video";
+  const LAY = { video: { H: 1920, OY: 0 }, thumb: { H: 1440, OY: 0, frameT: 24.8 }, ig: { H: 1920, OY: 240, frameT: 24.8 } }[MODE];
+  const POSTER = MODE !== "video", PDY = POSTER ? -470 : 0;
+  const FRAMES = "assets/frames/f_%05d.jpg";
+  const rnd = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const span = (a, b, t) => clamp((t - a) / (b - a), 0, 1);
+  const ease = (p) => (p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
+  const easeOut = (p) => 1 - Math.pow(1 - p, 3);
+  const lerp = (a, b, k) => a + (b - a) * k;
+  const byId = (id) => document.getElementById(id);
+  const f1 = (v) => v.toFixed(1);
+  const env = (t) => F.env[clamp(Math.floor(t * FPS), 0, NF - 1)];
+
+  // Cue times (seconds). Sung hits from a whisper pass (data/whisper-words.json): "tonight" twice, then four "bye"s.
+  const T = {
+    title: 0.3, compact: 4.4, crackOpen: [0.4, 1.9], crackOut: [2.9, 3.5], clockIn: 8.0, h1: 8.6,
+    tonight1: 14.04, h3: 21.1, tonight2: 28.16, end: 29.0,
+  };
+  const LIGHT = [4.48, 5.216, 5.888, 6.576];        // the pumpkins light on these beats (onsets) ...
+  const BYE = [29.0, 29.9, 30.46, 32.0];            // ... and go out on the "bye"s
+  const STRIKES = [T.tonight1, T.tonight2];
+
+  // ---------- series lettering ----------
+  const FONTS = ["Anton", "Rubik Mono One", "Bowlby One SC", "Abril Fatface", "Special Elite", "Permanent Marker"];
+  const SWATCH = [["#f2ecdf", "#111"], ["#111", "#c6ff3d"], ["#c6ff3d", "#111"], ["#ff8a1f", "#111"], ["#3a1d5c", "#f2ecdf"], ["#111", "#ff8a1f"]];
+  function ransom(el, text, size, seed) {
+    el.innerHTML = [...text].map((ch, i) => {
+      if (ch === " ") return '<span class="gap"></span>';
+      const r = (k) => rnd(seed * 100 + i * 7 + k);
+      const [bg, fg] = SWATCH[Math.floor(r(1) * SWATCH.length)];
+      const font = FONTS[Math.floor(r(2) * FONTS.length)];
+      const s = Math.round(size * (0.86 + r(3) * 0.3)), rot = (r(4) - 0.5) * 16;
+      return `<span class="rl" style="background:${bg}; color:${fg}; font:400 ${s}px/1 '${font}'; transform:rotate(${rot.toFixed(1)}deg)">${ch}</span>`;
+    }).join("");
+  }
+  ransom(byId("t1"), "PICK YOUR", 92, 21);
+  ransom(byId("t2"), "POISON", 128, 23);
+  ransom(byId("eTitle1"), "PICK YOUR", 60, 15);
+  ransom(byId("eTitle2"), "POISON", 74, 17);
+
+  // ---------- the night grade (WebGL; same as the E.T. ticket push) ----------
+  const glc = byId("gl"), gl = glc.getContext("webgl", { preserveDrawingBuffer: true, antialias: false });
+  const VS = "attribute vec2 p; varying vec2 v; void main(){ v = vec2(p.x * 0.5 + 0.5, 0.5 - p.y * 0.5); gl_Position = vec4(p, 0.0, 1.0); }";
+  const FS = `precision highp float;
+    uniform sampler2D img; uniform vec2 spot; uniform vec2 spotR; uniform float spotK; uniform float floorY;
+    uniform float dark; uniform float flash; uniform vec3 flashC; varying vec2 v;
+    void main() {
+      vec2 px = v * vec2(1080.0, 1920.0);
+      vec3 c = texture2D(img, v).rgb;
+      float mx = max(c.r, max(c.g, c.b)), mn = min(c.r, min(c.g, c.b)), sat = (mx - mn) / (mx + 1e-4);
+      float l = dot(c, vec3(0.299, 0.587, 0.114));
+      float lime = smoothstep(0.10, 0.30, sat) * smoothstep(0.02, 0.10, c.g - c.b) * smoothstep(-0.10, 0.02, c.g - c.r) * smoothstep(0.22, 0.5, l);
+      float orange = smoothstep(0.35, 0.55, sat) * smoothstep(0.08, 0.2, c.r - c.g) * smoothstep(0.08, 0.22, c.g - c.b);
+      vec3 n = pow(c, vec3(1.5)) * 0.46;
+      float ln = dot(n, vec3(0.299, 0.587, 0.114));
+      float sp = spotK * (1.0 - smoothstep(0.45, 1.1, length((px - spot) / spotR)));
+      n = mix(n, ln * vec3(0.58, 0.74, 1.10), 0.62 * (1.0 - 0.45 * sp));
+      n *= 1.0 + 1.25 * sp;
+      n += sp * vec3(0.035, 0.012, 0.06);
+      n *= 1.0 - 0.78 * smoothstep(floorY, floorY + 380.0, px.y);
+      n = mix(n, c * vec3(0.85, 1.25, 0.45) * 1.25, lime * 0.9);
+      n = mix(n, c * vec3(1.15, 0.62, 0.25), orange * 0.4);
+      vec2 q = v - vec2(0.5, 0.47);
+      n *= mix(0.2, 1.0, 1.0 - smoothstep(0.32, 0.82, length(q * vec2(1.25, 0.95))));
+      n = n * dark + flash * flashC * 0.22;
+      gl_FragColor = vec4(n, 1.0);
+    }`;
+  function shader(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s)); return s; }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, shader(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog); gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW);
+  const pLoc = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(pLoc); gl.vertexAttribPointer(pLoc, 2, gl.FLOAT, false, 0, 0);
+  gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+  [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]].forEach(([k, v]) => gl.texParameteri(gl.TEXTURE_2D, k, v));
+  const U = Object.fromEntries(["spot", "spotR", "spotK", "floorY", "dark", "flash", "flashC"].map((n) => [n, gl.getUniformLocation(prog, n)]));
+  gl.viewport(0, 0, 1080, 1920);
+  // the stage light follows the singers as the phone moves (keyframes read off the footage)
+  const SPOT = [[3.6, 540, 900, 720, 520], [5.0, 540, 760, 720, 520], [6.4, 540, 900, 720, 520], [8.4, 560, 1000, 740, 430],
+                [29.5, 600, 970, 760, 450], [31.6, 700, 1150, 760, 520], [33.5, 700, 1150, 760, 520]];
+  function spotAt(t) {
+    let i = 0; while (i < SPOT.length - 2 && t > SPOT[i + 1][0]) i++;
+    const a = SPOT[i], b = SPOT[i + 1], k = ease(span(a[0], b[0], t));
+    return [1, 2, 3, 4].map((j) => lerp(a[j], b[j], k));
+  }
+  // lightning on both "tonight"s: two quick flickers
+  const lightning = (t) => STRIKES.reduce((m, h) => {
+    const d = t - h; if (d < 0 || d > 0.6) return m;
+    return Math.max(m, (d < 0.06 ? 1 : d < 0.12 ? 0.25 : d < 0.18 ? 0.85 : 0) + Math.exp(-d * 6) * 0.25);
+  }, 0);
+  function drawGrade(t) {
+    const [sx, sy, rx, ry] = spotAt(t);
+    gl.uniform2f(U.spot, sx, sy); gl.uniform2f(U.spotR, rx, ry);
+    gl.uniform1f(U.spotK, span(4.6, 6.0, t));
+    gl.uniform1f(U.floorY, lerp(2400, 1260, ease(span(3.0, 4.6, t))));
+    gl.uniform1f(U.dark, lerp(0.72, 1, span(2.6, 4.0, t)) - 0.08 * span(T.end, T.end + 0.6, t));
+    gl.uniform1f(U.flash, lightning(t));
+    gl.uniform3f(U.flashC, 0.75, 0.85, 1.0);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+  }
+
+  // ---------- the opening: the real crack in the floor splits with fire light; bats burst out ----------
+  const ck = byId("crack").getContext("2d");
+  const CR = window.CRACK, DIRX = Math.cos(-0.314), DIRY = Math.sin(-0.314);      // the crack runs about 18 deg uphill
+  const CRACKPTS = [...Array(29)].map((_, i) => { const u = (i / 28) * 1300 - 650; return [u, (rnd(i + 41) - 0.5) * 10 + (i % 2 ? 4 : -4)]; });
+  const EMBERS = [...Array(60)].map((_, i) => ({ u: (rnd(i + 61) - 0.5) * 1100, v: 60 + rnd(i + 62) * 160, ph: rnd(i + 63), r: 1.5 + rnd(i + 64) * 3 }));
+  function drawCrack(t) {
+    ck.clearRect(0, 0, 1080, 1920);
+    const open = easeOut(span(T.crackOpen[0], T.crackOpen[1], t)) * (1 - span(T.crackOut[0], T.crackOut[1], t));
+    if (open <= 0.001) return;
+    const i = clamp(Math.floor(t * FPS + 1e-6), 0, CR.xy.length - 1), [cx, cy] = CR.xy[i];
+    const P = ([u, w]) => [cx + u * DIRX - w * DIRY, cy + u * DIRY + w * DIRX];
+    const pulse = 0.85 + 0.15 * Math.sin(t * 13) + 0.2 * env(t);
+    // floor lit from below
+    const g = ck.createRadialGradient(cx, cy, 0, cx, cy, 700);
+    g.addColorStop(0, `rgba(255,110,20,${(0.22 * open * pulse).toFixed(3)})`); g.addColorStop(1, "rgba(255,110,20,0)");
+    ck.save(); ck.translate(cx, cy); ck.rotate(-0.314); ck.scale(1, 0.4); ck.translate(-cx, -cy); ck.fillStyle = g; ck.fillRect(cx - 700, cy - 700, 1400, 1400); ck.restore();
+    // the fissure: a wide soft glow, then a hot core that widens as it opens
+    const path = () => { ck.beginPath(); CRACKPTS.forEach((p, k) => { const [x, y] = P(p); k ? ck.lineTo(x, y) : ck.moveTo(x, y); }); };
+    ck.lineCap = "round"; ck.lineJoin = "round";
+    [[60 * open, `rgba(255,90,10,${(0.25 * pulse).toFixed(3)})`], [26 * open, `rgba(255,140,30,${(0.6 * pulse).toFixed(3)})`],
+     [10 * open, "rgba(255,210,90,0.95)"], [3.5 * open, "rgba(255,250,220,1)"]].forEach(([w, c]) => { path(); ck.strokeStyle = c; ck.lineWidth = Math.max(0.5, w); ck.stroke(); });
+    // embers rising out of it
+    for (const e of EMBERS) {
+      const k = (t * 0.7 + e.ph) % 1, [x, y] = P([e.u, 0]);
+      const a = open * Math.sin(Math.PI * k);
+      ck.fillStyle = `rgba(255,${Math.round(150 + 80 * (1 - k))},60,${a.toFixed(3)})`;
+      ck.beginPath(); ck.arc(x + 20 * Math.sin(k * 7 + e.ph * 9), y - k * e.v, e.r, 0, 7); ck.fill();
+    }
+  }
+
+  // ---------- jack-o'-lanterns along the bottom edge, close to the camera ----------
+  const PUMPS = [{ x: 150, y: 1832, w: 300, f: 0 }, { x: 418, y: 1880, w: 250, f: 1 }, { x: 684, y: 1858, w: 272, f: 2 }, { x: 952, y: 1826, w: 312, f: 3 }];
+  const OUT_ORDER = [1, 3, 0, 2];                    // which pumpkin each "bye" blows out
+  const FACES = [
+    { eyes: "M -62 -30 L -24 -30 L -43 -66 Z M 24 -30 L 62 -30 L 43 -66 Z", nose: "M -10 -6 L 10 -6 L 0 -24 Z", mouth: "M -84 12 Q 0 74 84 12 L 60 22 L 48 8 L 30 26 L 14 10 L 0 28 L -14 10 L -30 26 L -48 8 L -60 22 Z" },
+    { eyes: "M -58 -54 A 22 22 0 1 0 -58 -10 A 22 22 0 1 0 -58 -54 Z M 58 -54 A 22 22 0 1 0 58 -10 A 22 22 0 1 0 58 -54 Z", nose: "M -8 -2 L 8 -2 L 0 -18 Z", mouth: "M -70 18 Q 0 62 70 18 Q 0 40 -70 18 Z" },
+    { eyes: "M -70 -40 L -22 -24 L -32 -60 Z M 70 -40 L 22 -24 L 32 -60 Z", nose: "M -12 -4 L 12 -4 L 0 -20 Z", mouth: "M -80 8 L 80 8 L 64 44 L 40 30 L 20 50 L 0 32 L -20 50 L -40 30 L -64 44 Z" },
+    { eyes: "M -64 -24 L -20 -24 L -42 -62 Z M 20 -24 L 64 -24 L 42 -62 Z", nose: "M -12 0 L 12 0 L 0 -20 Z", mouth: "M -76 16 Q 0 84 76 16 Q 40 30 20 22 L 12 36 L 0 24 L -12 36 L -20 22 Q -40 30 -76 16 Z" },
+  ];
+  byId("pumps").innerHTML = `<defs>
+      <radialGradient id="pk" cx="0.4" cy="0.35" r="0.75"><stop offset="0" stop-color="#ff9a2e"/><stop offset="0.6" stop-color="#e2600c"/><stop offset="1" stop-color="#7a2a04"/></radialGradient>
+      <radialGradient id="fire" cx="0.5" cy="0.55" r="0.6"><stop offset="0" stop-color="#ffffff"/><stop offset="0.45" stop-color="#fff0a0"/><stop offset="1" stop-color="#ffb12a"/></radialGradient>
+      <radialGradient id="inner" cx="0.5" cy="0.45" r="0.55"><stop offset="0" stop-color="#ffd27a" stop-opacity="0.75"/><stop offset="1" stop-color="#ff8a1f" stop-opacity="0"/></radialGradient>
+      <filter id="pglow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="16"/></filter>
+    </defs>` + PUMPS.map((p, i) => {
+    const s = p.w / 300, fc = FACES[p.f];
+    return `<g id="pump${i}" transform="translate(${p.x},${p.y}) scale(${s.toFixed(3)})">
+      <path d="M -8 -118 Q -4 -150 18 -160 L 24 -150 Q 10 -138 10 -116 Z" fill="#4c5a24" stroke="#1d2410" stroke-width="4"/>
+      <ellipse cx="-78" cy="0" rx="88" ry="116" fill="url(#pk)" stroke="#5a1f02" stroke-width="4"/>
+      <ellipse cx="78" cy="0" rx="88" ry="116" fill="url(#pk)" stroke="#5a1f02" stroke-width="4"/>
+      <ellipse cx="-30" cy="-4" rx="78" ry="122" fill="url(#pk)" stroke="#5a1f02" stroke-width="4"/>
+      <ellipse cx="30" cy="-4" rx="78" ry="122" fill="url(#pk)" stroke="#5a1f02" stroke-width="4"/>
+      <ellipse cx="0" cy="-6" rx="58" ry="124" fill="url(#pk)" stroke="#5a1f02" stroke-width="4"/>
+      <ellipse id="dim${i}" cx="0" cy="0" rx="166" ry="124" fill="#120804" opacity="0.5"/>
+      <ellipse id="lit${i}" cx="0" cy="-10" rx="150" ry="112" fill="url(#inner)" opacity="0" style="mix-blend-mode:screen"/>
+      <g id="face${i}"><path d="${fc.eyes} ${fc.nose} ${fc.mouth}" fill="#1a0d05"/>
+        <path id="fire${i}" d="${fc.eyes} ${fc.nose} ${fc.mouth}" fill="url(#fire)" opacity="0"/>
+        <path id="fglow${i}" d="${fc.eyes} ${fc.nose} ${fc.mouth}" fill="#ffb02e" filter="url(#pglow)" opacity="0"/></g>
+      <g id="smoke${i}" opacity="0" fill="none" stroke="rgba(200,200,210,0.5)" stroke-width="10" stroke-linecap="round">
+        <path id="smk${i}" d="M 0 -150 C 20 -190 -20 -220 0 -260"/></g>
+    </g>`;
+  }).join("");
+  const litAt = (i) => LIGHT[i];
+  const outAt = (i) => BYE[OUT_ORDER.indexOf(i)];
+  const pumpOn = (i, t) => span(litAt(i) - 0.05, litAt(i) + 0.12, t) * (1 - span(outAt(i), outAt(i) + 0.12, t));
+  const wv = byId("warm").getContext("2d");
+  function drawPumps(t) {
+    wv.clearRect(0, 0, 1080, 1920);
+    PUMPS.forEach((p, i) => {
+      const on = pumpOn(i, t), fl = 0.8 + 0.12 * Math.sin(t * 17 + i * 2) + 0.08 * Math.sin(t * 29 + i) + 0.15 * env(t);
+      const flare = t >= litAt(i) && t < litAt(i) + 0.4 ? 1 - (t - litAt(i)) / 0.4 : 0;
+      byId(`fire${i}`).setAttribute("opacity", (on * clamp(fl, 0, 1)).toFixed(3));
+      byId(`fglow${i}`).setAttribute("opacity", clamp(on * (1.0 * fl + 0.6 * flare), 0, 1).toFixed(3));
+      byId(`lit${i}`).setAttribute("opacity", (on * (0.75 * fl + 0.3 * flare)).toFixed(3));
+      byId(`dim${i}`).setAttribute("opacity", (0.5 * (1 - on)).toFixed(3));
+      const rise = 1 - easeOut(span(2.7 + i * 0.12, 3.7 + i * 0.12, t));                // they come up into frame on the tilt
+      byId(`pump${i}`).setAttribute("transform", `translate(${p.x},${f1(p.y + PDY + 260 * rise)}) scale(${(p.w / 300).toFixed(3)})`);
+      // a curl of smoke after it goes out
+      const so = t - outAt(i), sv = so > 0 && so < 1.6 ? Math.sin(Math.PI * so / 1.6) : 0;
+      byId(`smoke${i}`).setAttribute("opacity", (0.8 * sv).toFixed(3));
+      byId(`smk${i}`).setAttribute("d", `M 0 -150 C ${f1(20 + 10 * so)} ${f1(-190 - 40 * so)} ${f1(-20 - 10 * so)} ${f1(-220 - 60 * so)} ${f1(6 * Math.sin(so * 3))} ${f1(-260 - 90 * so)}`);
+      // warm light thrown up into the fog and onto the floor
+      const I = on * fl * 0.65 + on * flare * 0.5;
+      if (I > 0.01) {
+        const py = p.y + PDY, g = wv.createRadialGradient(p.x, py - 60, 0, p.x, py - 60, 420);
+        g.addColorStop(0, `rgba(255,140,40,${(0.38 * I).toFixed(3)})`); g.addColorStop(1, "rgba(255,140,40,0)");
+        wv.fillStyle = g; wv.fillRect(p.x - 420, py - 480, 840, 840);
+      }
+    });
+  }
+
+  // ---------- the haunted clock: ticks toward midnight with the beat, strikes on the second "tonight" ----------
+  const CK = { x: 540, y: 362, r: 126 };
+  const ROMAN = ["XII", "I", "II", "III", "IIII", "V", "VI", "VII", "VIII", "IX", "X", "XI"];
+  byId("clock").innerHTML = `<defs>
+      <radialGradient id="face" cx="0.5" cy="0.45" r="0.6"><stop offset="0" stop-color="#2a2140"/><stop offset="1" stop-color="#0c0814"/></radialGradient>
+      <linearGradient id="brass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2ecdf"/><stop offset="0.5" stop-color="#a99a7a"/><stop offset="1" stop-color="#4a4030"/></linearGradient>
+      <filter id="cglow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="10"/></filter>
+    </defs>
+    <circle id="ckGlow" cx="${CK.x}" cy="${CK.y}" r="${CK.r + 22}" fill="none" stroke="#c6ff3d" stroke-width="16" filter="url(#cglow)" opacity="0.35"/>
+    <circle id="ckRing" cx="${CK.x}" cy="${CK.y}" r="${CK.r}" fill="none" stroke="#c6ff3d" stroke-width="6" opacity="0"/>
+    <g id="ckBody">
+      <circle cx="${CK.x}" cy="${CK.y}" r="${CK.r + 14}" fill="url(#brass)" stroke="#1a140c" stroke-width="5"/>
+      ${[...Array(12)].map((_, i) => { const a = i * Math.PI / 6; return `<circle cx="${f1(CK.x + (CK.r + 14) * Math.sin(a))}" cy="${f1(CK.y - (CK.r + 14) * Math.cos(a))}" r="9" fill="#d8ccb0" stroke="#1a140c" stroke-width="3"/>`; }).join("")}
+      <circle cx="${CK.x}" cy="${CK.y}" r="${CK.r}" fill="url(#face)" stroke="#1a140c" stroke-width="4"/>
+      ${ROMAN.map((s, i) => { const a = i * Math.PI / 6, r = CK.r - 30; return `<text x="${f1(CK.x + r * Math.sin(a))}" y="${f1(CK.y - r * Math.cos(a) + 9)}" text-anchor="middle" font-family="Abril Fatface, serif" font-size="${i === 0 ? 30 : 24}" fill="#f2ecdf">${s}</text>`; }).join("")}
+      ${[...Array(60)].map((_, i) => { const a = i * Math.PI / 30, r0 = CK.r - (i % 5 ? 8 : 14); return `<path d="M ${f1(CK.x + r0 * Math.sin(a))} ${f1(CK.y - r0 * Math.cos(a))} L ${f1(CK.x + (CK.r - 3) * Math.sin(a))} ${f1(CK.y - (CK.r - 3) * Math.cos(a))}" stroke="#f2ecdf" stroke-width="${i % 5 ? 1.5 : 3}" opacity="0.8"/>`; }).join("")}
+      <path d="M ${CK.x - 70} ${CK.y - 80} L ${CK.x - 30} ${CK.y - 30} L ${CK.x - 44} ${CK.y + 10} M ${CK.x - 30} ${CK.y - 30} L ${CK.x + 6} ${CK.y - 44}" stroke="rgba(242,236,223,0.35)" stroke-width="2" fill="none"/>
+      <g id="hourH"><path d="M ${CK.x} ${CK.y + 14} L ${CK.x - 7} ${CK.y - 30} L ${CK.x} ${CK.y - 62} L ${CK.x + 7} ${CK.y - 30} Z" fill="#f2ecdf" stroke="#1a140c" stroke-width="2"/></g>
+      <g id="minH"><path d="M ${CK.x} ${CK.y + 18} L ${CK.x - 5} ${CK.y - 40} L ${CK.x - 12} ${CK.y - 70} L ${CK.x} ${CK.y - 100} L ${CK.x + 12} ${CK.y - 70} L ${CK.x + 5} ${CK.y - 40} Z" fill="#c6ff3d" stroke="#1a140c" stroke-width="2"/></g>
+      <circle cx="${CK.x}" cy="${CK.y}" r="9" fill="#c6ff3d" stroke="#1a140c" stroke-width="2"/>
+    </g>`;
+  // the minute hand steps a minute at a time on the beat: ten steps from 11:50 to midnight
+  const ONS = window.FEATURES.onsets || [];
+  const STEP_T = (() => {
+    const a = T.clockIn + 0.6, b = T.tonight2, out = [];
+    for (let k = 1; k <= 10; k++) {
+      const want = a + (b - a) * k / 10;
+      const near = ONS.filter((o) => o > a && o < b).reduce((m, o) => (Math.abs(o - want) < Math.abs(m - want) ? o : m), want);
+      out.push(k === 10 ? b : near);
+    }
+    return out;
+  })();
+  function drawClock(t) {
+    const steps = STEP_T.filter((s) => t >= s).length;
+    const last = steps ? STEP_T[steps - 1] : -9, kick = t - last < 0.18 ? Math.sin((t - last) / 0.18 * Math.PI) * 4 * Math.exp(-(t - last) * 10) : 0;
+    const minA = 300 + 6 * steps + kick, hourA = 355 + 0.5 * steps;
+    byId("minH").setAttribute("transform", `rotate(${minA.toFixed(2)} ${CK.x} ${CK.y})`);
+    byId("hourH").setAttribute("transform", `rotate(${hourA.toFixed(2)} ${CK.x} ${CK.y})`);
+    const strike = t >= T.tonight2 ? Math.exp(-(t - T.tonight2) * 2.2) : 0;
+    byId("ckGlow").setAttribute("opacity", (0.3 + 0.15 * env(t) + 0.7 * strike).toFixed(3));
+    const ring = t >= T.tonight2 ? (t - T.tonight2) / 0.9 : -1;
+    byId("ckRing").setAttribute("opacity", ring >= 0 && ring < 1 ? (1 - ring).toFixed(3) : "0");
+    byId("ckRing").setAttribute("r", f1(CK.r + (ring >= 0 ? ring * 260 : 0)));
+    const shake = strike * 5 * Math.sin(t * 60);
+    byId("ckBody").setAttribute("transform", `rotate(${shake.toFixed(2)} ${CK.x} ${CK.y})`);
+  }
+
+  // ---------- ghosts drifting through; they wave on the "bye"s and fade ----------
+  const GHOSTS = [
+    { t0: 14.3, t1: 23.5, a: [-180, 660], b: [1260, 600], s: 0.9 },
+    { t0: 17.6, t1: 27.0, a: [1260, 980], b: [-200, 840], s: 1.15 },
+    { t0: 23.6, t1: 28.6, a: [300, 1500], b: [760, 720], s: 1.0, stay: true },
+  ];
+  byId("ghosts").innerHTML = `<defs><filter id="gglow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="9"/></filter></defs>` +
+    GHOSTS.map((_, i) => `<g id="gh${i}" opacity="0"><path id="gb${i}" fill="rgba(240,248,255,0.85)" filter="url(#gglow)"/><path id="gs${i}" fill="rgba(245,250,255,0.82)"/>
+      <ellipse cx="-22" cy="-62" rx="11" ry="17" fill="#141020"/><ellipse cx="22" cy="-62" rx="11" ry="17" fill="#141020"/><ellipse cx="0" cy="-26" rx="12" ry="15" fill="#141020"/>
+      <path id="ga${i}" d="" fill="rgba(245,250,255,0.82)"/></g>`).join("");
+  function ghostPath(t, i) {
+    let d = "M -70 -60 C -70 -150 70 -150 70 -60 L 74 60";
+    for (let k = 0; k <= 6; k++) { const x = 74 - k * 148 / 6, y = 60 + (k % 2 ? 22 : 0) + 8 * Math.sin(t * 6 + k + i); d += ` Q ${f1(x + 12)} ${f1(y + 18)} ${f1(x)} ${f1(y)}`; }
+    return d + " L -70 -60 Z";
+  }
+  function drawGhosts(t) {
+    GHOSTS.forEach((g, i) => {
+      const el = byId(`gh${i}`);
+      let k = span(g.t0, g.t1, t); if (g.stay && t > g.t1) k = 1;
+      const fade = POSTER ? 1 : Math.min(span(g.t0, g.t0 + 0.6, t), g.stay ? 1 - span(BYE[1], BYE[2] + 0.3, t) : 1 - span(g.t1 - 0.6, g.t1, t));
+      if (fade <= 0) { el.setAttribute("opacity", "0"); return; }
+      let x = lerp(g.a[0], g.b[0], ease(k)) + 30 * Math.sin(t * 1.3 + i), y = lerp(g.a[1], g.b[1], ease(k)) + 18 * Math.sin(t * 2.1 + i * 2);
+      if (POSTER) {                                   // covers: two ghosts posed either side of the singers
+        const pose = [[112, 566], [945, 960], null][i];
+        if (!pose) { el.setAttribute("opacity", "0"); return; }
+        [x, y] = pose;
+      }
+      el.setAttribute("opacity", (0.85 * fade).toFixed(3));
+      el.setAttribute("transform", `translate(${f1(x)},${f1(y)}) rotate(${f1(6 * Math.sin(t * 1.7 + i))}) scale(${g.s})`);
+      const d = ghostPath(t, i);
+      byId(`gb${i}`).setAttribute("d", d); byId(`gs${i}`).setAttribute("d", d);
+      // a little arm: waves bye on the "bye"s
+      const wave = BYE.some((b) => t >= b - 0.1 && t < b + 0.7) ? Math.sin(t * 22) * 30 : 0;
+      byId(`ga${i}`).setAttribute("d", `M 62 -10 Q ${f1(110 + 0.3 * wave)} ${f1(-40 - wave)} ${f1(118 + 0.4 * wave)} ${f1(-74 - wave)} Q ${f1(100 + 0.3 * wave)} ${f1(-30 - wave)} 60 10 Z`);
+    });
+  }
+
+  // ---------- lightning bolts on the "tonight"s ----------
+  function drawBolt(t) {
+    const svg = byId("bolt");
+    const h = STRIKES.find((s) => t >= s && t < s + 0.22);
+    if (h === undefined) { svg.innerHTML = ""; return; }
+    const seed = Math.round(h * 10), x0 = h === T.tonight1 ? 860 : 220;
+    let pts = [[x0, -20]], x = x0, y = -20;
+    for (let k = 0; k < 9; k++) { x += (rnd(seed + k) - 0.5) * 140; y += 60 + rnd(seed + k + 20) * 30; pts.push([x, y]); }
+    const d = pts.map((p, k) => `${k ? "L" : "M"} ${f1(p[0])} ${f1(p[1])}`).join(" ");
+    const br = `M ${f1(pts[4][0])} ${f1(pts[4][1])} l ${f1(70 * (x0 > 540 ? -1 : 1))} 60 l -20 50 l ${f1(40 * (x0 > 540 ? -1 : 1))} 50`;
+    const on = (t - h) < 0.06 || ((t - h) > 0.11 && (t - h) < 0.2);
+    svg.innerHTML = on ? `<path d="${d} ${br}" stroke="rgba(190,215,255,0.6)" stroke-width="18" fill="none" filter="url(#gglow)"/>
+      <path d="${d} ${br}" stroke="#ffffff" stroke-width="5" fill="none" stroke-linejoin="round"/>` : "";
+  }
+
+  // ---------- floor fog, cobwebs, bats, grain (as in the E.T. ticket push) ----------
+  const fg = byId("fog").getContext("2d");
+  function drawFog(t) {
+    fg.clearRect(0, 0, 540, 960);
+    const on = span(3.8, 5.6, t);
+    if (on <= 0) return;
+    for (let i = 0; i < 34; i++) {
+      const sp = 5 + rnd(i + 1) * 12, w = 540 + 400;
+      const x = ((rnd(i + 50) * w + t * sp * (i % 2 ? 1 : -1)) % w + w) % w - 200;
+      const y = 640 + rnd(i + 80) * 320 + Math.sin(t * 0.4 + i) * 8, r = 80 + rnd(i + 110) * 100;
+      const g = fg.createRadialGradient(x, y, 0, x, y, r);
+      const a = on * 0.27 * (0.6 + 0.4 * rnd(i + 140)) * (0.55 + 0.45 * (y - 640) / 320);
+      g.addColorStop(0, `rgba(170,186,204,${a.toFixed(3)})`); g.addColorStop(1, "rgba(170,186,204,0)");
+      fg.fillStyle = g; fg.fillRect(x - r, y - r, 2 * r, 2 * r);
+    }
+  }
+  function web(cx, cy, a0, a1, R, seed) {
+    const spokes = 7, rings = 8, ang = [...Array(spokes)].map((_, i) => a0 + (a1 - a0) * i / (spokes - 1) + (rnd(seed + i) - 0.5) * 0.08);
+    let d = ang.map((a) => `M ${cx} ${cy} L ${f1(cx + R * Math.cos(a))} ${f1(cy + R * Math.sin(a))}`).join(" ");
+    for (let r = 1; r <= rings; r++) {
+      const rr = R * (r / rings) * (0.92 + 0.08 * rnd(seed + r * 3));
+      for (let i = 0; i < spokes - 1; i++) {
+        const p = [cx + rr * Math.cos(ang[i]), cy + rr * Math.sin(ang[i])], q = [cx + rr * Math.cos(ang[i + 1]), cy + rr * Math.sin(ang[i + 1])];
+        const m = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2], k = 0.12 * rr / R;
+        d += ` M ${f1(p[0])} ${f1(p[1])} Q ${f1(m[0] + (cx - m[0]) * k)} ${f1(m[1] + (cy - m[1]) * k)} ${f1(q[0])} ${f1(q[1])}`;
+      }
+    }
+    return d;
+  }
+  byId("webs").innerHTML = `<defs><filter id="wg" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3"/></filter></defs>
+    <g id="webG" opacity="0">
+      <g id="webR"><path d="${web(1080, 0, Math.PI * 0.5, Math.PI, 330, 11)}" fill="none" stroke="#c6ff3d" stroke-width="5" opacity="0.35" filter="url(#wg)"/>
+        <path d="${web(1080, 0, Math.PI * 0.5, Math.PI, 330, 11)}" fill="none" stroke="#e9ffc2" stroke-width="1.8" opacity="0.8"/></g>
+      <g id="webL"><path d="${web(0, 0, 0, Math.PI * 0.5, 280, 37)}" fill="none" stroke="#c6ff3d" stroke-width="5" opacity="0.3" filter="url(#wg)"/>
+        <path d="${web(0, 0, 0, Math.PI * 0.5, 280, 37)}" fill="none" stroke="#e9ffc2" stroke-width="1.8" opacity="0.7"/></g>
+    </g>`;
+  // bats: a swarm bursts out of the crack as it opens, then a few strays
+  const BATP = "M0 0 C -10 -12 -26 -14 -42 -8 C -34 -4 -32 2 -36 8 C -26 2 -16 4 -10 10 C -6 4 -2 2 0 4 C 2 2 6 4 10 10 C 16 4 26 2 36 8 C 32 2 34 -4 42 -8 C 26 -14 10 -12 0 0 Z";
+  const BATS = [...Array(18)].map((_, i) => ({ t0: 1.5 + rnd(i + 900) * 1.3, dur: 1.2 + rnd(i + 910) * 0.7, x0: 150 + rnd(i + 920) * 780, y0: 0,
+    vx: (rnd(i + 940) - 0.5) * 1200, vy: -900 - rnd(i + 950) * 800, s: 0.7 + rnd(i + 960) * 1.5, crack: true }))
+    .concat([[10.6, -80, 420, 1], [19.4, 1160, 330, -1], [25.6, -80, 500, 1]].map(([t0, x0, y0, dir], i) => ({ t0, dur: 2.6, x0, y0, vx: dir * 520, vy: -40, s: 1.0 + 0.2 * i })));
+  byId("bats").innerHTML = BATS.map((_, i) => `<path id="bat${i}" d="${BATP}" fill="#07080c" stroke="rgba(255,170,90,0.45)" stroke-width="1.5" opacity="0"/>`).join("");
+  function drawBats(t) {
+    BATS.forEach((b, i) => {
+      const el = byId(`bat${i}`), k = (t - b.t0) / b.dur;
+      if (k < 0 || k > 1) { el.setAttribute("opacity", "0"); return; }
+      let x0 = b.x0, y0 = b.y0;
+      if (b.crack) {                                  // leave from the crack line, wherever it is now
+        const j = clamp(Math.floor(b.t0 * FPS), 0, CR.xy.length - 1), [cx, cy] = CR.xy[j], u = b.x0 - 540;
+        x0 = cx + u * DIRX; y0 = cy + u * DIRY;
+      }
+      const x = x0 + b.vx * k * b.dur, y = y0 + b.vy * k * b.dur + 30 * Math.sin(k * 12 + i), flap = 0.35 + 0.65 * Math.abs(Math.sin((t - b.t0) * 18 + i));
+      el.setAttribute("opacity", (Math.min(1, k * 6, (1 - k) * 6)).toFixed(3));
+      el.setAttribute("transform", `translate(${f1(x)},${f1(y)}) scale(${b.s.toFixed(2)},${(b.s * flap).toFixed(3)})`);
+    });
+  }
+  function drawGrain(t) {
+    const gx = byId("grain").getContext("2d"), img = gx.createImageData(540, 960), d = img.data, seed = Math.floor(t * FPS) * 7919;
+    for (let p = 0; p < d.length; p += 4) { const v = (rnd(seed + p * 0.25) * 255) | 0; d[p] = d[p + 1] = d[p + 2] = v; d[p + 3] = 255; }
+    gx.putImageData(img, 0, 0);
+  }
+
+  // ---------- timeline (type) ----------
+  const tl = gsap.timeline({ paused: true });
+  tl.fromTo("#title", { opacity: 0, scale: 1.25, filter: "blur(10px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.5, ease: "power3.out", transformOrigin: "50% 36%" }, T.title);
+  tl.fromTo("#scrim", { opacity: 0 }, { opacity: 0.5, duration: 0.6 }, T.title);
+  tl.to("#title", { opacity: 0, y: -520, scale: 0.4, duration: 0.45, ease: "power3.in" }, T.compact);
+  tl.fromTo("#badge", { opacity: 0, y: -30 }, { opacity: 1, y: 0, duration: 0.5, ease: "back.out(2)" }, T.compact + 0.35);
+  tl.to("#scrim", { opacity: 1, duration: 0.6 }, T.clockIn - 0.4);
+  tl.fromTo("#clock", { opacity: 0, scale: 0.4, rotation: -30 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.6, ease: "back.out(1.7)", transformOrigin: `${CK.x}px ${CK.y}px` }, T.clockIn);
+  tl.fromTo("#h1", { opacity: 0, scale: 0.8, filter: "blur(8px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.6, ease: "power2.out" }, T.h1);
+  tl.to("#h1", { opacity: 0, duration: 0.1 }, T.tonight1 - 0.05);
+  tl.fromTo("#h2", { opacity: 0, scale: 1.5 }, { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(1.8)" }, T.tonight1);
+  tl.to("#h2", { opacity: 0, y: -20, duration: 0.25 }, T.h3 - 0.25);
+  tl.fromTo("#h3", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, T.h3);
+  tl.to(["#h3", "#badge"], { opacity: 0, duration: 0.25 }, T.end - 0.3);
+  tl.to("#clock", { opacity: 0, scale: 1.4, duration: 0.35, ease: "power2.in" }, T.end - 0.3);
+  // the end card flickers on with the "bye"s
+  const flicker = (sel, at) => [0, 1, 0.15, 1, 0.4, 1].forEach((o, i) => tl.set(sel, { opacity: o }, at + i * 0.07));
+  flicker("#eUp", T.end + 0.05);
+  document.querySelectorAll("#eTitle1 .rl, #eTitle2 .rl").forEach((el, i) => flicker(el, T.end + 0.25 + i * 0.03));
+  flicker("#eDate", T.end + 0.85);
+  flicker("#eWk", T.end + 1.2);
+  flicker("#eCta", T.end + 1.55);
+  tl.fromTo("#qcpa", { opacity: 0 }, { opacity: 1, duration: 0.6 }, T.end + 1.9);
+  const qcpa = byId("qcpa"), ASPECT = 253.262 / 340.77;
+  Object.assign(qcpa.style, { height: "150px", width: `${150 * ASPECT}px`, left: `${540 - 75 * ASPECT}px`, top: "712px" });
+
+  // ---------- per frame ----------
+  const fimg = new Image();
+  let lastSrc = "";
+  async function seek(t0) {
+    const t = POSTER ? LAY.frameT : t0;
+    if (!POSTER) tl.seek(t, false);
+    const n = Math.min(NF, Math.floor(t * FPS + 1e-6) + 1);
+    const src = FRAMES.replace("%05d", String(n).padStart(5, "0"));
+    if (src !== lastSrc) {
+      fimg.src = src; lastSrc = src;
+      try { await fimg.decode(); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, fimg); } catch (e) { console.error("frame", n, e.message); }
+    }
+    drawGrade(t); drawCrack(t); drawPumps(t); drawClock(t); drawGhosts(t); drawFog(t); drawBats(t); drawBolt(t); drawGrain(t);
+    byId("webG").setAttribute("opacity", span(3.6, 4.8, t).toFixed(3));
+    byId("webR").setAttribute("transform", `rotate(${(Math.sin(t * 0.9) * 1.2).toFixed(2)} 1080 0)`);
+    byId("webL").setAttribute("transform", `rotate(${(Math.sin(t * 0.7 + 1) * 1.2).toFixed(2)} 0 0)`);
+    byId("flash").style.opacity = (0.3 * lightning(t)).toFixed(3);
+    if (POSTER) [[205, 205, 1.3, 0.8], [880, 168, 0.9, 0.45]].forEach(([x, y, sc, fl], i) => {
+      const el = byId(`bat${i}`); el.setAttribute("opacity", "1");
+      el.setAttribute("transform", `translate(${x},${y}) scale(${sc},${sc * fl})`);
+    });
+  }
+
+  (async () => {
+    await Promise.all(["400 60px Creepster", "400 60px Anton", "400 60px 'Bowlby One SC'", "400 60px 'Special Elite'", "400 30px 'Abril Fatface'"].map((f) => document.fonts.load(f)));
+    await document.fonts.ready;
+    window.__tl = tl;
+    if (POSTER) {
+      const OY = LAY.OY;
+      document.documentElement.style.height = document.body.style.height = LAY.H + "px";
+      ["gl", "crack", "warm", "ghosts", "fog", "pumps", "webs", "bats", "bolt"].forEach((id) => (byId(id).style.top = OY + "px"));
+      ["title", "badge", "h1", "h2", "h3", "end", "qcpa"].forEach((id) => (byId(id).style.display = "none"));
+      gsap.set("#clock", { scale: 1, rotation: 0, opacity: 1 });
+      byId("clock").style.top = OY - 22 + "px";
+      Object.assign(byId("scrim").style, { opacity: 1, height: OY + 820 + "px" });
+      byId("cover").style.display = "block";
+      ransom(byId("cT1"), "PICK YOUR", 54, 15); ransom(byId("cT2"), "POISON", 68, 17);
+      byId("cT1").style.top = OY + 26 + "px"; byId("cT2").style.top = OY + 92 + "px";
+      byId("cHead").style.top = OY + 488 + "px";
+      byId("cDate").style.top = OY + 694 + "px";
+    }
+    window.__meta = { duration: POSTER ? 0.1 : D, width: 1080, height: LAY.H };
+    window.__seek = seek;
+    await seek(0);
+  })();
+</script>
+</body>
+</html>
