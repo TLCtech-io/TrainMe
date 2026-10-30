@@ -433,6 +433,37 @@ website. 16:9, narrated with a Descript AI voice.
   - a circle-radius or polygon tool that finds the facilities inside an area and adds them to a scenario.
 - **Home:** Current Scenario, Saved Scenarios, Map, Critical Contacts, and tiles for each asset type.
 
+### From the public page (https://tlctrng.com/dst)
+
+- **Lines worth reusing:**
+  - "Prioritization reference for TLC_TRNG leadership during disruptions to critical processes, systems, and
+    facilities." This is the tool's own home-screen tagline.
+  - "Higher score, addressed first."
+  - The report "is the artifact a duty officer actually hands to leadership."
+  - "A real build uses your assets, your dependencies, and your contacts."
+- **Call to action:** "Ready to operationalize your own plans?", then Book a Live Demo, or info@TLCTRNG.com. The
+  public demo itself is behind a short access form at tlctrng.com/dst.
+- **The page's suggested demo path:**
+  1. Open Systems & Technology and pick an asset near the top. Read its Impact Statement, then click the dependency
+     block.
+  2. Add it to a scenario, then Multi-Select three or four more and watch the ranking and cascade change.
+  3. Generate the report.
+  4. Optionally, draw a radius on Map / Weather and add the facilities it captures.
+- **Built mobile-first.** Phone shots (home screen, the Share Summary share sheet) belong in the spot alongside the
+  desktop views.
+- **The demo is a fictional organization with sample data.** Put a small "Demo data" note on screen wherever the
+  tool appears, so nobody reads it as a real client's plan.
+- **Look:**
+  - The UI is navy with amber and mustard accents, a green Map tile, and red DISRUPTED chips.
+  - The page's own screenshots sit in a Mac browser frame and an iPhone frame.
+  - Use the TLC_TRNG brand design system (section 6) and `motion/shared/brand/tlc-trng-horizontal-white.png` for the
+    end card.
+- **Screen names seen in those screenshots:**
+  - the Home tiles: Processes, Systems & Technology, Facilities, Scenario Builder, TLC_TRNG Map, Critical Contacts,
+    Current Scenario, My Scenarios;
+  - What-If Analysis states: Disrupted, Being Fixed, Manual Ops, Unable to Repair;
+  - the report title: "Scenario Impact Report".
+
 ### A possible story spine (to check against the DST session's brief)
 
 Storm warning on the map → draw the impact area → the facilities inside drop into a scenario → the tool ranks what to
