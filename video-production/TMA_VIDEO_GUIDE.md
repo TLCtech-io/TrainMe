@@ -557,7 +557,19 @@ The DST's screens appear as captured. Everything around them is brand:
   - **`motion/dst-commercial/media/` is committed** so a fresh session has everything the build needs: the two
     narration reads and the two blurred iPhone clips. The raw recording, which shows the user's contacts, is kept
     out of git on purpose. A fresh session can't rerun `clean_iphone.py` without the user re-attaching the raw.
-  - At capture, the user says where in the US an NWS alert is active, for the map hits.
+  - **Desktop capture done (2026-11-01)** with `motion/dst-commercial/tools/capture_dst.cjs` into
+    `motion/dst-commercial/media/capture/` (3840x2160, plus tall renders for panning and boxes.json).
+    - The demo login reached this session without restarting it. Sign-in has no phone code and lands as Demo
+      User 4 (user, not admin).
+    - The current scenario is kept in the browser, not on the account, so captures never touch the shared demo
+      data. Nothing is saved.
+    - The app scrolls inside its own panel, so full-page screenshots come out screen-sized. Scroll that panel, or
+      use a tall window.
+    - Labels are often lowercase in the page and capitalized by CSS, so match text ignoring case.
+    - The five-asset scenario reads: 5 assets, 2 departments, 24 direct, 43 total cascade. The ranking is Network
+      Core Switching 90, Primary Data Center 90, SCADA 74, Production Plant A 72, Production Operations 70.
+    - **SCADA to Manual Ops makes the cascade 41 (direct 22)**, so "watch the cascade shrink" is true on screen.
+  - Still to capture: the map hits. The user says where in the US an NWS alert is active.
   - Then: build the 60 s and 30 s cuts in the brand system, timed to the voice.
 
 - [ ] **Before planning content for the next Uptown Sound show:**

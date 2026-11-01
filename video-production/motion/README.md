@@ -152,6 +152,12 @@ dst-commercial/    TLC_TRNG Decision Support Tool commercial (16:9, 30 s and 60 
                    the red recording dot. It writes out/iphone-share-clean-full.mp4 and a trimmed 5.65 s
                    out/iphone-share-edit.mp4.
                      python3 tools/clean_iphone.py assets/iphone_share_raw.mp4 out/
+                   tools/capture_dst.cjs signs in to the demo (DST_USER / DST_PASSWORD from the environment) and
+                   captures every desktop screen in the storyboard at 3840x2160 into media/capture/, with
+                   boxes.json (callout targets per shot). The scenario it builds lives only in its browser, and it
+                   never saves one, so the shared demo account is left untouched.
+                     node tools/capture_dst.cjs media/capture
+                   media/ (committed): the Sheldon narration reads, the cleaned iPhone clips, the captures.
 ```
 
 Setup (once per machine): `npm install puppeteer-core@24 gsap` somewhere and point `NODE_PATH` at its `node_modules`;
