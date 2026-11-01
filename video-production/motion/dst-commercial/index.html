@@ -64,11 +64,25 @@
   .delta .lbl { font: 700 15px "Montserrat"; letter-spacing: 0.14em; color: var(--azure); text-transform: uppercase; }
 
   /* callouts: azure, flat (azure never glows) */
-  .callout { position: absolute; border: 3px solid var(--azure); border-radius: 8px; opacity: 0; pointer-events: none; }
-  .callout .tag { position: absolute; left: -3px; bottom: calc(100% + 8px); white-space: nowrap; background: var(--azure); color: var(--navy-deep);
+  .callout { position: absolute; border: 6px solid var(--azure); border-radius: 10px; opacity: 0; pointer-events: none; }
+  .callout .tag { position: absolute; left: -6px; bottom: calc(100% + 8px); white-space: nowrap; background: var(--azure); color: var(--navy-deep);
                   font: 700 17px "Montserrat"; letter-spacing: 0.1em; text-transform: uppercase; padding: 7px 12px; border-radius: 6px; }
   .callout.below .tag { bottom: auto; top: calc(100% + 8px); }
-  .callout.right .tag { left: auto; right: -3px; }
+  .callout.right .tag { left: auto; right: -6px; }
+  .callout.side .tag { left: calc(100% + 12px); bottom: auto; top: 50%; transform: translateY(-50%); }   /* beside the box, on its line */
+  /* a flag pointing left at a row (e.g. the first to restore) */
+  .flag { position: absolute; width: 0; height: 0; opacity: 0; pointer-events: none; }
+  .flag .body { position: absolute; left: 22px; top: 0; transform: translateY(-50%); white-space: nowrap; background: var(--azure); color: var(--navy-deep);
+                font: 800 22px/22px "Montserrat"; letter-spacing: 0.08em; text-transform: uppercase; padding: 12px 24px 12px 18px; border-radius: 0 10px 10px 0; }
+  .flag .body::before { content: ""; position: absolute; left: -22px; top: 0; border-style: solid; border-width: 23px 22px 23px 0;
+                        border-color: transparent var(--azure) transparent transparent; }
+  /* the scenario checklist (adding assets) */
+  .checklist { margin-top: 28px; }
+  .checklist .item { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; opacity: 0; }
+  .checklist .tick { width: 32px; height: 32px; border-radius: 50%; background: var(--azure); flex: none; display: flex; align-items: center; justify-content: center; }
+  .checklist .ty { display: block; font: 700 12px "Montserrat"; letter-spacing: 0.16em; color: var(--azure); text-transform: uppercase; }
+  .checklist .nm { display: block; font: 700 24px/1.15 "Montserrat"; color: #fff; }
+  .tally { font: 800 26px "Montserrat"; color: var(--light-blue); margin-top: 6px; opacity: 0; }
   /* tap rings: cyan, the clickable, so they glow */
   .tap { position: absolute; width: 0; height: 0; opacity: 0; }
   .tap::before, .tap::after { content: ""; position: absolute; border-radius: 50%; left: 50%; top: 50%; transform: translate(-50%, -50%); }
@@ -160,7 +174,7 @@
     "po": "asset-production-operations", "scada": "asset-scada", "nc": "asset-network-core", "pdc": "asset-primary-data-center", "ppa": "asset-production-plant-a",
     "po+": "asset-production-operations-added", "scada+": "asset-scada-added", "nc+": "asset-network-core-added", "pdc+": "asset-primary-data-center-added", "ppa+": "asset-production-plant-a-added",
     "sbTop": "sb-top", "sbList": "sb-list", "sbCascade": "sb-cascade", "sbState": "sb-state-panel", "sbManList": "sb-manual-list", "sbManTop": "sb-manual-top",
-    "rpTop": "report-top", "rpCq": "report-cq",
+    "rpScroll": "report-scroll",                     // report-top and report-cq stitched into one page (tools/stitch_scroll.py)
     "phxPopup": "map-phx-popup", "phxRadarPopup": "map-phx-radar-2150-popup", "r2150": "map-phx-radar-2150", "r2158": "map-phx-radar-2158",
     "r2204": "map-phx-radar-2204", "r2212": "map-phx-radar-2212",
     "a1": "map-area-01-tool", "a2": "map-area-02-pin", "a4": "map-area-04-found", "a5": "map-area-05-list", "a6": "map-area-06-added",
@@ -170,9 +184,11 @@
   const BOX = {
     score: [768, 383, 1002, 599], contact: [3518, 524, 3792, 596], impact: [768, 1438, 2238, 1730], deps: [2322, 974, 3792, 1304],
     add: [768, 641, 3792, 764], count: [3678, 35, 3792, 107],
-    tileCascade: [2292, 686, 3792, 966], order: [762, 262, 1066, 1362], row1: [762, 262, 3792, 410], cascadeHead: [768, 188, 3792, 356],
+    // the rank and score column, from the section rule (y 219) to the list's bottom line (y 1429); the flag points at row 01
+    tileCascade: [2292, 686, 3792, 966], order: [757, 219, 1072, 1429], first: [1530, 347], cascadeHead: [768, 188, 3792, 356],
     scadaChip: [3424, 805, 3684, 865], manualOpt: [1119, 1316, 2775, 1423], manTile: [2292, 320, 3792, 600],
-    exec: [800, 1380, 3740, 1760], cq1: [790, 196, 2110, 270], actions: [800, 790, 3740, 870],
+    // the report, on the stitched page (report-cq coordinates + 1833)
+    exec: [800, 1380, 3740, 1760], cq1: [790, 2029, 2110, 2103], actions: [800, 2623, 3740, 2703],
     map: [771, 430, 3789, 1870], warn: [2300, 860, 2760, 1250], areaAdd: [2788, 1688, 3712, 1800], areaPin: [1893, 1101, 1893, 1101],
   };
   const mid = (b) => [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2];
@@ -211,13 +227,23 @@
     return el;
   }
   const marks = [];
-  function callout(box, t, out, label = "", cls = "") {
+  // pad: screen px between the box and the frame; a negative pad centres the 6 px line on the box edge
+  function callout(box, t, out, label = "", cls = "", pad = 6) {
     const el = document.createElement("div");
     el.className = "callout " + cls;
     if (label) el.innerHTML = `<div class="tag">${label}</div>`;
     byId("marks").appendChild(el);
-    marks.push({ el, box });
+    marks.push({ el, box, pad });
     tl.fromTo(el, { opacity: 0, scale: 1.06 }, { opacity: 1, scale: 1, duration: 0.25, ease: "power2.out", immediateRender: false }, t);
+    tl.to(el, { opacity: 0, duration: 0.2 }, out);
+  }
+  function flag(point, t, out, label) {
+    const el = document.createElement("div");
+    el.className = "flag";
+    el.innerHTML = `<div class="body">${label}</div>`;
+    byId("marks").appendChild(el);
+    marks.push({ el, point });
+    tl.fromTo(el, { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.35, ease: "power3.out", immediateRender: false }, t);
     tl.to(el, { opacity: 0, duration: 0.2 }, out);
   }
   function tap(point, t, r = 64) {
@@ -232,12 +258,33 @@
     for (const m of marks) {
       if (m.box) {
         const [x0, y0] = toScreen(m.box[0], m.box[1]), [x1, y1] = toScreen(m.box[2], m.box[3]);
-        Object.assign(m.el.style, { left: x0 - 6 + "px", top: y0 - 6 + "px", width: x1 - x0 + 12 + "px", height: y1 - y0 + 12 + "px" });
+        const p = m.pad;
+        Object.assign(m.el.style, { left: x0 - p + "px", top: y0 - p + "px", width: x1 - x0 + 2 * p + "px", height: y1 - y0 + 2 * p + "px" });
       } else {
         const [x, y] = toScreen(m.point[0], m.point[1]);
         Object.assign(m.el.style, { left: x + "px", top: y + "px" });
       }
     }
+  }
+
+  // ---------- adding the assets: one tap on Add to Scenario, then the checklist of what's in the scenario ----------
+  const CHECK = `<svg width="18" height="18" viewBox="0 0 18 18"><path d="M3.5 9.5l3.5 3.5 7.5-8" fill="none" stroke="#081937" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const ASSET_LIST = [["Process", "Production Operations"], ["System", "SCADA / Plant Control"], ["System", "Network Core Switching"],
+                      ["Facility", "Primary Data Center"], ["Facility", "Production Plant A"]];
+  function addBeat(d0, r0, tapAt, step) {
+    // the page of the first asset, its Add to Scenario tapped, the header counter at 1
+    show("po", d0 - 0.05, tapAt + 0.08, 0.15);
+    tap(mid(BOX.add), tapAt, 80);
+    const listAt = tapAt + 0.18;
+    const lastTick = listAt + step * (ASSET_LIST.length - 1);
+    show("po+", tapAt + 0.08, lastTick + 0.05, 0.08);
+    // the scenario fills: the last asset added, the counter at 5
+    show("ppa+", lastTick + 0.05, r0 + 0.15, 0.25);
+    callout(BOX.count, tapAt + 0.15, r0 - 0.1, "In scenario", "below right");
+    const items = ASSET_LIST.map(([ty, nm]) => `<div class="item"><div class="tick">${CHECK}</div><div><span class="ty">${ty}</span><span class="nm">${nm}</span></div></div>`).join("");
+    const el = cap(d0, r0 - 0.1, { eyebrow: "Build a scenario", head: "Add what's down.", html: `<div class="checklist">${items}</div><div class="tally">5 assets · 1 scenario</div>`, top: 300 });
+    el.querySelectorAll(".item").forEach((it, i) => tl.fromTo(it, { opacity: 0, x: -16 }, { opacity: 1, x: 0, duration: 0.25, ease: "power2.out", immediateRender: false }, listAt + i * step));
+    tl.fromTo(el.querySelector(".tally"), { opacity: 0 }, { opacity: 1, duration: 0.3, immediateRender: false }, lastTick + 0.2);
   }
 
   // ---------- the long cut ----------
@@ -285,19 +332,8 @@
     callout(BOX.impact, wt("assets", "impact"), aEnd, "Impact", "below");
     callout(BOX.deps, wt("assets", "dependencies"), aEnd, "Dependencies", "below right");
 
-    // 4. ADD: the ones that are down go into one scenario (the header counter climbs to 5)
-    const d0 = beat("add").start;
-    const adds = ["po", "scada", "nc", "pdc", "ppa"];
-    ADD_TIMES.length = 0;
-    const capAdd = cap(d0, beat("rank").start - 0.1, { eyebrow: "Build a scenario", html: `<div class="big"><span id="addN">1</span></div><div class="head" style="margin-top:14px">assets.<br>1 scenario.</div>` });
-    adds.forEach((id, i) => {
-      const t = d0 + i * 0.5;
-      show(id, t, t + 0.2, 0.08);
-      tap(mid(BOX.add), t + 0.18, 80);
-      show(id + "+", t + 0.2, i < 4 ? t + 0.5 : beat("rank").start + 0.15, 0.08);
-      ADD_TIMES.push(t + 0.2);
-    });
-    callout(BOX.count, d0 + 0.2, beat("rank").start - 0.1, "In scenario", "below right");
+    // 4. ADD: the ones that are down go into one scenario
+    addBeat(beat("add").start, beat("rank").start, wt("add", "ones"), 0.3);
 
     // 5. RANK: the restoration order, then the Total Cascade
     const r0 = beat("rank").start;
@@ -305,8 +341,8 @@
     show("sbList", wt("rank", "ranks"), wt("rank", "Total") + 0.1, 0.3);
     tl.fromTo(layers.sbList.img, { y: 260 }, { y: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, wt("rank", "ranks"));
     cap(r0, wt("rank", "Total") - 0.05, { eyebrow: "Scenario Builder", head: "Ranked by<br>Restoration Score.", sub: "Higher score, addressed first." });
-    callout(BOX.order, wt("rank", "ranks") + 0.35, wt("rank", "Total") - 0.1, "Restoration order");
-    callout(BOX.row1, wt("rank", "higher"), wt("rank", "Total") - 0.1, "First to restore", "below right");
+    callout(BOX.order, wt("rank", "ranks") + 0.35, wt("rank", "Total") - 0.1, "Restoration order", "", -3);
+    flag(BOX.first, wt("rank", "higher"), wt("rank", "Total") - 0.1, "First to restore");
     show("sbTop", wt("rank", "Total"), wt("rank", "cascade", 0, "e") + 0.15, 0.15);
     tap(mid(BOX.tileCascade), wt("rank", "cascade") + 0.1);
     show("sbCascade", wt("rank", "cascade", 0, "e") + 0.15, beat("whatif").start + 0.1, 0.2);
@@ -332,15 +368,14 @@
 
     // 7. REPORT: the brief for leadership, then shared from a phone
     const p0 = beat("report").start;
-    show("rpTop", p0 - 0.05, wt("report", "critical") + 0.15, 0.25);
-    camTo(p0 - 0.1, 0.45, { cx: 2280, cy: 1250, z: 1.12 });
+    // one page (z 1.3 keeps the sidebar out of view), scrolling down: Executive Summary, then Critical Questions and Initial Actions
+    show("rpScroll", p0 - 0.05, beat("map").start - 0.2, 0.25);
+    camTo(p0 - 0.1, 0.45, { cx: 2280, cy: 1250, z: 1.3 });
     callout(BOX.exec, wt("report", "executive"), wt("report", "critical"), "Executive Summary");
-    show("rpCq", wt("report", "critical") + 0.1, beat("map").start - 0.2, 0.25);
-    tl.fromTo(layers.rpCq.img, { y: 220 }, { y: 0, duration: 0.45, ease: "power2.out", immediateRender: false }, wt("report", "critical") + 0.1);
-    camTo(wt("report", "critical") + 0.1, 0.5, { cx: 2280, cy: 760, z: 1.12 });
+    camTo(wt("report", "critical"), 0.65, { cy: 2330 });
     const ph0 = wt("report", "ready") - 0.45, ph1 = beat("map").start - 0.15;
-    callout(BOX.cq1, wt("report", "questions"), ph0 - 0.05, "The first question", "below");
-    callout(BOX.actions, wt("report", "initial"), ph0 - 0.05, "Initial Actions");
+    callout(BOX.cq1, wt("report", "critical") + 0.6, ph0 - 0.05, "The first question", "side");
+    callout(BOX.actions, wt("report", "initial"), ph0 - 0.05, "Initial Actions", "right");
     cap(p0, beat("map").start - 0.15, { eyebrow: "Scenario Impact Report", head: "Brief leadership<br>in seconds.", sub: "Executive Summary, Critical Questions, Initial Actions." });
     tl.to("#frame", { opacity: 0.35, x: -120, duration: 0.5, ease: "power2.inOut" }, ph0);
     tl.fromTo("#phone", { opacity: 0, y: 80 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, ph0);
@@ -421,18 +456,8 @@
     callout(BOX.impact, wt("assets", "impact"), aEnd, "Impact", "below");
     callout(BOX.deps, wt("assets", "dependencies"), aEnd, "Dependencies", "below right");
 
-    // ADD: five taps into one scenario
-    const d0 = beat("add").start;
-    ADD_TIMES.length = 0;
-    cap(d0, beat("rank").start - 0.1, { eyebrow: "Build a scenario", html: `<div class="big"><span id="addN">1</span></div><div class="head" style="margin-top:14px">assets.<br>1 scenario.</div>` });
-    ["po", "scada", "nc", "pdc", "ppa"].forEach((id, i) => {
-      const t = d0 + i * 0.3;
-      show(id, t, t + 0.12, 0.06);
-      tap(mid(BOX.add), t + 0.1, 80);
-      show(id + "+", t + 0.12, i < 4 ? t + 0.3 : beat("rank").start + 0.15, 0.06);
-      ADD_TIMES.push(t + 0.12);
-    });
-    callout(BOX.count, d0 + 0.15, beat("rank").start - 0.1, "In scenario", "below right");
+    // ADD: one tap, then the checklist
+    addBeat(beat("add").start, beat("rank").start, wt("add", "them"), 0.17);
 
     // RANK, then what goes down with them
     const r0 = beat("rank").start;
@@ -440,8 +465,8 @@
     show("sbList", wt("rank", "ranks"), wt("rank", "goes") + 0.1, 0.25);
     tl.fromTo(layers.sbList.img, { y: 260 }, { y: 0, duration: 0.45, ease: "power2.out", immediateRender: false }, wt("rank", "ranks"));
     cap(r0, wt("rank", "what", 1) - 0.05, { eyebrow: "Scenario Builder", head: "Ranked.", sub: "Higher score, addressed first." });
-    callout(BOX.order, wt("rank", "ranks") + 0.3, wt("rank", "what", 1) - 0.1, "Restoration order");
-    callout(BOX.row1, wt("rank", "first"), wt("rank", "what", 1) - 0.1, "First to restore", "below right");
+    callout(BOX.order, wt("rank", "ranks") + 0.3, wt("rank", "what", 1) - 0.1, "Restoration order", "", -3);
+    flag(BOX.first, wt("rank", "first"), wt("rank", "what", 1) - 0.1, "First to restore");
     show("sbCascade", wt("rank", "goes"), beat("whatif").start + 0.1, 0.2);
     cap(wt("rank", "what", 1), beat("whatif").start - 0.1, { eyebrow: "Total Cascade", head: "See what<br>fails next.", sub: "43 items downstream, from 5 assets." });
     callout(BOX.cascadeHead, wt("rank", "goes") + 0.2, beat("whatif").start - 0.1, "Everything downstream", "below");
@@ -464,9 +489,9 @@
 
     // REPORT, shared from a phone
     const p0 = beat("report").start;
-    show("rpCq", p0 - 0.1, beat("end").start - 0.2, 0.2);
-    camTo(p0 - 0.15, 0.4, { cx: 2280, cy: 760, z: 1.12 });
-    callout(BOX.cq1, p0 + 0.1, wt("report", "leadership") + 0.3, "The first question", "below");
+    show("rpScroll", p0 - 0.1, beat("end").start - 0.2, 0.2);
+    camTo(p0 - 0.15, 0.4, { cx: 2280, cy: 2330, z: 1.3 });
+    callout(BOX.cq1, p0 + 0.15, wt("report", "leadership") + 0.3, "The first question", "side");
     cap(p0, beat("end").start - 0.2, { eyebrow: "Scenario Impact Report", head: "Brief leadership<br>in seconds." });
     const ph0 = wt("report", "leadership") + 0.3, ph1 = beat("end").start - 0.2;
     tl.to("#frame", { opacity: 0.35, x: -120, duration: 0.4, ease: "power2.inOut" }, ph0);
@@ -488,7 +513,6 @@
   // ---------- the phone clip (the user's Share Summary recording, cleaned: media/iphone-share-edit.mp4) ----------
   const PHONE = { t0: 0, t1: 0, n: 170, from: 0.6, to: 5.65 };    // clip seconds shown between t0 and t1
   const phoneImg = byId("phoneImg");
-  const ADD_TIMES = [];                                       // when the header counter (and the super's number) steps up
   let phoneSrc = "";
 
   if (CUT === "short") buildShort(); else buildLong();
@@ -509,7 +533,6 @@
       if (src !== phoneSrc) { phoneImg.src = src; phoneSrc = src; waits.push(phoneImg.decode().catch(() => {})); }
     }
     await Promise.all(waits);
-    byId("addN").textContent = String(Math.max(1, ADD_TIMES.filter((a) => t >= a).length));
     const k = FW / 3840 * cam.z;
     byId("cam").style.transform = `translate(${FW / 2 - cam.cx * k}px, ${FH / 2 - cam.cy * k}px) scale(${k})`;
     placeMarks();

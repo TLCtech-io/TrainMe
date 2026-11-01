@@ -606,6 +606,18 @@ The DST's screens appear as captured. Everything around them is brand:
       card reads by 1 s). Both cuts start and end on navy, so the booth loop is seamless.
     - **The 30 s cut** has no map hits, and its call to action comes up on "You decide", so the loop shows it for
       2 s.
+  - **Draft 2 (2026-11-01), from the user's draft 1 notes.** These are guidelines for later DST and tool videos too:
+    - **Frames sit on the app's own lines.** The Restoration order frame runs along the ranked list's section rule,
+      the row separators' left end and the bottom line, clear of the rank numbers. Measure the lines in the capture
+      before placing a frame.
+    - **A flag, not a second frame,** marks the one item that matters ("First to restore", beside row 01).
+    - **Frame lines are 6 px** (double draft 1's 3 px). Labels sit where they cover no app text: beside the box, or
+      above its right end.
+    - **Scroll the way the page reads.** The report is one tall page, stitched from two scrolled shots with
+      `tools/stitch_scroll.py`, and the camera moves down it: Executive Summary, then Critical Questions, then
+      Initial Actions.
+    - **Show an action once, then show its result.** One tap on Add to Scenario, then a checklist of the five
+      assets ticks in beside the app, with "5 assets · 1 scenario" and the header counter at 5. No repeated flashes.
 
 - [ ] **Before planning content for the next Uptown Sound show:**
   - Research the current FB, TikTok and IG ranking signals (hook and retention, shares and saves, TikTok search

@@ -162,6 +162,12 @@ dst-commercial/    TLC_TRNG Decision Support Tool commercial (16:9, 60 s and 30 
                    boxes.json (callout targets per shot). The scenario it builds lives only in its browser, and it
                    never saves one, so the shared demo account is left untouched.
                      node tools/capture_dst.cjs media/capture
+                   tools/stitch_scroll.py joins two shots of one scrolling page (the app scrolls inside its own
+                   panel) into one tall page, so the camera can scroll down it; it prints the scroll distance, which
+                   maps the lower shot's boxes onto the page. media/capture/report-scroll.png is the report, built
+                   from report-top and report-cq (distance 1833 px).
+                     python3 tools/stitch_scroll.py media/capture/report-top.png media/capture/report-cq.png \
+                       media/capture/report-scroll.png
                    media/ (committed): the Sheldon narration reads, the cleaned iPhone clips, the captures.
 ```
 
