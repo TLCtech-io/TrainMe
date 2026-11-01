@@ -143,6 +143,15 @@ uptown-wall/       Video wall backdrop for the Pick Your Poison shows: a dusty a
                    1920x1200 and 1920x1080 (the 4K render takes about an hour here; HD about 15 minutes).
                    tools/patch_frames.py swaps re-rendered frame ranges into a lossless loop render, for changes that
                    only touch a few seconds.
+dst-commercial/    TLC_TRNG Decision Support Tool commercial (16:9, 30 s and 60 s cuts, Descript AI voice; in progress).
+                   fact-brief.md is the DST Code session's handoff. script.md is the approved script (draft 3), and
+                   "DST Commercial - Narration.docx" holds just its time hacks and narration, for Descript. The look
+                   follows the TLC_TRNG company brand system (Dropbox ds-bundle; see the video guide, section 13).
+                   tools/clean_iphone.py cleans the user's iPhone Share Summary recording (assets/, not committed):
+                   it blurs the share sheet's contacts row as the sheet grows in, rests and is covered, and paints out
+                   the red recording dot. It writes out/iphone-share-clean-full.mp4 and a trimmed 5.65 s
+                   out/iphone-share-edit.mp4.
+                     python3 tools/clean_iphone.py assets/iphone_share_raw.mp4 out/
 ```
 
 Setup (once per machine): `npm install puppeteer-core@24 gsap` somewhere and point `NODE_PATH` at its `node_modules`;

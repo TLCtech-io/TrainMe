@@ -542,8 +542,10 @@ The DST's screens appear as captured. Everything around them is brand:
 
 - [ ] **DST commercial:**
   - The user adds `DST_USER` and `DST_PASSWORD` as environment variables, then starts a new session for the capture.
-  - The user approves `motion/dst-commercial/script.md` (draft 3), then makes the Descript AI voice.
-  - The user makes the iPhone Share Summary recording (script section 7, with the five assets).
+  - Script draft 3 approved (2026-11-01). The time hacks and narration are in
+    `motion/dst-commercial/DST Commercial - Narration.docx` for Descript. Next: the user makes the Descript AI voice.
+  - The iPhone Share Summary recording is in, and has been cleaned with `motion/dst-commercial/tools/clean_iphone.py`
+    (contacts blurred, recording dot removed, a trimmed 5.65 s edit).
   - At capture, the user says where in the US an NWS alert is active, for the map hits.
   - Then: build the 60 s and 30 s cuts in the brand system, timed to the voice.
 
