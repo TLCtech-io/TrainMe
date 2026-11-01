@@ -582,9 +582,13 @@ The DST's screens appear as captured. Everything around them is brand:
     - **Radar:** headless capture fires before the rain tiles load, and the loop steps in bursts. The user is
       taking 3-4 still frames (Phoenix, radar on, same framing; popup open and closed). The build cross-fades
       them under a slow push-in.
-    - **Draw an area:** the map's "Select facilities by area" tool, in Radius mode (click a centre, move out,
-      click). The capture script's area step needs one full run; the first was interrupted after the growing
-      circle.
+    - **Draw an area (captured):** the map's "Select facilities by area" tool, in Radius mode (click a centre,
+      move out, click). The frames are `map-area-01` to `map-area-06`:
+      - the pin, then the circle growing in eight steps;
+      - "8 facilities in 0.3 mi radius", which is tapped to open a checklist that includes Production Plant A;
+      - ADD 8 TO SCENARIO, after which the header counter reads 8.
+    - **The user's radar crops are overlaid on the app capture.** The map panel sits at
+      x 771-3789, y 430-1870 in the 3840x2160 shots (`map-box.json`, about 2.1:1).
   - Then: build the 60 s and 30 s cuts in the brand system, timed to the voice.
 
 - [ ] **Before planning content for the next Uptown Sound show:**

@@ -34,6 +34,10 @@ const W = 1280, H = 720, DSF = 3;
   await pause(6000);
   await step("scroll to map", async () => { await page.getByText(/tlc_trng site map/i).first().evaluate((e) => e.scrollIntoView({ block: "start" })); await pause(2500); });
   await shot("map-default");
+  // where the map sits in the shots (shot pixels), for laying other map images over them
+  const mapBox = await page.locator(".mapboxgl-map").first().boundingBox();
+  fs.writeFileSync(`${OUT}/map-box.json`, JSON.stringify({ map: [mapBox.x, mapBox.y, mapBox.x + mapBox.width, mapBox.y + mapBox.height].map((v) => Math.round(v * DSF)) }) + "\n");
+  console.log("  map box", fs.readFileSync(`${OUT}/map-box.json`, "utf8").trim());
   await page.evaluate(() => {
     const el = document.querySelector(".mapboxgl-map"), seen = new Set();
     const isMap = (v) => v && typeof v === "object" && typeof v.flyTo === "function" && typeof v.getCenter === "function";
@@ -75,12 +79,14 @@ const W = 1280, H = 720, DSF = 3;
       await page.screenshot({ path: `${OUT}/map-area-03-grow-${k}.png` });
     }
     await page.mouse.click(cx + rad, cy); await pause(1800);
-    await shot("map-area-04-found");
+    await shot("map-area-04-found");                       // "N facilities in X mi radius - tap to review and add"
+    await page.getByText(/facilities in .* radius/i).first().click(); await pause(1500);
+    await shot("map-area-05-list");
     const t = (await page.evaluate(() => document.body.innerText)).replace(/\s+/g, " ");
-    const i = t.search(/add \d+ to/i); console.log("  found panel:", i >= 0 ? t.slice(Math.max(0, i - 300), i + 60) : "(no add button text)");
-    const add = page.getByText(/add \d+ to/i).first();
-    if (await add.count()) { await add.click(); await pause(2000); await shot("map-area-05-added"); }
-    await page.keyboard.press("Escape"); await pause(800);
+    const i = t.search(/facilities in .* radius/i); console.log("  list panel:", i >= 0 ? t.slice(i, i + 500) : "(not found)");
+    const add = page.getByRole("button", { name: /add/i }).filter({ hasText: /scenario|\d/i }).first();
+    console.log("  add button:", (await add.count()) ? (await add.innerText()).replace(/\s+/g, " ") : "(none)");
+    if (await add.count()) { await add.click(); await pause(2000); await shot("map-area-06-added"); }
   });
 
   // the alert polygons drawn in view, each with a point inside it (centroid of its outer ring) in page pixels
