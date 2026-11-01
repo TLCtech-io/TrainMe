@@ -587,14 +587,15 @@ The DST's screens appear as captured. Everything around them is brand:
       - the pin, then the circle growing in eight steps;
       - "8 facilities in 0.3 mi radius", which is tapped to open a checklist that includes Production Plant A;
       - ADD 8 TO SCENARIO, after which the header counter reads 8.
-    - **The user's map crops (2026-11-01):** five crops, in `media/capture/user-map/`: the warning shapes, the
-      popup, radar at 9:50 PM with and without the popup, and radar at 9:58 PM. `tools/overlay_map.py` lays them
+    - **The user's map crops (2026-11-01):** seven crops, in `media/capture/user-map/`: the warning shapes, the
+      popup, radar at 9:50 PM with and without the popup, and radar at 9:58, 10:04 and 10:12 PM. `tools/overlay_map.py` lays them
       over the map panel of the app capture, written as `media/capture/map-phx-*.png`:
       - it finds each crop's map border coming in from the page white, past the page's thin rules;
       - it lines the crops up by phase correlation (popup, timeline bar and controls masked), to within about
         0.2 px;
       - it scales them to cover the map box.
-      The user has two more radar frames from later in the loop, for a longer glide.
+      - Light, untinted patches in the radar frames are gaps in the rain (the user's correction), not missing
+        tiles. Leave them as shot.
     - **The user's radar crops are overlaid on the app capture.** The map panel sits at
       x 771-3789, y 430-1870 in the 3840x2160 shots (`map-box.json`, about 2.1:1).
   - Then: build the 60 s and 30 s cuts in the brand system, timed to the voice.

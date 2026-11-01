@@ -74,7 +74,8 @@ def match_view(c):
 
 
 shot = Image.open(shot_path).convert("RGB")
-ref_view, ref_edges = None, None
+ref_view = None
+panels = []                                                # (name, aligned panel) for every crop
 for path in crops:
     im = Image.open(path).convert("RGB")
     a = np.asarray(im)
@@ -89,12 +90,17 @@ for path in crops:
             panel = fit; view = match_view(panel)
         dy, dx = (2 * v for v in shift_to(ref_view, view))   # match_view is at half size
         panel = panel.transform(panel.size, Image.AFFINE, (1, 0, -dx, 0, 1, -dy), Image.BICUBIC)
+    name = os.path.splitext(os.path.basename(path))[0]
+    panels.append((name, panel))
+    print(f"{name}: panel {l},{t},{r},{b} ({r - l}x{b - t}), shift dx {dx:+.2f} dy {dy:+.2f}")
+
+# light, untinted patches in a radar frame are gaps in the rain, not missing tiles: they stay as shot
+for name, panel in panels:
     # cover the map box: scale to fill it, trim the overflow evenly
     s = max(BW / panel.width, BH / panel.height)
     big = panel.resize((round(panel.width * s), round(panel.height * s)), Image.LANCZOS)
     ox, oy = (big.width - BW) // 2, (big.height - BH) // 2
     out = shot.copy()
     out.paste(big.crop((ox, oy, ox + BW, oy + BH)), (X0, Y0))
-    name = os.path.splitext(os.path.basename(path))[0]
     out.save(os.path.join(out_dir, name + ".png"))
-    print(f"{name}: panel {l},{t},{r},{b} ({r - l}x{b - t}), shift dx {dx:+.2f} dy {dy:+.2f}, scale {s:.3f}, trim {ox},{oy}")
+print(f"scale {s:.3f}, trim {ox},{oy}; wrote {len(panels)} shots")
