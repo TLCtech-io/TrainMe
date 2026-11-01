@@ -598,7 +598,14 @@ The DST's screens appear as captured. Everything around them is brand:
         tiles. Leave them as shot.
     - **The user's radar crops are overlaid on the app capture.** The map panel sits at
       x 771-3789, y 430-1870 in the 3840x2160 shots (`map-box.json`, about 2.1:1).
-  - Then: build the 60 s and 30 s cuts in the brand system, timed to the voice.
+  - **Draft 1 of both cuts built (2026-11-01):** `motion/dst-commercial/index.html` and `build.sh`.
+    - **Timing:** the narration's beats are spaced (60 s: a 0.3 s lead-in, room around the report and the phone,
+      the end card held to 60.0 s; 30 s: lead-ins only, landing on 30.0 s). The voice itself is untouched,
+      at -14 LUFS.
+    - **QA:** supers never overlap (each is gone before the next arrives). The 3-second check passes (the alert
+      card reads by 1 s). Both cuts start and end on navy, so the booth loop is seamless.
+    - **The 30 s cut** has no map hits, and its call to action comes up on "You decide", so the loop shows it for
+      2 s.
 
 - [ ] **Before planning content for the next Uptown Sound show:**
   - Research the current FB, TikTok and IG ranking signals (hook and retention, shares and saves, TikTok search

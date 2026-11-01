@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TLC_TRNG Decision Support Tool: commercial</title>
+<!--
+  The DST commercial (script.md, draft 3; 16:9, 1920x1080). The 60 s cut by default; ?cut=short for the 30 s cut.
+  The narration is the Descript "Sheldon" read, spaced to the beats by tools/time_narration.py (data/timing_*.js holds
+  every word's time), and every cue below is pinned to a word. The app appears as captured (media/capture), inside a
+  brand browser frame; everything around it follows the TLC_TRNG company system (Dropbox ds-bundle): navy dominant,
+  azure for structure (never glows), cyan only for the live and the clickable (tap rings, the call to action; always
+  glows), status red only for "Disrupted", no gold or yellow, Montserrat headings and Open Sans text.
+  Built to work muted: the left-hand supers carry the story without the voice.
+-->
+<style>
+  @font-face { font-family: "Montserrat"; font-weight: 600; src: url("../shared/fonts/montserrat-latin-600-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Montserrat"; font-weight: 700; src: url("../shared/fonts/montserrat-latin-700-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Montserrat"; font-weight: 800; src: url("../shared/fonts/montserrat-latin-800-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Montserrat"; font-weight: 900; src: url("../shared/fonts/montserrat-latin-900-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Open Sans"; font-weight: 400; src: url("../shared/fonts/open-sans-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Open Sans"; font-weight: 600; src: url("../shared/fonts/open-sans-latin-600-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Open Sans"; font-weight: 700; src: url("../shared/fonts/open-sans-latin-700-normal.woff2") format("woff2"); }
+  :root {
+    --navy: #0F2557; --navy-deep: #081937; --navy-light: #1A3473;
+    --azure: #4DA3FF; --cyan: #6FF2FF; --light-blue: #DCE5F2; --error: #FF6B7A;
+    --cyan-glow: 0 0 16px rgba(111, 242, 255, 0.55); --cyan-glow-soft: 0 0 12px rgba(111, 242, 255, 0.40);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--navy-deep); color: #fff;
+               font-family: "Open Sans", sans-serif; -webkit-font-smoothing: antialiased; }
+  .abs { position: absolute; }
+  /* background: deep navy with a soft navy field and faint azure linework */
+  #bg { position: absolute; inset: 0;
+        background: radial-gradient(1200px 800px at 68% 45%, rgba(26, 52, 115, 0.85), rgba(15, 37, 87, 0.35) 55%, rgba(8, 25, 55, 0) 80%), var(--navy-deep); }
+  #grid { position: absolute; inset: 0; opacity: 0.07;
+          background-image: linear-gradient(var(--azure) 1px, transparent 1px), linear-gradient(90deg, var(--azure) 1px, transparent 1px);
+          background-size: 64px 64px; }
+
+  /* the browser frame the app sits in */
+  #frame { position: absolute; left: 640px; top: 182px; width: 1200px; height: 715px; border-radius: 14px; overflow: hidden;
+           background: var(--navy-light); border: 1px solid rgba(77, 163, 255, 0.28);
+           box-shadow: 0 30px 80px rgba(3, 10, 25, 0.6), 0 2px 0 rgba(255, 255, 255, 0.04) inset; opacity: 0; }
+  #bar { position: absolute; left: 0; top: 0; width: 1200px; height: 40px; display: flex; align-items: center; gap: 8px; padding-left: 16px; }
+  #bar i { width: 11px; height: 11px; border-radius: 50%; background: rgba(220, 229, 242, 0.28); }
+  #url { margin-left: 22px; height: 24px; padding: 0 14px; border-radius: 12px; background: var(--navy-deep);
+         font: 600 13px/24px "Open Sans"; color: var(--light-blue); letter-spacing: 0.02em; }
+  #content { position: absolute; left: 0; top: 40px; width: 1200px; height: 675px; overflow: hidden; background: #fff; }
+  #cam { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+  #cam img { position: absolute; left: 0; top: 0; opacity: 0; }
+  #demo { position: absolute; left: 640px; top: 913px; font: 600 16px "Open Sans"; color: var(--light-blue); opacity: 0; letter-spacing: 0.02em; }
+  #demo b { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--azure); margin-right: 9px; vertical-align: 2px; }
+
+  /* the left-hand supers */
+  .cap { position: absolute; left: 120px; width: 470px; opacity: 0; }
+  .eyebrow { font: 700 18px "Montserrat"; letter-spacing: 0.18em; color: var(--azure); text-transform: uppercase; margin-bottom: 18px; }
+  .head { font: 800 56px/1.04 "Montserrat"; color: #fff; text-transform: uppercase; letter-spacing: -0.01em; }
+  .sub { font: 600 25px/1.35 "Open Sans"; color: var(--light-blue); margin-top: 22px; }
+  .types { margin-top: 26px; font: 700 20px "Montserrat"; letter-spacing: 0.14em; }
+  .types span { color: rgba(220, 229, 242, 0.32); }
+  .types em { font-style: normal; color: rgba(77, 163, 255, 0.5); margin: 0 10px; }
+  .big { font: 900 150px/0.9 "Montserrat"; color: #fff; letter-spacing: -0.03em; }
+  .delta { display: inline-flex; align-items: center; gap: 14px; margin-top: 26px; padding: 10px 18px; border-radius: 8px;
+           background: rgba(77, 163, 255, 0.12); border: 1px solid rgba(77, 163, 255, 0.4); font: 800 34px "Montserrat"; }
+  .delta .lbl { font: 700 15px "Montserrat"; letter-spacing: 0.14em; color: var(--azure); text-transform: uppercase; }
+
+  /* callouts: azure, flat (azure never glows) */
+  .callout { position: absolute; border: 3px solid var(--azure); border-radius: 8px; opacity: 0; pointer-events: none; }
+  .callout .tag { position: absolute; left: -3px; bottom: calc(100% + 8px); white-space: nowrap; background: var(--azure); color: var(--navy-deep);
+                  font: 700 17px "Montserrat"; letter-spacing: 0.1em; text-transform: uppercase; padding: 7px 12px; border-radius: 6px; }
+  .callout.below .tag { bottom: auto; top: calc(100% + 8px); }
+  .callout.right .tag { left: auto; right: -3px; }
+  /* tap rings: cyan, the clickable, so they glow */
+  .tap { position: absolute; width: 0; height: 0; opacity: 0; }
+  .tap::before, .tap::after { content: ""; position: absolute; border-radius: 50%; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+  .tap::before { width: 22px; height: 22px; background: var(--cyan); box-shadow: var(--cyan-glow); }
+  .tap::after { width: var(--r, 64px); height: var(--r, 64px); border: 3px solid var(--cyan); box-shadow: var(--cyan-glow); }
+
+  /* opening: the alert card */
+  #alert { position: absolute; left: 550px; top: 380px; width: 820px; padding: 34px 44px 38px; border-radius: 22px; opacity: 0;
+           background: var(--navy-light); border: 1px solid rgba(77, 163, 255, 0.3); box-shadow: 0 30px 90px rgba(3, 10, 25, 0.7); }
+  #alert .row { display: flex; align-items: center; gap: 12px; font: 700 18px "Montserrat"; letter-spacing: 0.16em; color: var(--error); }
+  #alert .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--error); }
+  #alert .when { margin-left: auto; font: 600 17px "Open Sans"; letter-spacing: 0.02em; color: rgba(220, 229, 242, 0.6); }
+  #alert h1 { font: 800 62px/1.05 "Montserrat"; margin-top: 20px; }
+  #alert p { font: 600 36px "Open Sans"; color: var(--light-blue); margin-top: 8px; }
+  /* the question, with the five assets down around it */
+  #question { position: absolute; left: 0; width: 1920px; top: 452px; text-align: center; font: 900 92px/1 "Montserrat"; letter-spacing: -0.01em; opacity: 0; }
+  #binder { position: absolute; left: 0; width: 1920px; top: 590px; text-align: center; font: 600 34px "Open Sans"; color: var(--light-blue); opacity: 0; }
+  .chip { position: absolute; padding: 14px 20px 15px; border-radius: 12px; background: var(--navy-light); border: 1px solid rgba(77, 163, 255, 0.25);
+          box-shadow: 0 14px 40px rgba(3, 10, 25, 0.5); opacity: 0; white-space: nowrap; }
+  .chip small { display: block; font: 700 13px "Montserrat"; letter-spacing: 0.16em; color: var(--azure); text-transform: uppercase; }
+  .chip span { display: block; font: 700 25px "Montserrat"; margin-top: 4px; }
+  .chip b { position: absolute; right: 14px; top: 14px; width: 11px; height: 11px; border-radius: 50%; background: var(--error); }
+
+  /* the phone, for Share Summary */
+  #phone { position: absolute; left: 1430px; top: 150px; width: 384px; height: 806px; border-radius: 58px; background: #0b1426; padding: 13px; opacity: 0;
+           border: 2px solid rgba(220, 229, 242, 0.22); box-shadow: 0 40px 100px rgba(3, 10, 25, 0.75); }
+  #phone img { width: 354px; height: 770px; border-radius: 46px; display: block; object-fit: cover; }
+
+  /* end card */
+  #end { position: absolute; inset: 0; opacity: 0; text-align: center; }
+  #end img { position: absolute; left: 50%; top: 250px; width: 560px; transform: translateX(-50%); }
+  #end .eyebrow { position: absolute; left: 0; width: 100%; top: 372px; font-size: 22px; }
+  #endTag { position: absolute; left: 0; width: 100%; top: 450px; font: 800 82px/1.05 "Montserrat"; letter-spacing: -0.01em; }
+  #endTag span { opacity: 0; }
+  #endAsk { position: absolute; left: 0; width: 100%; top: 590px; font: 600 34px "Open Sans"; color: var(--light-blue); opacity: 0; }
+  #cta { position: absolute; left: 50%; top: 668px; transform: translateX(-50%); white-space: nowrap; opacity: 0;
+         background: var(--cyan); color: var(--navy-deep); font: 800 32px "Montserrat"; letter-spacing: 0.02em;
+         padding: 20px 44px; border-radius: 999px; box-shadow: var(--cyan-glow), 0 0 40px rgba(111, 242, 255, 0.25); }
+</style>
+</head>
+<body>
+  <div id="bg"></div><div id="grid"></div>
+
+  <div id="alert">
+    <div class="row"><div class="dot"></div>DISRUPTED<span class="when">Just now</span></div>
+    <h1>Operations disrupted.</h1>
+    <p>Cause unknown.</p>
+  </div>
+  <div id="question">WHAT DO WE RESTORE FIRST?</div>
+  <div id="binder">The answer’s in your plans… buried in a binder.</div>
+  <div id="chips"></div>
+
+  <div id="frame">
+    <div id="bar"><i></i><i></i><i></i><div id="url">tlctrng.demo-dst.com</div></div>
+    <div id="content"><div id="cam"></div></div>
+  </div>
+  <div id="demo"><b></b>Demo · simulated data</div>
+  <div id="caps"></div>
+  <div id="marks"></div>
+  <div id="phone"><img id="phoneImg" alt=""></div>
+
+  <div id="end">
+    <img src="../shared/brand/tlc-trng-horizontal-gray-white.png" alt="TLC_TRNG">
+    <div class="eyebrow">Decision Support Tool</div>
+    <div id="endTag"><span id="endA">The DST ranks.</span> <span id="endB">You decide.</span></div>
+    <div id="endAsk">Ready to operationalize your plans?</div>
+    <div id="cta">Book a live demo · tlctrng.com/dst</div>
+  </div>
+
+<script src="../shared/gsap.min.js"></script>
+<script>
+  const CUT = location.search.includes("cut=short") ? "short" : "long";
+  document.write(`<script src="data/timing_${CUT}.js"><\/script>`);
+</script>
+<script>
+  const T = window.TIMING, D = T.length, FPS = 30;
+  const byId = (id) => document.getElementById(id);
+  // the time a word starts (or ends) in a beat: wt("rank", "cascade"), wt("report", "phone", 0, "e")
+  const wt = (beat, word, nth = 0, edge = "s") => {
+    const norm = (w) => w.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const hits = T.words.filter((w) => w.beat === beat && norm(w.w) === norm(word));
+    if (!hits[nth]) throw new Error(`no word ${word} #${nth} in ${beat}`);
+    return hits[nth][edge];
+  };
+  const beat = (id) => T.beats.find((b) => b.id === id);
+
+  // ---------- the app shots, in shot pixels (3840x2160; the *_tall ones are taller) ----------
+  const SHOTS = {
+    "po": "asset-production-operations", "scada": "asset-scada", "nc": "asset-network-core", "pdc": "asset-primary-data-center", "ppa": "asset-production-plant-a",
+    "po+": "asset-production-operations-added", "scada+": "asset-scada-added", "nc+": "asset-network-core-added", "pdc+": "asset-primary-data-center-added", "ppa+": "asset-production-plant-a-added",
+    "sbTop": "sb-top", "sbList": "sb-list", "sbCascade": "sb-cascade", "sbState": "sb-state-panel", "sbManList": "sb-manual-list", "sbManTop": "sb-manual-top",
+    "rpTop": "report-top", "rpCq": "report-cq",
+    "phxPopup": "map-phx-popup", "phxRadarPopup": "map-phx-radar-2150-popup", "r2150": "map-phx-radar-2150", "r2158": "map-phx-radar-2158",
+    "r2204": "map-phx-radar-2204", "r2212": "map-phx-radar-2212",
+    "a1": "map-area-01-tool", "a2": "map-area-02-pin", "a4": "map-area-04-found", "a5": "map-area-05-list", "a6": "map-area-06-added",
+  };
+  for (let k = 1; k <= 8; k++) SHOTS["g" + k] = "map-area-03-grow-" + k;
+  // where things are in the shots (media/capture/boxes.json, plus measured off the shots)
+  const BOX = {
+    score: [768, 383, 1002, 599], contact: [3518, 524, 3792, 596], impact: [768, 1438, 2238, 1730], deps: [2322, 974, 3792, 1304],
+    add: [768, 641, 3792, 764], count: [3678, 35, 3792, 107],
+    tileCascade: [2292, 686, 3792, 966], order: [762, 262, 1066, 1362], row1: [762, 262, 3792, 410], cascadeHead: [768, 188, 3792, 356],
+    scadaChip: [3424, 805, 3684, 865], manualOpt: [1119, 1316, 2775, 1423], manTile: [2292, 320, 3792, 600],
+    exec: [800, 1380, 3740, 1760], cq1: [790, 196, 2110, 270], actions: [800, 790, 3740, 870],
+    map: [771, 430, 3789, 1870], warn: [2300, 860, 2760, 1250], areaAdd: [2788, 1688, 3712, 1800], areaPin: [1893, 1101, 1893, 1101],
+  };
+  const mid = (b) => [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2];
+
+  // ---------- the camera on the shots ----------
+  const FX = 640, FY = 222, FW = 1200, FH = 675;
+  const cam = { cx: 1920, cy: 1080, z: 1 };
+  const toScreen = (x, y) => { const k = FW / 3840 * cam.z; return [FX + FW / 2 + (x - cam.cx) * k, FY + FH / 2 + (y - cam.cy) * k]; };
+  const layers = {};
+  for (const [id, file] of Object.entries(SHOTS)) {
+    const img = document.createElement("img");
+    img.dataset.src = `media/capture/${file}.png`; img.alt = "";
+    byId("cam").appendChild(img);
+    layers[id] = { img, windows: [] };
+  }
+
+  const tl = gsap.timeline({ paused: true });
+  // a shot fades in at t (and out at `out`, if given); its file is loaded only around the times it shows
+  function show(id, t, out, fade = 0.18) {
+    const L = layers[id];
+    tl.fromTo(L.img, { opacity: 0 }, { opacity: 1, duration: fade, ease: "none", immediateRender: false }, t);
+    if (out !== undefined) tl.to(L.img, { opacity: 0, duration: fade, ease: "none" }, out);
+    L.windows.push([t - 0.6, (out === undefined ? D : out) + fade + 0.3]);
+  }
+  function camTo(t, dur, to, ease = "power2.inOut") { tl.to(cam, { ...to, duration: dur, ease }, t); }
+  function camSet(t, to) { tl.set(cam, to, t); }
+
+  // ---------- supers, callouts, taps ----------
+  function cap(t, out, { eyebrow = "", head = "", sub = "", html = "", top = 380 }) {
+    const el = document.createElement("div");
+    el.className = "cap"; el.style.top = top + "px";
+    el.innerHTML = (eyebrow ? `<div class="eyebrow">${eyebrow}</div>` : "") + (head ? `<div class="head">${head}</div>` : "") + (sub ? `<div class="sub">${sub}</div>` : "") + html;
+    byId("caps").appendChild(el);
+    tl.fromTo(el, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out", immediateRender: false }, t);
+    tl.to(el, { opacity: 0, y: -12, duration: 0.22, ease: "power2.in" }, out - 0.22);   // gone by `out`: supers never overlap
+    return el;
+  }
+  const marks = [];
+  function callout(box, t, out, label = "", cls = "") {
+    const el = document.createElement("div");
+    el.className = "callout " + cls;
+    if (label) el.innerHTML = `<div class="tag">${label}</div>`;
+    byId("marks").appendChild(el);
+    marks.push({ el, box });
+    tl.fromTo(el, { opacity: 0, scale: 1.06 }, { opacity: 1, scale: 1, duration: 0.25, ease: "power2.out", immediateRender: false }, t);
+    tl.to(el, { opacity: 0, duration: 0.2 }, out);
+  }
+  function tap(point, t, r = 64) {
+    const el = document.createElement("div");
+    el.className = "tap"; el.style.setProperty("--r", r + "px");
+    byId("marks").appendChild(el);
+    marks.push({ el, point });
+    tl.fromTo(el, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.12, ease: "power2.out", immediateRender: false }, t - 0.12);
+    tl.to(el, { opacity: 0, scale: 1.5, duration: 0.35, ease: "power2.out" }, t + 0.05);
+  }
+  function placeMarks() {
+    for (const m of marks) {
+      if (m.box) {
+        const [x0, y0] = toScreen(m.box[0], m.box[1]), [x1, y1] = toScreen(m.box[2], m.box[3]);
+        Object.assign(m.el.style, { left: x0 - 6 + "px", top: y0 - 6 + "px", width: x1 - x0 + 12 + "px", height: y1 - y0 + 12 + "px" });
+      } else {
+        const [x, y] = toScreen(m.point[0], m.point[1]);
+        Object.assign(m.el.style, { left: x + "px", top: y + "px" });
+      }
+    }
+  }
+
+  // ---------- the long cut ----------
+  function buildLong() {
+    gsap.set("#endA, #endB", { opacity: 0 });
+    // 1. ALERT: operations are down, cause unknown
+    tl.fromTo("#alert", { opacity: 0, y: -50, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.6)" }, 0.12);
+    tl.fromTo("#alert .dot", { scale: 1 }, { scale: 1.35, duration: 0.45, ease: "sine.inOut", yoyo: true, repeat: 9 }, 0.5);
+    tl.to("#alert", { opacity: 0, y: -40, duration: 0.35, ease: "power2.in" }, beat("question").start - 0.3);
+
+    // 2. QUESTION: what do we restore first? the five assets are down around it
+    const q0 = beat("question").start;
+    tl.fromTo("#question", { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: 0.45, ease: "power3.out" }, q0 - 0.05);
+    const chips = [["Process", "Production Operations", 170, 250], ["System", "SCADA / Plant Control", 1330, 215], ["System", "Network Core Switching", 250, 720],
+                   ["Facility", "Primary Data Center", 1290, 735], ["Facility", "Production Plant A", 770, 830]];
+    chips.forEach(([type, name, x, y], i) => {
+      const el = document.createElement("div");
+      el.className = "chip"; el.style.left = x + "px"; el.style.top = y + "px";
+      el.innerHTML = `<small>${type}</small><span>${name}</span><b></b>`;
+      byId("chips").appendChild(el);
+      tl.fromTo(el, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, q0 + 0.25 + i * 0.14);
+      // into a binder: the cards fall into one stack and dim
+      tl.to(el, { left: 820 + i * 6, top: 760 + i * 10, rotation: (i - 2) * 2.5, opacity: 0.55, duration: 0.6, ease: "power3.inOut" }, wt("question", "buried") - 0.05 + i * 0.04);
+      tl.to(el, { opacity: 0, y: 30, duration: 0.3 }, beat("assets").start - 0.55);
+    });
+    tl.fromTo("#binder", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.35 }, wt("question", "The") - 0.1);
+    tl.to(["#question", "#binder"], { opacity: 0, y: -30, duration: 0.35, ease: "power2.in" }, beat("assets").start - 0.55);
+
+    // 3. ASSETS: every asset has the same page (the pages change under callouts that stay put)
+    const a0 = beat("assets").start;
+    tl.fromTo("#frame", { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, a0 - 0.3);
+    tl.fromTo("#demo", { opacity: 0 }, { opacity: 0.8, duration: 0.4 }, a0);
+    camSet(0, { cx: 1920, cy: 1080, z: 1 });
+    const types = cap(a0, beat("assets").end + 0.3, { eyebrow: "Decision Support Tool", head: "Every asset.<br>The same page.",
+      html: `<div class="types"><span id="tP">PROCESS</span><em>·</em><span id="tS">SYSTEM</span><em>·</em><span id="tF">FACILITY</span></div>` });
+    const lit = (id, t) => tl.to("#" + id, { color: "#ffffff", duration: 0.2 }, t);
+    lit("tP", wt("assets", "process")); lit("tS", wt("assets", "system")); lit("tF", wt("assets", "facility"));
+    const swaps = [["po", a0 - 0.3], ["scada", wt("assets", "system")], ["pdc", wt("assets", "facility")], ["nc", wt("assets", "same")],
+                   ["ppa", wt("assets", "restoration") - 0.35], ["po", wt("assets", "contact") - 0.3], ["scada", wt("assets", "impact") - 0.25],
+                   ["nc", wt("assets", "dependencies") - 0.2]];
+    swaps.forEach(([id, t], i) => { const next = swaps[i + 1]; show(id, t, next ? next[0] === id ? undefined : next[1] + 0.12 : beat("add").start + 0.1, i ? 0.12 : 0.3); });
+    const aEnd = beat("add").start - 0.05;
+    callout(BOX.score, wt("assets", "restoration"), aEnd, "Restoration Score");
+    callout(BOX.contact, wt("assets", "contact"), aEnd, "Contact", "right");
+    callout(BOX.impact, wt("assets", "impact"), aEnd, "Impact", "below");
+    callout(BOX.deps, wt("assets", "dependencies"), aEnd, "Dependencies", "below right");
+
+    // 4. ADD: the ones that are down go into one scenario (the header counter climbs to 5)
+    const d0 = beat("add").start;
+    const adds = ["po", "scada", "nc", "pdc", "ppa"];
+    ADD_TIMES.length = 0;
+    const capAdd = cap(d0, beat("rank").start - 0.1, { eyebrow: "Build a scenario", html: `<div class="big"><span id="addN">1</span></div><div class="head" style="margin-top:14px">assets.<br>1 scenario.</div>` });
+    adds.forEach((id, i) => {
+      const t = d0 + i * 0.5;
+      show(id, t, t + 0.2, 0.08);
+      tap(mid(BOX.add), t + 0.18, 80);
+      show(id + "+", t + 0.2, i < 4 ? t + 0.5 : beat("rank").start + 0.15, 0.08);
+      ADD_TIMES.push(t + 0.2);
+    });
+    callout(BOX.count, d0 + 0.2, beat("rank").start - 0.1, "In scenario", "below right");
+
+    // 5. RANK: the restoration order, then the Total Cascade
+    const r0 = beat("rank").start;
+    show("sbTop", r0 - 0.05, wt("rank", "ranks") + 0.1, 0.25);
+    show("sbList", wt("rank", "ranks"), wt("rank", "Total") + 0.1, 0.3);
+    tl.fromTo(layers.sbList.img, { y: 260 }, { y: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, wt("rank", "ranks"));
+    cap(r0, wt("rank", "Total") - 0.05, { eyebrow: "Scenario Builder", head: "Ranked by<br>Restoration Score.", sub: "Higher score, addressed first." });
+    callout(BOX.order, wt("rank", "ranks") + 0.35, wt("rank", "Total") - 0.1, "Restoration order");
+    callout(BOX.row1, wt("rank", "higher"), wt("rank", "Total") - 0.1, "First to restore", "below right");
+    show("sbTop", wt("rank", "Total"), wt("rank", "cascade", 0, "e") + 0.15, 0.15);
+    tap(mid(BOX.tileCascade), wt("rank", "cascade") + 0.1);
+    show("sbCascade", wt("rank", "cascade", 0, "e") + 0.15, beat("whatif").start + 0.1, 0.2);
+    cap(wt("rank", "Total"), beat("whatif").start - 0.1, { eyebrow: "Total Cascade", head: "See what<br>fails next.", sub: "43 items downstream, from 5 assets." });
+    callout(BOX.cascadeHead, wt("rank", "shows"), beat("whatif").start - 0.1, "Everything downstream", "below");
+
+    // 6. WHAT-IF: SCADA to Manual Ops, and the cascade shrinks
+    const w0 = beat("whatif").start;
+    show("sbList", w0, wt("whatif", "manual") + 0.2, 0.2);
+    tap(mid(BOX.scadaChip), wt("whatif", "manual") + 0.05);
+    show("sbState", wt("whatif", "manual") + 0.2, wt("whatif", "ops", 0, "e") + 0.2, 0.18);
+    camTo(wt("whatif", "manual") + 0.2, 0.6, { cx: 1947, cy: 1240, z: 1.25 });
+    callout(BOX.manualOpt, wt("whatif", "SCADA"), wt("whatif", "ops", 0, "e") + 0.15, "Manual Ops");
+    tap(mid(BOX.manualOpt), wt("whatif", "manual", 1) + 0.15);
+    show("sbManList", wt("whatif", "ops", 0, "e") + 0.2, wt("whatif", "watch") + 0.3, 0.18);
+    camTo(wt("whatif", "ops", 0, "e") + 0.2, 0.5, { cx: 1920, cy: 1080, z: 1 });
+    show("sbManTop", wt("whatif", "watch") + 0.3, beat("report").start + 0.1, 0.2);
+    callout(BOX.manTile, wt("whatif", "cascade") - 0.1, beat("report").start - 0.05, "Total Cascade", "below right");
+    cap(w0, beat("report").start - 0.1, { eyebrow: "What-If Analysis", head: "What if it<br>runs on manual?",
+      html: `<div class="delta"><span class="lbl">Total Cascade</span><span id="dFrom">43</span><span style="color:var(--azure)">→</span><span id="dTo" style="opacity:0">41</span></div>` });
+    tl.to("#dTo", { opacity: 1, duration: 0.25 }, wt("whatif", "shrink"));
+    tl.to("#dFrom", { opacity: 0.35, duration: 0.25 }, wt("whatif", "shrink"));
+
+    // 7. REPORT: the brief for leadership, then shared from a phone
+    const p0 = beat("report").start;
+    show("rpTop", p0 - 0.05, wt("report", "critical") + 0.15, 0.25);
+    camTo(p0 - 0.1, 0.45, { cx: 2280, cy: 1250, z: 1.12 });
+    callout(BOX.exec, wt("report", "executive"), wt("report", "critical"), "Executive Summary");
+    show("rpCq", wt("report", "critical") + 0.1, beat("map").start - 0.2, 0.25);
+    tl.fromTo(layers.rpCq.img, { y: 220 }, { y: 0, duration: 0.45, ease: "power2.out", immediateRender: false }, wt("report", "critical") + 0.1);
+    camTo(wt("report", "critical") + 0.1, 0.5, { cx: 2280, cy: 760, z: 1.12 });
+    const ph0 = wt("report", "ready") - 0.45, ph1 = beat("map").start - 0.15;
+    callout(BOX.cq1, wt("report", "questions"), ph0 - 0.05, "The first question", "below");
+    callout(BOX.actions, wt("report", "initial"), ph0 - 0.05, "Initial Actions");
+    cap(p0, beat("map").start - 0.15, { eyebrow: "Scenario Impact Report", head: "Brief leadership<br>in seconds.", sub: "Executive Summary, Critical Questions, Initial Actions." });
+    tl.to("#frame", { opacity: 0.35, x: -120, duration: 0.5, ease: "power2.inOut" }, ph0);
+    tl.fromTo("#phone", { opacity: 0, y: 80 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, ph0);
+    tl.to("#phone", { opacity: 0, y: 40, duration: 0.3 }, ph1);
+    tl.to("#frame", { opacity: 1, x: 0, duration: 0.4, ease: "power2.inOut" }, ph1);
+    PHONE.t0 = ph0; PHONE.t1 = ph1;
+
+    // 8. MAP: live NWS weather on the map, then select facilities by area
+    const m0 = beat("map").start;
+    camTo(m0 - 0.3, 0.4, { cx: 2280, cy: 1150, z: 1.27 });
+    show("phxPopup", m0 - 0.2, wt("map", "weather") + 0.1, 0.2);
+    show("phxRadarPopup", wt("map", "weather"), wt("map", "weather") + 0.55, 0.25);
+    const rad = [["r2150", wt("map", "weather") + 0.5], ["r2158", wt("map", "a") - 0.05], ["r2204", wt("map", "map") + 0.15], ["r2212", wt("map", "that") + 0.05]];
+    rad.forEach(([id, t], i) => show(id, t, i < rad.length - 1 ? rad[i + 1][1] + 0.3 : wt("map", "finds") + 0.15, 0.3));
+    camTo(m0 + 0.1, wt("map", "finds") - m0 - 0.2, { cx: 2480, cy: 1060, z: 1.5 }, "sine.inOut");
+    const s0 = wt("map", "finds") + 0.1;
+    camTo(s0 - 0.05, 0.35, { cx: 2640, cy: 1300, z: 1.6 });
+    show("a1", s0, s0 + 0.3, 0.15);
+    show("a2", s0 + 0.3, s0 + 0.5, 0.06);
+    tap([1893, 1101], s0 + 0.3, 56);
+    for (let k = 1; k <= 8; k++) show("g" + k, s0 + 0.42 + k * 0.075, s0 + 0.5 + k * 0.075, 0.04);
+    show("a4", s0 + 1.1, s0 + 1.45, 0.08);
+    show("a5", s0 + 1.45, s0 + 1.95, 0.12);
+    tap(mid(BOX.areaAdd), s0 + 1.85, 90);
+    show("a6", s0 + 1.95, beat("end").start - 0.1, 0.12);
+    camTo(s0 + 1.95, 0.5, { cx: 1920, cy: 1080, z: 1 });                // pull back to the header: 8 now in the scenario
+    callout(BOX.count, s0 + 2.3, beat("end").start - 0.3, "8 added", "below right");
+    cap(m0 - 0.1, s0 - 0.05, { eyebrow: "Map / Weather", head: "Live NWS<br>weather.", sub: "Warnings and radar, right on your map." });
+    cap(s0, beat("end").start - 0.25, { eyebrow: "Map / Weather", head: "Map<br>selection.", sub: "Draw an area. Add every facility inside." });
+
+    // 9. END: the DST ranks, you decide; book a live demo (and fade to the opening's navy, for the booth loop)
+    const e0 = beat("end").start;
+    tl.to(["#frame", "#demo"], { opacity: 0, y: 30, duration: 0.4, ease: "power2.in" }, e0 - 0.3);
+    tl.fromTo("#end", { opacity: 0 }, { opacity: 1, duration: 0.4 }, e0 - 0.1);
+    tl.fromTo("#end img", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, e0 - 0.1);
+    tl.fromTo("#endA", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4 }, wt("end", "The"));
+    tl.fromTo("#endB", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4 }, wt("end", "You"));
+    tl.fromTo("#endAsk", { opacity: 0 }, { opacity: 1, duration: 0.4 }, wt("end", "You") + 0.6);
+    tl.fromTo("#cta", { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(2)" }, wt("end", "Book"));
+    tl.to("#end", { opacity: 0, duration: 0.55, ease: "power1.in" }, D - 0.6);
+  }
+
+  // ---------- the short cut: the same story at 30 s, without the map ----------
+  function buildShort() {
+    gsap.set("#endA, #endB", { opacity: 0 });
+    // ALERT, then the question
+    tl.fromTo("#alert", { opacity: 0, y: -50, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.6)" }, 0.05);
+    tl.fromTo("#alert .dot", { scale: 1 }, { scale: 1.35, duration: 0.45, ease: "sine.inOut", yoyo: true, repeat: 6 }, 0.4);
+    const q0 = beat("question").start;
+    tl.to("#alert", { opacity: 0, y: -40, duration: 0.25, ease: "power2.in" }, q0 - 0.45);   // gone before the question arrives
+    tl.fromTo("#question", { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: 0.4, ease: "power3.out" }, q0 - 0.12);
+    const chips = [["Process", "Production Operations", 170, 250], ["System", "SCADA / Plant Control", 1330, 215], ["System", "Network Core Switching", 250, 720],
+                   ["Facility", "Primary Data Center", 1290, 735], ["Facility", "Production Plant A", 770, 830]];
+    chips.forEach(([type, name, x, y], i) => {
+      const el = document.createElement("div");
+      el.className = "chip"; el.style.left = x + "px"; el.style.top = y + "px";
+      el.innerHTML = `<small>${type}</small><span>${name}</span><b></b>`;
+      byId("chips").appendChild(el);
+      tl.fromTo(el, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" }, q0 + 0.1 + i * 0.1);
+      tl.to(el, { opacity: 0, y: 30, duration: 0.3 }, beat("assets").start - 0.45);
+    });
+    tl.to("#question", { opacity: 0, y: -30, duration: 0.3, ease: "power2.in" }, beat("assets").start - 0.45);
+
+    // ASSETS: the same page for every asset
+    const a0 = beat("assets").start;
+    tl.fromTo("#frame", { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, a0 - 0.3);
+    tl.fromTo("#demo", { opacity: 0 }, { opacity: 0.8, duration: 0.4 }, a0);
+    camSet(0, { cx: 1920, cy: 1080, z: 1 });
+    cap(a0, beat("assets").end + 0.3, { eyebrow: "Decision Support Tool", head: "Every asset.<br>The same page.",
+      html: `<div class="types"><span id="tP">PROCESS</span><em>·</em><span id="tS">SYSTEM</span><em>·</em><span id="tF">FACILITY</span></div>` });
+    ["tP", "tS", "tF"].forEach((id, i) => tl.to("#" + id, { color: "#ffffff", duration: 0.2 }, wt("assets", "asset") + i * 0.15));
+    const swaps = [["po", a0 - 0.3], ["scada", wt("assets", "every")], ["pdc", wt("assets", "same")], ["nc", wt("assets", "Score") - 0.3],
+                   ["ppa", wt("assets", "contact") - 0.25], ["po", wt("assets", "impact") - 0.25], ["scada", wt("assets", "dependencies") - 0.25]];
+    swaps.forEach(([id, t], i) => { const next = swaps[i + 1]; show(id, t, next ? next[1] + 0.12 : beat("add").start + 0.1, i ? 0.12 : 0.3); });
+    const aEnd = beat("add").start - 0.05;
+    callout(BOX.score, wt("assets", "Score"), aEnd, "Restoration Score");
+    callout(BOX.contact, wt("assets", "contact"), aEnd, "Contact", "right");
+    callout(BOX.impact, wt("assets", "impact"), aEnd, "Impact", "below");
+    callout(BOX.deps, wt("assets", "dependencies"), aEnd, "Dependencies", "below right");
+
+    // ADD: five taps into one scenario
+    const d0 = beat("add").start;
+    ADD_TIMES.length = 0;
+    cap(d0, beat("rank").start - 0.1, { eyebrow: "Build a scenario", html: `<div class="big"><span id="addN">1</span></div><div class="head" style="margin-top:14px">assets.<br>1 scenario.</div>` });
+    ["po", "scada", "nc", "pdc", "ppa"].forEach((id, i) => {
+      const t = d0 + i * 0.3;
+      show(id, t, t + 0.12, 0.06);
+      tap(mid(BOX.add), t + 0.1, 80);
+      show(id + "+", t + 0.12, i < 4 ? t + 0.3 : beat("rank").start + 0.15, 0.06);
+      ADD_TIMES.push(t + 0.12);
+    });
+    callout(BOX.count, d0 + 0.15, beat("rank").start - 0.1, "In scenario", "below right");
+
+    // RANK, then what goes down with them
+    const r0 = beat("rank").start;
+    show("sbTop", r0 - 0.05, wt("rank", "ranks") + 0.1, 0.2);
+    show("sbList", wt("rank", "ranks"), wt("rank", "goes") + 0.1, 0.25);
+    tl.fromTo(layers.sbList.img, { y: 260 }, { y: 0, duration: 0.45, ease: "power2.out", immediateRender: false }, wt("rank", "ranks"));
+    cap(r0, wt("rank", "what", 1) - 0.05, { eyebrow: "Scenario Builder", head: "Ranked.", sub: "Higher score, addressed first." });
+    callout(BOX.order, wt("rank", "ranks") + 0.3, wt("rank", "what", 1) - 0.1, "Restoration order");
+    callout(BOX.row1, wt("rank", "first"), wt("rank", "what", 1) - 0.1, "First to restore", "below right");
+    show("sbCascade", wt("rank", "goes"), beat("whatif").start + 0.1, 0.2);
+    cap(wt("rank", "what", 1), beat("whatif").start - 0.1, { eyebrow: "Total Cascade", head: "See what<br>fails next.", sub: "43 items downstream, from 5 assets." });
+    callout(BOX.cascadeHead, wt("rank", "goes") + 0.2, beat("whatif").start - 0.1, "Everything downstream", "below");
+
+    // WHAT-IF: a workaround, before committing people
+    const w0 = beat("whatif").start;
+    show("sbList", w0, w0 + 0.45, 0.15);
+    tap(mid(BOX.scadaChip), w0 + 0.3);
+    show("sbState", w0 + 0.45, wt("whatif", "you") + 0.15, 0.15);
+    camTo(w0 + 0.45, 0.5, { cx: 1947, cy: 1240, z: 1.25 });
+    callout(BOX.manualOpt, wt("whatif", "workaround"), wt("whatif", "you") + 0.1, "Manual Ops");
+    tap(mid(BOX.manualOpt), wt("whatif", "before") + 0.15);
+    show("sbManTop", wt("whatif", "you") + 0.15, beat("report").start + 0.1, 0.2);
+    camTo(wt("whatif", "you") + 0.15, 0.4, { cx: 1920, cy: 1080, z: 1 });
+    callout(BOX.manTile, wt("whatif", "commit") - 0.1, beat("report").start - 0.05, "Total Cascade", "below right");
+    cap(w0, beat("report").start - 0.1, { eyebrow: "What-If Analysis", head: "What if it<br>runs on manual?",
+      html: `<div class="delta"><span class="lbl">Total Cascade</span><span id="dFrom">43</span><span style="color:var(--azure)">→</span><span id="dTo" style="opacity:0">41</span></div>` });
+    tl.to("#dTo", { opacity: 1, duration: 0.25 }, wt("whatif", "people"));
+    tl.to("#dFrom", { opacity: 0.35, duration: 0.25 }, wt("whatif", "people"));
+
+    // REPORT, shared from a phone
+    const p0 = beat("report").start;
+    show("rpCq", p0 - 0.1, beat("end").start - 0.2, 0.2);
+    camTo(p0 - 0.15, 0.4, { cx: 2280, cy: 760, z: 1.12 });
+    callout(BOX.cq1, p0 + 0.1, wt("report", "leadership") + 0.3, "The first question", "below");
+    cap(p0, beat("end").start - 0.2, { eyebrow: "Scenario Impact Report", head: "Brief leadership<br>in seconds." });
+    const ph0 = wt("report", "leadership") + 0.3, ph1 = beat("end").start - 0.2;
+    tl.to("#frame", { opacity: 0.35, x: -120, duration: 0.4, ease: "power2.inOut" }, ph0);
+    tl.fromTo("#phone", { opacity: 0, y: 80 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, ph0);
+    tl.to("#phone", { opacity: 0, y: 40, duration: 0.25 }, ph1);
+    Object.assign(PHONE, { t0: ph0, t1: ph1, from: 1.25, to: 4.3 });
+
+    // END
+    const e0 = beat("end").start;
+    tl.to(["#frame", "#demo"], { opacity: 0, y: 30, duration: 0.35, ease: "power2.in" }, e0 - 0.3);
+    tl.fromTo("#end", { opacity: 0 }, { opacity: 1, duration: 0.35 }, e0 - 0.15);
+    tl.fromTo("#end img", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, e0 - 0.15);
+    tl.fromTo("#endA", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.35 }, wt("end", "The"));
+    tl.fromTo("#endB", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.35 }, wt("end", "You"));
+    tl.fromTo("#cta", { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)" }, wt("end", "decide") + 0.3);   // up early: the booth loop needs it on screen
+    tl.to("#end", { opacity: 0, duration: 0.25, ease: "power1.in" }, D - 0.27);
+  }
+
+  // ---------- the phone clip (the user's Share Summary recording, cleaned: media/iphone-share-edit.mp4) ----------
+  const PHONE = { t0: 0, t1: 0, n: 170, from: 0.6, to: 5.65 };    // clip seconds shown between t0 and t1
+  const phoneImg = byId("phoneImg");
+  const ADD_TIMES = [];                                       // when the header counter (and the super's number) steps up
+  let phoneSrc = "";
+
+  if (CUT === "short") buildShort(); else buildLong();
+
+  async function seek(t) {
+    tl.seek(t, false);
+    // load the shots that show around t, drop the rest
+    const waits = [];
+    for (const L of Object.values(layers)) {
+      const on = L.windows.some(([a, b]) => t >= a && t <= b);
+      if (on && !L.img.getAttribute("src")) { L.img.src = L.img.dataset.src; waits.push(L.img.decode().catch(() => {})); }
+      if (!on && L.img.getAttribute("src")) L.img.removeAttribute("src");
+    }
+    if (t >= PHONE.t0 - 0.3 && t <= PHONE.t1 + 0.4) {
+      const u = Math.min(1, Math.max(0, (t - PHONE.t0) / (PHONE.t1 - PHONE.t0)));
+      const n = Math.min(PHONE.n, Math.max(1, Math.round((PHONE.from + u * (PHONE.to - PHONE.from)) * 30) + 1));
+      const src = `assets/iphone/f_${String(n).padStart(4, "0")}.jpg`;
+      if (src !== phoneSrc) { phoneImg.src = src; phoneSrc = src; waits.push(phoneImg.decode().catch(() => {})); }
+    }
+    await Promise.all(waits);
+    byId("addN").textContent = String(Math.max(1, ADD_TIMES.filter((a) => t >= a).length));
+    const k = FW / 3840 * cam.z;
+    byId("cam").style.transform = `translate(${FW / 2 - cam.cx * k}px, ${FH / 2 - cam.cy * k}px) scale(${k})`;
+    placeMarks();
+  }
+
+  (async () => {
+    await document.fonts.ready;
+    window.__seek = seek;
+    await seek(0);
+    window.__tl = tl;
+    window.__meta = { duration: D, width: 1920, height: 1080 };
+  })();
+</script>
+</body>
+</html>

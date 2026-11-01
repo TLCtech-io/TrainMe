@@ -143,7 +143,12 @@ uptown-wall/       Video wall backdrop for the Pick Your Poison shows: a dusty a
                    1920x1200 and 1920x1080 (the 4K render takes about an hour here; HD about 15 minutes).
                    tools/patch_frames.py swaps re-rendered frame ranges into a lossless loop render, for changes that
                    only touch a few seconds.
-dst-commercial/    TLC_TRNG Decision Support Tool commercial (16:9, 30 s and 60 s cuts, Descript AI voice; in progress).
+dst-commercial/    TLC_TRNG Decision Support Tool commercial (16:9, 60 s and 30 s cuts, Descript AI voice "Sheldon").
+                   index.html is the composition (?cut=short for the 30 s cut). The app shots sit in a brand browser
+                   frame, with azure callouts and cyan tap rings, and the supers on the left carry the story muted. Every cue is
+                   pinned to a narration word (data/timing_*.js, from tools/time_narration.py, which spaces the read's
+                   beats without touching the voice). ./build.sh renders both cuts in three parallel parts each (about
+                   2.5 minutes here) and muxes the timed narration: out/"TLC_TRNG DST - 60s.mp4" and "- 30s.mp4".
                    fact-brief.md is the DST Code session's handoff. script.md is the approved script (draft 3), and
                    "DST Commercial - Narration.docx" holds just its time hacks and narration, for Descript. The look
                    follows the TLC_TRNG company brand system (Dropbox ds-bundle; see the video guide, section 13).
