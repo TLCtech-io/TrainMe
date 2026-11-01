@@ -547,13 +547,16 @@ The DST's screens appear as captured. Everything around them is brand:
   - **Voice is done (voice "Sheldon")**, in Descript project "DST Demo Narration" (folder Decision Support Tool):
     - the compositions "Long (Sheldon)", 53.84 s, and "Short (Sheldon)", 29.68 s;
     - published as private audio on 2026-11-01 with the user's OK, so the share pages are visible only to them;
-    - downloaded to `motion/dst-commercial/assets/narration_{long,short}_sheldon.m4a`, at -14 LUFS with peaks
-      about -1 dBFS;
+    - downloaded and committed to `motion/dst-commercial/media/narration_{long,short}_sheldon.m4a`, at -14 LUFS with
+      peaks about -1 dBFS;
     - word timings in `motion/dst-commercial/data/words_{long,short}.json`.
   - The long read ends at 53.5 s, so the 60 s cut has about 6 s to place. Use short pauses at the beat changes (after
     "binder", before "Then brief leadership", before "Plus live weather") and a longer end-card hold.
   - The iPhone Share Summary recording is in, and has been cleaned with `motion/dst-commercial/tools/clean_iphone.py`
     (contacts blurred, recording dot removed, a trimmed 5.65 s edit).
+  - **`motion/dst-commercial/media/` is committed** so a fresh session has everything the build needs: the two
+    narration reads and the two blurred iPhone clips. The raw recording, which shows the user's contacts, is kept
+    out of git on purpose. A fresh session can't rerun `clean_iphone.py` without the user re-attaching the raw.
   - At capture, the user says where in the US an NWS alert is active, for the map hits.
   - Then: build the 60 s and 30 s cuts in the brand system, timed to the voice.
 
