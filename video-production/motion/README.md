@@ -148,7 +148,8 @@ dst-commercial/    TLC_TRNG Decision Support Tool commercial (16:9, 60 s and 30 
                    frame, with azure callouts and cyan tap rings, and the supers on the left carry the story muted. Every cue is
                    pinned to a narration word (data/timing_*.js, from tools/time_narration.py, which spaces the read's
                    beats without touching the voice). ./build.sh renders both cuts in three parallel parts each (about
-                   2.5 minutes here) and muxes the timed narration: out/"TLC_TRNG DST - 60s.mp4" and "- 30s.mp4".
+                   2.5 minutes here) and muxes the timed narration: out/"TLC_TRNG DST - 60s.mp4" (61 s) and
+                   "- 30s.mp4" (31 s).
                    fact-brief.md is the DST Code session's handoff. script.md is the approved script (draft 3), and
                    "DST Commercial - Narration.docx" holds just its time hacks and narration, for Descript. The look
                    follows the TLC_TRNG company brand system (Dropbox ds-bundle; see the video guide, section 13).

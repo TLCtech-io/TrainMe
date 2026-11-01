@@ -29,7 +29,9 @@ screen, including captions generated from the voice, reads **TLC_TRNG**. DST is 
   them in the moment.
 - **The answer, in one line:** the DST turns those plans into a ranked restoration order and a leadership brief, in
   minutes, on any device.
-- **Tagline:** *The DST ranks. You decide.*
+- **Tagline:** *The DST ranks. You decide.* (on screen). Spoken: "The DST handles ranking, and you make the
+  decisions." The user rewrote the spoken line in Descript on 2026-11-01: the AI voice put the stress on "DST" and
+  let "ranks" fall flat. A comma, "ranks, but" and "ranks, and" didn't fix it; this wording did.
 
 ## 2. The story
 
@@ -70,7 +72,7 @@ screen, including captions generated from the voice, reads **TLC_TRNG**. DST is 
 | 0:32-0:38 | **What-If Analysis**: tap SCADA / Plant Control's chip, and the four definitions appear. Choose **Manual Ops**; SCADA leaves the cascade and the total drops. | WHAT IF IT RUNS ON MANUAL? | Running the plant on manual? Mark SCADA as Manual Ops and watch the cascade shrink. |
 | 0:38-0:48 | **Report Preview**: the **Executive Summary**, then **Critical Questions** with 01 highlighted ("Is the source of the disruption known…"), then **Initial Actions / Considerations**. Then the iPhone: **Share Summary** opens the share sheet. | BRIEF LEADERSHIP IN SECONDS | Then brief leadership: an executive summary, critical questions and initial actions, ready to share from your phone. |
 | 0:48-0:54 | Quick hits: **TLC_TRNG Map** with a live NWS alert and the radar; the circle tool draws an area; **Add N to scenario**. | LIVE NWS WEATHER. MAP SELECTION. | Plus live weather, and a map that finds the facilities in any area. |
-| 0:54-1:00 | End card on navy: TLC_TRNG logo, "Decision Support Tool", the tagline, a glowing cyan call-to-action. Fades back into the opening. | The DST ranks. You decide. / Ready to operationalize your plans? / Book a live demo · tlctrng.com/dst | The DST ranks. You decide. Book a live demo. |
+| 0:54-1:01 | End card on navy: TLC_TRNG logo, "Decision Support Tool", the tagline, a glowing cyan call-to-action. Fades back into the opening. | The DST ranks. You decide. / Ready to operationalize your plans? / Book a live demo · tlctrng.com/dst | The DST handles ranking, and you make the decisions. Book a live demo. |
 
 ## 4. 30-second cut (about 65 words)
 
@@ -81,7 +83,7 @@ screen, including captions generated from the voice, reads **TLC_TRNG**. DST is 
 | 0:10-0:16 | Add to scenario, the ranking, then **Total Cascade** | RANKED. HIGHER SCORE, ADDRESSED FIRST. | Add them to a scenario. The DST ranks what to restore first, and what goes down with them. |
 | 0:16-0:20 | **What-If Analysis**: SCADA to **Manual Ops** | WHAT IF IT RUNS ON MANUAL? | Test a workaround before you commit people. |
 | 0:20-0:25 | The report, then **Share Summary** on the iPhone | BRIEF LEADERSHIP IN SECONDS | Then brief leadership in seconds. |
-| 0:25-0:30 | End card | The DST ranks. You decide. / Book a live demo · tlctrng.com/dst | The DST ranks. You decide. Book a live demo. |
+| 0:25-0:31 | End card | The DST ranks. You decide. / Book a live demo · tlctrng.com/dst | The DST handles ranking, and you make the decisions. Book a live demo. |
 
 ---
 

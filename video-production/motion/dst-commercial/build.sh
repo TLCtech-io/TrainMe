@@ -4,7 +4,7 @@
 #   ./build.sh long     one cut (long | short)
 # Inputs (committed): media/narration_{long,short}_sheldon.m4a (the Descript reads), media/capture/ (the app shots),
 # media/iphone-share-edit.mp4 (the cleaned Share Summary clip), data/words_*.json and data/beats_*.json.
-# Output in $OUT_DIR (default out/): "TLC_TRNG DST - 60s.mp4" and "TLC_TRNG DST - 30s.mp4".
+# Output in $OUT_DIR (default out/): "TLC_TRNG DST - 60s.mp4" (61 s) and "TLC_TRNG DST - 30s.mp4" (31 s).
 set -euo pipefail
 cd "$(dirname "$0")"
 SCRATCH=/tmp/claude-0/-home-user-TrainMe/c833cb12-34f4-587e-bb3c-3be71c4f3073/scratchpad
@@ -39,7 +39,7 @@ build() {   # build <long|short> <seconds> <label>
 }
 
 case "${1:-both}" in
-  long)  build long 60 60s ;;
-  short) build short 30 30s ;;
-  *)     build long 60 60s; build short 30 30s ;;
+  long)  build long 61 60s ;;
+  short) build short 31 30s ;;
+  *)     build long 61 60s; build short 31 30s ;;
 esac

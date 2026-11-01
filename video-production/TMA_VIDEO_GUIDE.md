@@ -527,7 +527,8 @@ The DST's screens appear as captured. Everything around them is brand:
   cut of 67, each with picture, on-screen text and narration per beat.
   - The demo path is trimmed from the brief's walkthrough: open on the map, draw the area, see the ranking and the
     cascade, run one what-if, then the report shared from a phone.
-  - Tagline: "The DST ranks. You decide."
+  - Tagline: "The DST ranks. You decide." (on screen). The spoken line became "The DST handles ranking, and you make
+    the decisions." in draft 3 of the cuts (see below).
   - Draft 2 (the same day) opened on a gas-leak circle and checked every line against the sources.
   - **Draft 3** (the same day) follows the user's direction: the unknown-cause opening, five chosen assets, the
     asset-page tour, map hits at the end, the brand look, and restored draft 1 lines. The 60 s cut is 131 words and
@@ -604,8 +605,8 @@ The DST's screens appear as captured. Everything around them is brand:
       at -14 LUFS.
     - **QA:** supers never overlap (each is gone before the next arrives). The 3-second check passes (the alert
       card reads by 1 s). Both cuts start and end on navy, so the booth loop is seamless.
-    - **The 30 s cut** has no map hits, and its call to action comes up on "You decide", so the loop shows it for
-      2 s.
+    - **The 30 s cut** has no map hits, and its call to action comes up right after the tagline, so the loop shows
+      it for about 2 s.
   - **Draft 2 (2026-11-01), from the user's draft 1 notes.** These are guidelines for later DST and tool videos too:
     - **Frames sit on the app's own lines.** The Restoration order frame runs along the ranked list's section rule,
       the row separators' left end and the bottom line, clear of the rank numbers. Measure the lines in the capture
@@ -618,6 +619,19 @@ The DST's screens appear as captured. Everything around them is brand:
       Initial Actions.
     - **Show an action once, then show its result.** One tap on Add to Scenario, then a checklist of the five
       assets ticks in beside the app, with "5 assets · 1 scenario" and the header counter at 5. No repeated flashes.
+  - **Draft 3 of the cuts (2026-11-01): the new tagline read.**
+    - The AI voice stressed "DST" and let "ranks" drop like a sentence end, so "The DST ranks. You decide." read flat.
+      In Descript the user tried a comma, "ranks, but" and "ranks, and"; none moved the stress. Rewording fixed it:
+      "The DST handles ranking, and you make the decisions." For AI voice reads, when punctuation can't move the
+      stress, change the words so the stressed idea gets its own words.
+    - Both Sheldon compositions were re-published as private audio to the same share pages. Only the tagline
+      changed (the reads are sample-identical before it), so the original word times are kept up to the tagline
+      and the new ones after it.
+    - **Lengths are guidelines too (from the user):** the cuts may run past 60 and 30 s. They are now 61.0 s and
+      31.0 s, keeping the same end-card hold as before. The file names keep "60s" and "30s" as the cut names.
+    - The end card keeps the short on-screen tagline, "The DST ranks. You decide.", like every other super (they
+      condense the narration). Its two halves come up on "The DST" and "you make". In the 30 s cut, the call to
+      action comes up just after "decisions".
 
 - [ ] **Before planning content for the next Uptown Sound show:**
   - Research the current FB, TikTok and IG ranking signals (hook and retention, shares and saves, TikTok search
