@@ -543,7 +543,15 @@ The DST's screens appear as captured. Everything around them is brand:
 - [ ] **DST commercial:**
   - The user adds `DST_USER` and `DST_PASSWORD` as environment variables, then starts a new session for the capture.
   - Script draft 3 approved (2026-11-01). The time hacks and narration are in
-    `motion/dst-commercial/DST Commercial - Narration.docx` for Descript. Next: the user makes the Descript AI voice.
+    `motion/dst-commercial/DST Commercial - Narration.docx` for Descript.
+  - **Voice is done (voice "Sheldon")**, in Descript project "DST Demo Narration" (folder Decision Support Tool):
+    - the compositions "Long (Sheldon)", 53.84 s, and "Short (Sheldon)", 29.68 s;
+    - published as private audio on 2026-11-01 with the user's OK, so the share pages are visible only to them;
+    - downloaded to `motion/dst-commercial/assets/narration_{long,short}_sheldon.m4a`, at -14 LUFS with peaks
+      about -1 dBFS;
+    - word timings in `motion/dst-commercial/data/words_{long,short}.json`.
+  - The long read ends at 53.5 s, so the 60 s cut has about 6 s to place. Use short pauses at the beat changes (after
+    "binder", before "Then brief leadership", before "Plus live weather") and a longer end-card hold.
   - The iPhone Share Summary recording is in, and has been cleaned with `motion/dst-commercial/tools/clean_iphone.py`
     (contacts blurred, recording dot removed, a trimmed 5.65 s edit).
   - At capture, the user says where in the US an NWS alert is active, for the map hits.
