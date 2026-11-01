@@ -1,0 +1,46 @@
+<!doctype html>
+<!-- IMP - Span of Control, WORKING 0:08-0:28. "Three major topics..." Builds one item per topic as Rick names it. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="../shared/tma.css" />
+<style>
+  .row { position: absolute; left: 120px; width: 1680px; height: 132px; display: flex; align-items: center; gap: 36px; padding: 0 48px; overflow: hidden; }
+  .row .accent { position: absolute; left: 0; top: 0; bottom: 0; width: 12px; background: var(--amber); }
+  .badge { flex: none; width: 84px; height: 84px; border-radius: 50%; background: var(--blue); color: var(--white);
+           display: flex; align-items: center; justify-content: center; font: 900 44px/1 "Roboto"; }
+  .row h3 { font: 700 46px/1.1 "Roboto"; }
+  .row p { font: 400 30px/1.2 "Roboto"; color: var(--slate); margin-top: 6px; }
+</style>
+</head>
+<body>
+  <div class="kicker" id="kicker"><span class="bar"></span>Span of Control</div>
+  <div class="title" id="title">Three major topics</div>
+
+  <div class="card row" id="r1" style="top: 300px"><span class="accent"></span><div class="badge">1</div>
+    <div><h3>Why it matters</h3><p>The danger of getting overextended</p></div></div>
+  <div class="card row" id="r2" style="top: 466px"><span class="accent"></span><div class="badge">2</div>
+    <div><h3>What strains it</h3><p>The factors that test anyone's span of control</p></div></div>
+  <div class="card row" id="r3" style="top: 632px"><span class="accent"></span><div class="badge">3</div>
+    <div><h3>How to extend it</h3><p>Tips to fix it when you're stretched</p></div></div>
+
+<script src="../shared/gsap.min.js"></script>
+<script src="../shared/motion.js"></script>
+<script>
+  const D = 20;
+  // Seconds from clip start (clip starts at WORKING 0:08). Retime here if Rick's pacing differs.
+  const T = { item1: 1.2, item2: 10.2, item3: 16.5 };
+  const tl = gsap.timeline({ paused: true });
+  tl.fromTo("#kicker", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 0.1);
+  tl.fromTo("#title", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.25);
+  ["#r1", "#r2", "#r3"].forEach((id, i) => {
+    const t = [T.item1, T.item2, T.item3][i];
+    tl.fromTo(id, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, t);
+    tl.fromTo(`${id} .badge`, { scale: 0.4 }, { scale: 1, duration: 0.6, ease: "back.out(2)" }, t + 0.05);
+    tl.fromTo(`${id} .accent`, { scaleY: 0 }, { scaleY: 1, duration: 0.4, ease: "power2.out", transformOrigin: "50% 0%" }, t + 0.2);
+    if (i > 0) tl.to(`${["#r1", "#r2"][i - 1]} .accent`, { opacity: 0, duration: 0.4 }, t);
+  });
+  M.register(tl, { duration: D, width: 1920, height: 1080 });
+</script>
+</body>
+</html>

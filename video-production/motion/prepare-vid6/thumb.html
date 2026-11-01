@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PREPARE Vid 6: thumbnail</title>
+<!--
+  Cover for Vid 6: the hook line with HEATS in gold, the presenter cut out (relit frame FRAME and its matte from
+  tools/prep_footage.py) over the storm backdrop, and the heat-rising building from beat 4 behind him.
+    3:4 (1080x1440, TikTok)          render.cjs --in thumb.html --stills 0 --stills-dir <dir>
+    9:16 (1080x1920, Instagram)      render.cjs --in thumb.html --query ig --stills 0 --stills-dir <dir>
+  Instagram's Reels cover is 9:16 and its profile grid shows the middle 3:4, so the ig version keeps the whole 3:4
+  design in the band y 240-1680 (OY) and only backdrop, floor and his shirt run into the top and bottom 240 px.
+-->
+<style>
+  @font-face { font-family: "Montserrat"; font-weight: 800; src: url("../shared/fonts/montserrat-latin-800-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Montserrat"; font-weight: 900; src: url("../shared/fonts/montserrat-latin-900-normal.woff2") format("woff2"); }
+  :root { --storm: #3F6A72; --harbor: #1A2A33; --gold: #E3BE6A; --dawn: #F1E5BD; --fog: #E4EAE8; --grid: #8C94A6; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1440px; overflow: hidden; background: var(--harbor); }
+  canvas, svg { position: absolute; left: 0; top: 0; }
+  .line { position: absolute; left: 0; width: 1080px; text-align: center; white-space: nowrap; }
+  #l1, #l3 { font: 800 78px/1 "Montserrat"; color: #fff; letter-spacing: 0.01em; text-shadow: 0 6px 18px rgba(0, 0, 0, 0.45); }
+  #l2 { font: 900 262px/1 "Montserrat"; color: var(--gold); letter-spacing: 0.01em; filter: url(#heatwarp);
+        text-shadow: 0 0 46px rgba(227, 190, 106, 0.55), 0 8px 24px rgba(0, 0, 0, 0.4); }
+  #lockup { position: absolute; right: 44px; bottom: 40px; display: flex; align-items: center; gap: 18px; }
+</style>
+</head>
+<body>
+  <canvas id="bg" width="1080" height="1440"></canvas>
+  <svg id="bld" width="1080" height="1440" viewBox="0 0 1080 1440">
+    <defs>
+      <filter id="heatwarp" x="-10%" y="-20%" width="120%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.05" numOctaves="2" seed="7" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="10" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
+    </defs>
+  </svg>
+  <canvas id="fg" width="1080" height="1440"></canvas>
+  <div id="l1" class="line" style="top:52px">DO YOU KNOW WHAT</div>
+  <div id="l2" class="line" style="top:136px">HEATS</div>
+  <div id="l3" class="line" style="top:406px">YOUR APARTMENT?</div>
+  <div id="lockup">
+    <img src="../shared/brand/tlc-trng-horizontal-white.png" alt="TLC_TRNG" style="height:34px">
+    <div style="width:3px; height:38px; background:var(--grid)"></div>
+    <div style="font:800 32px/1 'Montserrat'; letter-spacing:0.22em; color:#fff">PREPARE</div>
+  </div>
+<script>
+  const FRAME = 1195;                       // 39.8s: "your number won't match" (brows up, a "do you know?" look)
+  const IG = location.search.includes("ig");
+  const H = IG ? 1920 : 1440, OY = IG ? 240 : 0;
+  // cut-out scale and where his head centre lands; on 9:16 the frame bottom meets the cover bottom, so he scales up
+  // to keep his head where the 3:4 design has it
+  const P = IG ? { s: 0.9, hx: 280, base: 1920 } : { s: 0.72, hx: 300, base: 1440 };
+  document.documentElement.style.height = document.body.style.height = H + "px";
+  ["bg", "fg"].forEach((id) => (document.getElementById(id).height = H));
+  const svg = document.getElementById("bld"); svg.setAttribute("height", H); svg.setAttribute("viewBox", `0 0 1080 ${H}`);
+  ["l1", "l2", "l3"].forEach((id) => { const el = document.getElementById(id); el.style.top = parseFloat(el.style.top) + OY + "px"; });
+  document.getElementById("lockup").style.bottom = 40 + OY + "px";
+  const rnd = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  const pad = (n) => String(n).padStart(5, "0");
+  const byId = (id) => document.getElementById(id);
+
+  // the beat-4 building, smaller, right of frame: warmer floor by floor, heat climbing through the slabs
+  const BX0 = 610, BX1 = 1010, FL = 128, GND = 1350, NF = 5, ROOF = GND - FL * NF;
+  const ftop = (k) => GND - FL * (k + 1);
+  const warm = [0.16, 0.26, 0.38, 0.52, 0.66];
+  let art = warm.map((v, k) => `<rect x="${BX0}" y="${ftop(k)}" width="${BX1 - BX0}" height="${FL}" fill="#E3BE6A" opacity="${v}"/>`).join("");
+  art += [...Array(NF)].map((_, k) => [0, 1].map((u) => {
+    const cx = u ? (BX0 + BX1) / 2 + 100 : (BX0 + BX1) / 2 - 100, y = ftop(k) + 32;
+    return `<rect x="${cx - 30}" y="${y}" width="60" height="58" rx="3" fill="rgba(241,229,189,0.12)" stroke="#8C94A6" stroke-width="3"/><path d="M ${cx} ${y} V ${y + 58} M ${cx - 30} ${y + 29} H ${cx + 30}" stroke="#8C94A6" stroke-width="2"/>`;
+  }).join("")).join("");
+  // heat strokes: soft glow + core, rising off each floor into the next
+  const heat = [...Array(34)].map((_, i) => {
+    const k = Math.floor(rnd(i + 3) * 4), x = BX0 + 26 + rnd(i + 5) * (BX1 - BX0 - 52), y0 = ftop(k) + FL - 10 - rnd(i + 7) * (FL * 0.9);
+    let d = ""; for (let s = 0; s <= 6; s++) d += `${s ? "L" : "M"} ${(x + 8 * Math.sin(s * 1.25 + i)).toFixed(1)} ${(y0 - s * 8).toFixed(1)} `;
+    const a = (0.55 + 0.45 * k / 3).toFixed(2);
+    return `<path d="${d}" stroke="#E3BE6A" stroke-width="13" opacity="${(0.22 * a).toFixed(2)}" fill="none" stroke-linecap="round"/><path d="${d}" stroke="#E3BE6A" stroke-width="5.5" opacity="${a}" fill="none" stroke-linecap="round"/>`;
+  }).join("");
+  art += heat;
+  art += `<g stroke="#E4EAE8" stroke-width="6" fill="none"><path d="M ${BX0} ${GND} V ${ROOF - 12} H ${BX1} V ${GND}"/>
+    ${[...Array(NF - 1)].map((_, k) => `<path d="M ${BX0} ${ftop(k)} H ${BX1}"/>`).join("")}<path d="M ${BX0 - 14} ${ROOF} H ${BX1 + 14}"/></g>
+    <g stroke="#8C94A6" stroke-width="3">${[...Array(NF)].map((_, k) => `<path d="M ${(BX0 + BX1) / 2} ${ftop(k) + 6} V ${ftop(k) + FL - 4}"/>`).join("")}</g>
+    <path d="M ${BX1 + 34} ${GND - 30} V ${ROOF + 30}" stroke="#E3BE6A" stroke-width="8" stroke-linecap="round"/>
+    <path d="M ${BX1 + 14} ${ROOF + 56} L ${BX1 + 34} ${ROOF + 28} L ${BX1 + 54} ${ROOF + 56}" stroke="#E3BE6A" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 0 ${GND} H 1080" stroke="#E4EAE8" stroke-width="5"/>`;
+  byId("bld").insertAdjacentHTML("beforeend", `<g transform="translate(0 ${OY})">${art}</g>`);
+
+  // backdrop: the video's storm gradient and blueprint grid, a warm glow behind his head, darker band under the type
+  const g = byId("bg").getContext("2d");
+  const gr = g.createLinearGradient(0, 0, 0, H);
+  gr.addColorStop(0, "#14232b"); gr.addColorStop(0.55, "#24434c"); gr.addColorStop(1, "#3F6A72");
+  g.fillStyle = gr; g.fillRect(0, 0, 1080, H);
+  g.strokeStyle = "rgba(140,148,166,0.10)"; g.lineWidth = 2; g.beginPath();
+  for (let x = 30; x < 1080; x += 90) { g.moveTo(x, 0); g.lineTo(x, H); }
+  for (let y = 40 + OY % 90; y < H; y += 90) { g.moveTo(0, y); g.lineTo(1080, y); }
+  g.stroke();
+  const glow = g.createRadialGradient(P.hx, 860 + OY, 0, P.hx, 860 + OY, 560);
+  glow.addColorStop(0, "rgba(227,190,106,0.22)"); glow.addColorStop(1, "rgba(227,190,106,0)");
+  g.fillStyle = glow; g.fillRect(0, 0, 1080, H);
+  g.fillStyle = "#121f26"; g.fillRect(0, GND + OY, 1080, H - GND - OY);
+
+  async function load(src) { const im = new Image(); im.src = src; await im.decode(); return im; }
+  async function draw() {
+    const [f, a] = await Promise.all([load(`assets/lit/f_${pad(FRAME)}.jpg`), load(`assets/alpha/a_${pad(FRAME)}.png`)]);
+    const pc = document.createElement("canvas"); pc.width = 1080; pc.height = 1920;
+    const px = pc.getContext("2d", { willReadFrequently: true });
+    px.drawImage(a, 0, 0); const ad = px.getImageData(0, 0, 1080, 1920).data;
+    px.clearRect(0, 0, 1080, 1920); px.drawImage(f, 0, 0);
+    const im = px.getImageData(0, 0, 1080, 1920), d = im.data;
+    // matte (tightened a touch), feathered over the last 220 px before the source frame's right edge, where his
+    // shoulder was cut by the camera: a hard vertical edge there reads as a cut, a fade reads as design
+    for (let i = 3; i < d.length; i += 4) {
+      const x = ((i - 3) >> 2) % 1080, f = Math.min(1, (1080 - x) / 220), fe = f * f * (3 - 2 * f);
+      d[i] = Math.round(255 * Math.pow(ad[i - 3] / 255, 1.35) * fe);
+    }
+    px.putImageData(im, 0, 0);
+    // place him: head centre (x 500 in the source) at P.hx, the frame's bottom on the thumbnail's bottom
+    const c = byId("fg").getContext("2d");
+    c.save();
+    c.shadowColor = "rgba(0,0,0,0.5)"; c.shadowBlur = 50; c.shadowOffsetY = 14;
+    c.translate(P.hx, P.base); c.scale(P.s, P.s); c.drawImage(pc, -500, -1920);
+    c.restore();
+  }
+
+  (async () => {
+    await Promise.all(["800 60px Montserrat", "900 60px Montserrat"].map((f) => document.fonts.load(f)));
+    await document.fonts.ready;
+    await draw();
+    window.__meta = { duration: 0.1, width: 1080, height: H };
+    window.__seek = async () => {};
+  })();
+</script>
+</body>
+</html>

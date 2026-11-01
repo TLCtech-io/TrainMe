@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Uptown Sound: the reaper's last call</title>
+<!--
+  Uptown Sound "Pick Your Poison" last-minute ticket push on "10.23 Fri Zombie": the venue's guitar-playing Grim Reaper
+  prop under the ZOMBIE chorus (1080x1920 from 4K, 24 fps, 20 s). The clip is used as delivered and its audio is copied
+  untouched. The user's asks: the bottom third fades to black, and a side vignette hides the background.
+  The reaper stands in a void: a cold, colourless grade that also keys the brick wall down to black, the side vignette,
+  green graveyard fog over the faded bottom third. His eye sockets (tracked, data/eyes.json) ignite red on the first
+  ZOMBIE and flare with lightning on every ZOMBIE. The words slam in on the ZOMBIEs (DEAD / LAST / CHANCE, then GET /
+  YOUR / TICKETS); the series' zombie hands climb out of the fog on the second set and drag TICKETS under. End card.
+-->
+<style>
+  @font-face { font-family: "Nosifer"; src: url("../shared/fonts/nosifer-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Creepster"; src: url("../shared/fonts/creepster-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Special Elite"; src: url("../shared/fonts/special-elite-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Anton"; src: url("../shared/fonts/anton-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Rubik Mono One"; src: url("../shared/fonts/rubik-mono-one-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Bowlby One SC"; src: url("../shared/fonts/bowlby-one-sc-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Abril Fatface"; src: url("../shared/fonts/abril-fatface-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Permanent Marker"; src: url("../shared/fonts/permanent-marker-latin-400-normal.woff2") format("woff2"); }
+  :root { --blood: #e0242b; --blood-dk: #9e0f14; --bone: #ece6d6; --paper: #f2ecdf; --ink: #111; --fog: #a9c3a2; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; color: #fff; }
+  canvas, svg { position: absolute; left: 0; top: 0; }
+  .layer { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+  /* the user's asks: sides vignetted to black, bottom third faded to black */
+  #sides { background: linear-gradient(90deg, #000 0%, rgba(0,0,0,0.9) 9%, rgba(0,0,0,0.35) 24%, rgba(0,0,0,0) 36%, rgba(0,0,0,0) 64%, rgba(0,0,0,0.35) 76%, rgba(0,0,0,0.9) 91%, #000 100%); }
+  #top { background: linear-gradient(180deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 16%); }
+  #bottom3 { top: 1280px; height: 640px; background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.72) 38%, rgba(0,0,0,0.96) 70%, #000 100%); }
+  #eyes { mix-blend-mode: screen; }
+  #grain { width: 1080px; height: 1920px; opacity: 0.08; mix-blend-mode: overlay; }
+  #flash { background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(225,240,255,0.95), rgba(170,200,230,0.55)); opacity: 0; mix-blend-mode: screen; }
+  .zh { position: absolute; left: 0; top: 0; width: 300px; height: 900px; transform-origin: 150px 524px; filter: brightness(0.72); }
+  .zh svg { width: 300px; height: 900px; overflow: visible; position: static; }
+  .ransom { position: absolute; left: 0; width: 1080px; display: flex; justify-content: center; flex-wrap: nowrap; gap: 6px; }
+  .rl { display: inline-flex; align-items: center; justify-content: center; padding: 2px 10px 4px; line-height: 1; box-shadow: 0 6px 14px rgba(0,0,0,0.5); }
+  .gap { width: 30px; }
+  .w { position: absolute; left: 0; width: 1080px; text-align: center; white-space: nowrap; opacity: 0; }
+  .nos { font: 400 132px/1 "Nosifer"; color: var(--blood); text-shadow: 0 0 2px #000, 0 6px 0 #000, 0 0 28px rgba(224,36,43,0.5); }
+  .bone { font: 400 124px/1 "Creepster"; color: var(--bone); letter-spacing: 0.03em; text-shadow: 0 5px 0 #000, 0 0 22px rgba(0,0,0,0.9); }
+  .echo { color: transparent; -webkit-text-stroke: 2px rgba(236,230,214,0.8); text-shadow: none; }
+  .end-line { position: absolute; left: 0; width: 1080px; text-align: center; opacity: 0; }
+  #eTitle1 .rl, #eTitle2 .rl, #t1 .rl, #t2 .rl { opacity: 0; }
+  #qcpa { position: absolute; opacity: 0; }
+</style>
+</head>
+<body>
+  <canvas id="gl" width="1080" height="1920"></canvas>
+  <div id="sides" class="layer"></div>
+  <div id="top" class="layer"></div>
+  <canvas id="eyes" width="1080" height="1920"></canvas>
+  <div id="bottom3" class="layer"></div>
+  <canvas id="fogBack" width="540" height="960" style="width:1080px; height:1920px"></canvas>
+  <div id="hands"></div>
+  <canvas id="fogFront" width="540" height="960" style="width:1080px; height:1920px"></canvas>
+
+  <!-- title -->
+  <div class="ransom" id="t1" style="top:1300px"></div>
+  <div class="ransom" id="t2" style="top:1376px"></div>
+  <div class="w nos" id="tZ" style="top:1500px; font-size:150px">ZOMBIE</div>
+  <!-- the two ZOMBIE stacks -->
+  <div id="g1"><div class="w nos" id="s0" style="top:1280px">DEAD</div><div class="w nos" id="s1" style="top:1430px">LAST</div><div class="w nos" id="s2" style="top:1580px">CHANCE</div></div>
+  <div id="head" style="position:absolute; left:0; top:0; width:1080px; height:1920px">
+    <div class="w bone" id="hd" style="top:1320px; font-size:150px"></div>
+    <div class="w nos" id="hm" style="top:1500px; font-size:78px">MISS THIS SHOW</div>
+  </div>
+  <div id="g2"><div class="w nos" id="s3" style="top:1280px">GET</div><div class="w nos" id="s4" style="top:1430px">YOUR</div><div class="w nos" id="s5" style="top:1580px">TICKETS</div></div>
+
+  <!-- covers (?thumb 3:4, ?ig 9:16): the skull close-up, eyes lit, the hook below -->
+  <div id="cover" style="display:none">
+    <div id="cEdge" style="position:absolute; left:0; top:0; width:420px; height:100%; background:linear-gradient(90deg, #000 0px, #000 150px, rgba(0,0,0,0) 420px)"></div>
+    <div id="cScrim" style="position:absolute; left:0; width:1080px; height:520px; background:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.7) 30%, rgba(0,0,0,0.85))"></div>
+    <div class="ransom" id="cT1"></div>
+    <div class="ransom" id="cT2"></div>
+    <div class="w nos" id="cS1" style="opacity:1; font-size:120px">DEAD LAST</div>
+    <div class="w nos" id="cS2" style="opacity:1; font-size:150px">CHANCE</div>
+    <div class="end-line" id="cDate" style="opacity:1"><span style="font:400 62px/1 'Bowlby One SC'; color:var(--bone); text-shadow:0 0 18px rgba(224,36,43,0.45), 0 5px 0 rgba(0,0,0,0.85)">OCT 24 &amp; 25</span><span style="font:400 58px/1 'Creepster'; letter-spacing:0.05em; color:var(--blood); text-shadow:0 0 10px rgba(0,0,0,0.95), 0 0 18px rgba(224,36,43,0.6), 0 4px 0 rgba(0,0,0,0.8)">&nbsp; &middot; THIS WEEKEND</span></div>
+  </div>
+
+  <!-- end card -->
+  <img id="qcpa" src="../shared/brand/qcpa-logo-white.svg" alt="Queen City Performing Arts" />
+  <div id="end">
+    <div class="end-line" id="eUp" style="top:1010px; font:400 92px/1 'Anton'; letter-spacing:0.08em; color:#fff; text-shadow:0 0 18px rgba(224,36,43,0.45), 0 6px 0 rgba(0,0,0,0.7)">UPTOWN SOUND</div>
+    <div class="ransom" id="eTitle1" style="top:1118px"></div>
+    <div class="ransom" id="eTitle2" style="top:1190px"></div>
+    <div class="end-line" id="eDate" style="top:1300px; font:400 84px/1 'Bowlby One SC'; color:var(--bone); text-shadow:0 0 22px rgba(224,36,43,0.45), 0 5px 0 rgba(0,0,0,0.8)">OCT 24 &amp; 25</div>
+    <div class="end-line" id="eWk" style="top:1400px; font:400 70px/1 'Creepster'; letter-spacing:0.06em; color:var(--blood); text-shadow:0 0 10px rgba(0,0,0,0.95), 0 0 20px rgba(224,36,43,0.6), 0 4px 0 rgba(0,0,0,0.7)">THIS WEEKEND</div>
+    <div class="end-line" id="eCta" style="top:1494px"><span style="display:inline-block; background:#0a0a0a; color:var(--bone); border:2px solid var(--blood); font:400 38px/1 'Special Elite'; padding:12px 24px; border-radius:8px; letter-spacing:0.06em">TICKETS &middot; LINK IN BIO</span></div>
+  </div>
+  <canvas id="grain" width="540" height="960"></canvas>
+  <div id="flash" class="layer"></div>
+
+<script src="../shared/gsap.min.js"></script>
+<script src="data/features.js"></script>
+<script src="data/eyes.js"></script>
+<script>
+  const F = window.FEATURES, FPS = F.fps, D = F.env.length / FPS, NF = F.env.length, EYES = window.EYES.eyes;
+  const FRAMES = "assets/frames/f_%05d.jpg";
+  // Output: the 9:16 reel, or a cover (?thumb = 3:4 for TikTok, ?ig = 9:16 for Instagram, whose grid shows the middle
+  // 3:4, so the ig cover keeps the whole design in the band OY..OY+1440). Covers hold the skull close-up at frameT with
+  // the eyes lit and a little flare; the footage layers move by dx, dy so the eyes sit centred below the title.
+  const MODE = location.search.includes("thumb") ? "thumb" : location.search.includes("ig") ? "ig" : "video";
+  const LAY = { video: { H: 1920, OY: 0 }, thumb: { H: 1440, OY: 0 }, ig: { H: 1920, OY: 240 } }[MODE];
+  const POSTER = MODE !== "video";
+  const POSE = { frameT: 6.7, flare: 0.35, dy: -190, dx: 150 };
+  const rnd = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const span = (a, b, t) => clamp((t - a) / (b - a), 0, 1);
+  const ease = (p) => (p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
+  const lerp = (a, b, k) => a + (b - a) * k;
+  const byId = (id) => document.getElementById(id);
+  const env = (t) => F.env[clamp(Math.floor(t * FPS), 0, NF - 1)];
+
+  // Cue times (seconds): the ZOMBIEs are the vocal onsets of each "zom-"; the head line rides "what's in your head".
+  const T = { title: 0.12, titleOut: 3.55, z1: [4.13, 5.26, 6.33], z1out: 7.45, head: 7.95, miss: 9.2, headOut: 12.2,
+              z2: [12.77, 13.84, 14.88], drag: 15.35, end: 15.75 };
+  const HITS = [...T.z1, ...T.z2];
+
+  // ---------- lettering ----------
+  const FONTS = ["Anton", "Rubik Mono One", "Bowlby One SC", "Abril Fatface", "Special Elite", "Permanent Marker", "Creepster"];
+  const SWATCH = [["#f2ecdf", "#111"], ["#111", "#f2ecdf"], ["#e0242b", "#fff"], ["#ece6d6", "#9e0f14"], ["#8a8a8a", "#111"], ["#111", "#e0242b"]];
+  function ransom(el, text, size, seed) {
+    el.innerHTML = [...text].map((ch, i) => {
+      if (ch === " ") return '<span class="gap"></span>';
+      const r = (k) => rnd(seed * 100 + i * 7 + k);
+      const [bg, fg] = SWATCH[Math.floor(r(1) * SWATCH.length)];
+      const font = FONTS[Math.floor(r(2) * FONTS.length)];
+      const s = Math.round(size * (0.86 + r(3) * 0.3)), rot = (r(4) - 0.5) * 16;
+      return `<span class="rl" style="background:${bg}; color:${fg}; font:400 ${s}px/1 '${font}'; transform:rotate(${rot.toFixed(1)}deg)">${ch}</span>`;
+    }).join("");
+  }
+  ransom(byId("t1"), "PICK YOUR", 58, 21);
+  ransom(byId("t2"), "POISON", 72, 23);
+  ransom(byId("eTitle1"), "PICK YOUR", 60, 11);
+  ransom(byId("eTitle2"), "POISON", 74, 13);
+  byId("hd").innerHTML = [0, 1, 2].map((k) => `<div class="w bone echo" data-k="${k}" style="top:0; opacity:1; font-size:inherit">ONLY THE DEAD</div>`).join("")
+    + `<div class="w bone" id="hdMain" style="top:0; opacity:1; font-size:inherit">ONLY THE DEAD</div>`;
+
+  // ---------- the grade (WebGL): a cold, colourless night, the brick keyed down to black, the skull in a hard light ----------
+  const glc = byId("gl"), gl = glc.getContext("webgl", { preserveDrawingBuffer: true, antialias: false });
+  const VS = "attribute vec2 p; varying vec2 v; void main(){ v = vec2(p.x * 0.5 + 0.5, 0.5 - p.y * 0.5); gl_Position = vec4(p, 0.0, 1.0); }";
+  const FS = `precision highp float;
+    uniform sampler2D img; uniform vec2 spot; uniform vec2 spotR; uniform float spotK; uniform float flash; uniform float redK; uniform vec3 view; varying vec2 v;
+    void main() {
+      vec2 px = v * vec2(1080.0, 1920.0);
+      vec3 c = texture2D(img, view.xy + (v - 0.5) / view.z).rgb;
+      float mx = max(c.r, max(c.g, c.b)), mn = min(c.r, min(c.g, c.b)), sat = (mx - mn) / (mx + 1e-4);
+      float l = dot(c, vec3(0.299, 0.587, 0.114));
+      // brick and the pink-lit wall: warm, fairly saturated, mid to bright; the red guitar is darker and stays
+      float brick = smoothstep(0.16, 0.32, sat) * smoothstep(0.2, 0.36, l) * step(c.g, c.r);
+      float guitar = smoothstep(0.45, 0.7, sat) * (1.0 - smoothstep(0.22, 0.34, l)) * step(c.g * 1.4, c.r);
+      vec3 n = pow(c, vec3(1.45)) * 0.62;
+      float ln = dot(n, vec3(0.299, 0.587, 0.114));
+      n = mix(n, ln * vec3(0.84, 0.92, 0.86), 0.82);                  // nearly colourless, a graveyard green-grey
+      n = mix(n, c * vec3(0.75, 0.25, 0.22), guitar * 0.75);           // the guitar keeps a dull blood red
+      n *= 1.0 - 0.9 * brick;                                         // the wall goes black
+      float sp = spotK * (1.0 - smoothstep(0.35, 1.0, length((px - spot) / spotR)));
+      n *= 0.62 + 0.75 * sp;                                          // a hard light on the skull, the rest falls away
+      n += sp * redK * vec3(0.10, 0.0, 0.0);                          // red spill from the eyes
+      n += flash * (vec3(0.55, 0.62, 0.7) * l + 0.06);                // lightning shows the room for an instant
+      gl_FragColor = vec4(n, 1.0);
+    }`;
+  function shader(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s)); return s; }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, shader(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog); gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW);
+  const pLoc = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(pLoc); gl.vertexAttribPointer(pLoc, 2, gl.FLOAT, false, 0, 0);
+  gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+  [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]].forEach(([k, v]) => gl.texParameteri(gl.TEXTURE_2D, k, v));
+  const U = Object.fromEntries(["spot", "spotR", "spotK", "flash", "redK", "view"].map((n) => [n, gl.getUniformLocation(prog, n)]));
+  gl.viewport(0, 0, 1080, 1920);
+  gl.uniform3f(U.view, 0.5, 0.5, 1);
+
+  // the skull and its sockets in this frame (null before it rises into shot and after it leaves)
+  function eyesAt(t) {
+    const e = EYES[clamp(Math.floor(t * FPS + 1e-6), 0, EYES.length - 1)];
+    return e ? { lx: e[0], ly: e[1], rx: e[2], ry: e[3], w: e[4], cx: (e[0] + e[2]) / 2, cy: e[1] } : null;
+  }
+  // a ZOMBIE: sharp attack, quick decay
+  const hit = (t, list = HITS, k = 5) => list.reduce((m, h) => Math.max(m, t >= h - 0.04 ? (t < h ? (t - h + 0.04) / 0.04 : Math.exp(-(t - h) * k)) : 0), 0);
+  // lightning: a double strike on each ZOMBIE
+  const bolt = (t) => HITS.reduce((m, h) => { const s = t - h; return Math.max(m, s < 0 ? 0 : s < 0.07 ? 1 : s < 0.11 ? 0.15 : s < 0.17 ? 0.65 : Math.exp(-(s - 0.17) * 14) * 0.65); }, 0);
+  // eyes: dark sockets until the first ZOMBIE, then they sputter alight and stay lit, flaring on every hit
+  function eyeLevel(t) {
+    if (POSTER) return 1;
+    if (t < T.z1[0] - 0.02) return 0;
+    const s = t - T.z1[0], f = Math.floor(t * FPS);
+    const sputter = s < 0.45 ? (rnd(f * 7 + 3) < 0.55 ? 1 : 0.15) : 1;
+    return sputter * (0.82 + 0.1 * rnd(f) + 0.18 * env(t));
+  }
+  function drawGrade(t) {
+    const e = eyesAt(t);
+    if (e) { gl.uniform2f(U.spot, e.cx, e.cy + e.w * 0.9); gl.uniform2f(U.spotR, e.w * 3.0, e.w * 4.4); }
+    gl.uniform1f(U.spotK, e ? 1 : 0);
+    gl.uniform1f(U.flash, POSTER ? 0 : 0.45 * bolt(t));
+    gl.uniform1f(U.redK, eyeLevel(t) * (0.6 + 0.8 * (POSTER ? POSE.flare : hit(t))));
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+  }
+
+  // ---------- glowing eyes ----------
+  const ex = byId("eyes").getContext("2d");
+  function drawEyes(t) {
+    ex.clearRect(0, 0, 1080, 1920);
+    const e = eyesAt(t), I = eyeLevel(t);
+    if (!e || I <= 0) return;
+    const fl = POSTER ? POSE.flare : hit(t), w = e.w;
+    const halo = ex.createRadialGradient(e.cx, e.cy, 0, e.cx, e.cy, w * (1.3 + 0.8 * fl));
+    halo.addColorStop(0, `rgba(255,30,20,${(0.22 * I + 0.25 * fl).toFixed(3)})`); halo.addColorStop(1, "rgba(255,0,0,0)");
+    ex.fillStyle = halo; ex.fillRect(0, 0, 1080, 1920);
+    [[e.lx, e.ly], [e.rx, e.ry]].forEach(([x, y]) => {
+      const R = w * (0.34 + 0.3 * fl);
+      const g = ex.createRadialGradient(x, y, 0, x, y, R);
+      g.addColorStop(0, `rgba(255,236,210,${I.toFixed(3)})`);
+      g.addColorStop(0.14, `rgba(255,70,40,${(0.95 * I).toFixed(3)})`);
+      g.addColorStop(0.45, `rgba(200,0,0,${(0.32 * I).toFixed(3)})`);
+      g.addColorStop(1, "rgba(120,0,0,0)");
+      ex.fillStyle = g; ex.beginPath(); ex.arc(x, y, R, 0, 7); ex.fill();
+      if (fl > 0.02) {                                   // an anamorphic streak on the hits
+        const L = w * (0.8 + 1.7 * fl), s = ex.createLinearGradient(x - L, y, x + L, y);
+        s.addColorStop(0, "rgba(255,40,30,0)"); s.addColorStop(0.5, `rgba(255,120,90,${(0.8 * fl).toFixed(3)})`); s.addColorStop(1, "rgba(255,40,30,0)");
+        ex.fillStyle = s; ex.fillRect(x - L, y - Math.max(2, w * 0.022), 2 * L, Math.max(4, w * 0.044));
+      }
+    });
+  }
+
+  // ---------- graveyard fog over the faded bottom third ----------
+  const fb = byId("fogBack").getContext("2d"), ff = byId("fogFront").getContext("2d");
+  function drawFog(ctx, t, seed, n, alpha, y0, dy) {
+    ctx.clearRect(0, 0, 540, 960);
+    for (let i = 0; i < n; i++) {
+      const sp = 6 + rnd(seed + i) * 14, w = 540 + 400;
+      const x = ((rnd(seed + i + 50) * w + t * sp * (i % 2 ? 1 : -1)) % w + w) % w - 200;
+      const y = y0 + rnd(seed + i + 80) * dy + Math.sin(t * 0.4 + i) * 8, r = 90 + rnd(seed + i + 110) * 90;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r), a = alpha * (0.6 + 0.4 * rnd(seed + i + 140));
+      g.addColorStop(0, `rgba(169,195,162,${a.toFixed(3)})`); g.addColorStop(1, "rgba(169,195,162,0)");
+      ctx.fillStyle = g; ctx.fillRect(x - r, y - r, 2 * r, 2 * r);
+    }
+  }
+
+  // ---------- zombie hands (the series' rig from ../uptown-zombie) ----------
+  // A decayed hand, palm toward us: bony three-joint fingers with knuckle bumps and broken nails, mottled rotting skin
+  // and ragged edges (SVG turbulence), sores, a torn sleeve; each finger bends at its joints to grab and claw.
+  const FING = [
+    [104, 390, -12, [60, 42, 30], [19, 15, 12]],
+    [134, 382, -3, [66, 46, 33], [20, 16, 12]],
+    [164, 386, 6, [62, 42, 30], [19, 15, 12]],
+    [193, 400, 16, [48, 34, 25], [16, 13, 10]],
+    [108, 462, -48, [56, 42], [23, 18]],
+  ];
+  function rigHand(id, seed) {
+    const r = (k) => rnd(seed * 37 + k);
+    const seg = (wb, wt, L, k, tip) => {
+      const f = (v) => v.toFixed(1);
+      let g = `<path d="M ${f(-wb / 2)} 5 L ${f(-wt / 2)} ${f(-L + wt / 2)} A ${f(wt / 2)} ${f(wt / 2)} 0 0 1 ${f(wt / 2)} ${f(-L + wt / 2)} L ${f(wb / 2)} 5 Z" fill="url(#skin${seed})"/>`;
+      if (!tip) g += `<ellipse cx="0" cy="${f(-L)}" rx="${f(wt / 2 + 1.2)}" ry="${f(wt / 2)}" fill="url(#skin${seed})"/>`
+        + `<ellipse cx="0" cy="${f(-L - 1)}" rx="${f(wt * 0.22)}" ry="${f(wt * 0.14)}" fill="#9a9c8c" opacity="0.55"/>`;
+      if (r(k) < 0.12) g += `<rect x="${f(-wb * 0.13)}" y="${f(-L * 0.8)}" width="${f(wb * 0.26)}" height="${f(L * 0.5)}" rx="${f(wb * 0.13)}" fill="#a9a290"/>`;
+      if (tip) g += `<path d="M ${f(-wt * 0.34)} ${f(-L + 11)} L ${f(-wt * 0.32)} ${f(-L + 3)} L ${f(-wt * 0.05)} ${f(-L + 1.5)} L ${f(wt * 0.1)} ${f(-L + 4)} L ${f(wt * 0.3)} ${f(-L + 2.5)} L ${f(wt * 0.34)} ${f(-L + 11)} Z" fill="#46432f" opacity="0.9"/>`;
+      return g;
+    };
+    const fingers = FING.map(([bx, by, , L, W], fi) => {
+      let inner = "";
+      for (let j = L.length - 1; j >= 0; j--)
+        inner = `<g id="${id}f${fi}s${j}">${seg(W[j], j < L.length - 1 ? W[j + 1] : W[j] * 0.8, L[j], fi * 5 + j, j === L.length - 1)}${inner ? `<g transform="translate(0,${-L[j]})">${inner}</g>` : ""}</g>`;
+      return `<g transform="translate(${bx},${by})">${inner}</g>`;
+    });
+    const palm = "M 92 394 C 96 378 206 380 210 400 L 207 470 C 203 498 196 512 193 528 L 107 528 C 104 508 97 488 94 470 Z";
+    const arm = "M 108 520 L 192 520 L 202 900 L 98 900 Z";
+    const sleeve = "M 92 900 L 95 668 L 106 684 L 112 652 L 124 676 L 134 646 L 146 672 L 158 642 L 170 670 L 182 648 L 194 678 L 206 656 L 208 900 Z"
+      + " M 112 652 L 108 724 L 118 702 Z M 158 642 L 162 718 L 170 694 Z M 194 678 L 200 742 L 206 708 Z";
+    const creases = "M 112 452 Q 150 438 188 448 M 118 488 Q 146 474 176 486 M 150 410 L 148 450";
+    const sores = [...Array(5)].map((_, k) => `<ellipse cx="${(108 + r(k + 60) * 84).toFixed(0)}" cy="${(405 + r(k + 70) * 210).toFixed(0)}" rx="${(4 + r(k + 80) * 8).toFixed(1)}" ry="${(3 + r(k + 90) * 6).toFixed(1)}" fill="#2a1f1c" opacity="0.7"/>`).join("");
+    return `<div class="zh" id="${id}"><svg viewBox="0 0 300 900">
+      <defs>
+        <linearGradient id="skin${seed}" x1="0" y1="250" x2="0" y2="900" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#7d8173"/><stop offset="0.35" stop-color="#585d50"/><stop offset="1" stop-color="#2a2d26"/>
+        </linearGradient>
+        <filter id="rot${seed}" x="-15%" y="-8%" width="130%" height="116%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="${seed}" result="n"/>
+          <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.16  0 0 0 0 0.15  0 0 0 0 0.11  3.2 0 0 0 -1.85" result="b"/>
+          <feComposite in="b" in2="SourceAlpha" operator="in" result="blotch"/>
+          <feTurbulence type="turbulence" baseFrequency="0.7" numOctaves="1" seed="${seed + 9}" result="g"/>
+          <feColorMatrix in="g" type="matrix" values="0 0 0 0 0.05  0 0 0 0 0.05  0 0 0 0 0.04  0.9 0 0 0 -0.25" result="g2"/>
+          <feComposite in="g2" in2="SourceAlpha" operator="in" result="wrinkle"/>
+          <feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="2" seed="${seed + 3}" result="d"/>
+          <feDisplacementMap in="SourceGraphic" in2="d" scale="5" xChannelSelector="R" yChannelSelector="G" result="ragged"/>
+          <feGaussianBlur in="SourceAlpha" stdDeviation="5" result="bl"/>
+          <feComposite in="SourceAlpha" in2="bl" operator="arithmetic" k2="1.6" k3="-1.6" result="edge"/>
+          <feFlood flood-color="#000" flood-opacity="0.75"/><feComposite in2="edge" operator="in" result="shade"/>
+          <feMorphology in="SourceAlpha" operator="dilate" radius="1.8" result="dl"/>
+          <feComposite in="dl" in2="SourceAlpha" operator="out" result="ol"/>
+          <feFlood flood-color="#dfe3d6" flood-opacity="0.5"/><feComposite in2="ol" operator="in" result="rim"/>
+          <feMerge><feMergeNode in="ragged"/><feMergeNode in="shade"/><feMergeNode in="blotch"/><feMergeNode in="wrinkle"/><feMergeNode in="rim"/></feMerge>
+        </filter>
+      </defs>
+      <g filter="url(#rot${seed})">
+        <path d="${arm}" fill="url(#skin${seed})"/>
+        <path d="${palm}" fill="url(#skin${seed})"/>
+        ${fingers.join("")}
+        ${sores}
+        <path d="${creases}" stroke="#2f322b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </g>
+      <path d="${sleeve}" fill="#151513" stroke="rgba(223,227,214,0.35)" stroke-width="1.5" stroke-linejoin="round"/>
+    </svg></div>`;
+  }
+  // One hand climbs out on each ZOMBIE of the second set: left, right, then one right under TICKETS that grabs the
+  // word and drags it down into the fog (and goes back under with it).
+  const HANDS = [
+    { s: T.z2[0] - 0.1, x: 150, k: 1.0, tilt: -12, m: false, rest: 1700 },
+    { s: T.z2[1] - 0.1, x: 935, k: 1.0, tilt: 12, m: true, rest: 1700 },
+    { s: T.z2[2] - 0.1, x: 560, k: 1.08, tilt: -3, m: false, rest: 1830, sink: T.drag },
+  ];
+  byId("hands").innerHTML = HANDS.map((h, i) => rigHand(`zh${i}`, i + 4)).join("");
+  HANDS.forEach((h, i) => { h.el = byId(`zh${i}`); h.segs = FING.map((f, fi) => f[3].map((_, j) => byId(`zh${i}f${fi}s${j}`))); });
+  const PULL = 0.3, PULLS = 2, DEG = Math.PI / 180;
+  const lunge = (t) => clamp([...T.z2, T.drag].reduce((a, h) => a + (t >= h ? Math.exp(-(t - h) * 4) * Math.min(1, (t - h) / 0.06) : 0), 0), 0, 1);
+  function handState(h, i, t) {
+    const p = (t - h.s) / PULL, out = p >= PULLS;
+    let rise = 0, grip = 0;
+    if (p > 0 && !out) {
+      const k = Math.floor(p), f = p - k;
+      rise = (k + 0.1 * Math.min(f / 0.45, 1) + 0.9 * ease(clamp((f - 0.45) / 0.4, 0, 1))) / PULLS;
+      grip = Math.sin(Math.PI * clamp((f - 0.35) / 0.6, 0, 1));
+    } else if (out) rise = 1;
+    const L = out ? lunge(t) : 0;
+    const hidden = 1920 + 560 * h.k;
+    const rest = h.rest + (h.sink ? 0 : 110 * ease(span(T.end, T.end + 1.2, t)));      // make room for the end card
+    let wristY = hidden + (rest - hidden) * rise - 34 * L + (out ? Math.sin(t * 1.6 + i) * 10 : 0);
+    let fist = 0;
+    if (h.sink && t > h.sink) { const q = span(h.sink, h.sink + 0.7, t); wristY += (hidden - h.rest + 80) * q * q; fist = 1; }
+    const tilt = h.tilt + Math.sin(t * 1.2 + i * 1.3) * 6 - L * 5 * (h.m ? -1 : 1);
+    return { wristY, tilt, grip, out, L, fist };
+  }
+  function drawHands(t) {
+    HANDS.forEach((h, i) => {
+      const st = handState(h, i, t);
+      if (st.wristY > 1920 + 330 * h.k) { h.el.style.display = "none"; return; }
+      h.el.style.display = "";
+      h.el.style.transform = `translate(${h.x - 150}px, ${(st.wristY - 524).toFixed(1)}px) rotate(${st.tilt.toFixed(2)}deg) scale(${h.m ? -h.k : h.k}, ${h.k})`;
+      h.segs.forEach((segs, fi) => {
+        const claw = st.fist ? 1 : st.out ? 0.5 + 0.45 * Math.sin((t - h.s) * 5.4 + (3 - fi) * 0.5 + i) : st.grip;
+        const curl = clamp(Math.max(claw, st.L), 0, 1), thumb = fi === 4;
+        const spread = FING[fi][2], inward = thumb ? 0 : (fi < 2 ? 1 : -1) * 6 * curl;
+        segs.forEach((el, j) => {
+          const bend = [55, 72, 55][j] * (thumb ? 0.6 : 1) * curl;
+          const rot = j === 0 ? (thumb ? spread + 34 * curl : spread * (1 + 0.35 * (1 - curl)) + inward) : inward * 0.6;
+          el.setAttribute("transform", `rotate(${rot.toFixed(2)}) scale(1,${Math.max(0.28, Math.cos(bend * DEG)).toFixed(3)})`);
+        });
+      });
+      h.state = st;
+    });
+  }
+
+  // ---------- timeline (type) ----------
+  const tl = gsap.timeline({ paused: true });
+  document.querySelectorAll("#t1 .rl, #t2 .rl").forEach((el, i) => {
+    tl.fromTo(el, { opacity: 0, scale: 2.4 }, { opacity: 1, scale: 1, duration: 0.18, ease: "power4.in" }, T.title + i * 0.07);
+  });
+  tl.fromTo("#tZ", { opacity: 0, scale: 1.8, filter: "blur(10px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.4, ease: "power3.out" }, T.title + 1.05);
+  tl.to(["#t1", "#t2", "#tZ"], { opacity: 0, y: 40, duration: 0.35, ease: "power2.in" }, T.titleOut);
+  // the stacks slam in on the ZOMBIEs, each line tilted a little
+  [...T.z1, ...T.z2].forEach((h, i) => {
+    const tilt = (rnd(i + 40) - 0.5) * 8;
+    tl.fromTo(`#s${i}`, { opacity: 0, scale: 2.3, rotation: tilt * 3 }, { opacity: 1, scale: 1, rotation: tilt, duration: 0.14, ease: "power4.in" }, h - 0.1);
+  });
+  tl.to(["#s0", "#s1", "#s2"], { opacity: 0, y: 40, duration: 0.3, ease: "power2.in" }, T.z1out);
+  tl.fromTo("#hd", { opacity: 0, y: 24, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.5, ease: "power2.out" }, T.head);
+  tl.fromTo("#hm", { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: 0.2, ease: "back.out(1.8)" }, T.miss);
+  tl.to(["#hd", "#hm"], { opacity: 0, filter: "blur(10px)", duration: 0.35 }, T.headOut);
+  // the grab: GET and YOUR shake loose, TICKETS goes under with the hand
+  tl.to(["#s3", "#s4"], { opacity: 0, y: 30, duration: 0.3, ease: "power2.in" }, T.drag);
+  tl.to("#s5", { y: 520, rotation: -6, duration: 0.7, ease: "power2.in" }, T.drag);
+  tl.to("#s5", { opacity: 0, duration: 0.25 }, T.drag + 0.45);
+  // end card flickers on in the dark
+  const flicker = (sel, at) => [0, 1, 0.15, 1, 0.4, 1].forEach((o, i) => tl.set(sel, { opacity: o }, at + i * 0.06));
+  flicker("#eUp", T.end);
+  document.querySelectorAll("#eTitle1 .rl, #eTitle2 .rl").forEach((el, i) => flicker(el, T.end + 0.15 + i * 0.03));
+  flicker("#eDate", T.end + 0.7);
+  flicker("#eWk", T.end + 1.0);
+  flicker("#eCta", T.end + 1.3);
+  tl.fromTo("#qcpa", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, T.end + 1.6);
+  const qcpa = byId("qcpa"), ASPECT = 253.262 / 340.77;
+  Object.assign(qcpa.style, { height: "150px", width: `${150 * ASPECT}px`, left: `${540 - 75 * ASPECT}px`, top: "1590px" });
+
+  // ---------- per frame ----------
+  function drawHead(t) {
+    document.querySelectorAll("#hd .echo").forEach((el) => {
+      const k = +el.dataset.k, ph = (t * 0.7 + k / 3) % 1;
+      el.style.transform = `scale(${(1 + 0.22 * ph).toFixed(3)})`; el.style.opacity = ((1 - ph) * 0.45).toFixed(3);
+    });
+  }
+  function drawGrain(t) {
+    const gx = byId("grain").getContext("2d"), img = gx.createImageData(540, 960), dd = img.data, seed = Math.floor(t * FPS) * 7919;
+    for (let p = 0; p < dd.length; p += 4) { const v = (rnd(seed + p * 0.25) * 255) | 0; dd[p] = dd[p + 1] = dd[p + 2] = v; dd[p + 3] = 255; }
+    gx.putImageData(img, 0, 0);
+  }
+  const fimg = new Image();
+  let lastSrc = "";
+  async function seek(t0) {
+    const t = POSTER ? POSE.frameT : t0;
+    if (!POSTER) tl.seek(t, false);
+    const n = Math.min(NF, Math.floor(t * FPS + 1e-6) + 1);
+    const src = FRAMES.replace("%05d", String(n).padStart(5, "0"));
+    if (src !== lastSrc) {
+      fimg.src = src; lastSrc = src;
+      try { await fimg.decode(); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, fimg); } catch (e) { console.error("frame", n, e.message); }
+    }
+    // a jolt on every ZOMBIE
+    const sh = 9 * hit(t, HITS, 9), f = Math.floor(t * FPS);
+    glc.style.transform = !POSTER && sh > 0.3 ? `translate(${((rnd(f) - 0.5) * 2 * sh).toFixed(1)}px, ${((rnd(f + 9) - 0.5) * 2 * sh).toFixed(1)}px) scale(1.012)` : "";
+    drawGrade(t); drawEyes(t);
+    drawFog(fb, t, 1, 12, 0.075, 780, 160); drawFog(ff, t, 300, 9, 0.09, 870, 90);
+    drawHands(t); drawHead(t); drawGrain(t);
+    byId("flash").style.opacity = POSTER ? 0 : (0.32 * bolt(t)).toFixed(3);
+  }
+
+  (async () => {
+    await Promise.all(["400 100px Nosifer", "400 100px Creepster", "400 100px Anton", "400 60px 'Bowlby One SC'", "400 60px 'Special Elite'"].map((f) => document.fonts.load(f)));
+    await document.fonts.ready;
+    if (POSTER) {
+      const OY = LAY.OY, dy = OY + POSE.dy;
+      document.documentElement.style.height = document.body.style.height = LAY.H + "px";
+      ["gl", "eyes", "top", "fogBack", "fogFront"].forEach((id) => Object.assign(byId(id).style, { top: dy + "px", left: POSE.dx + "px" }));
+      byId("sides").style.top = dy + "px";                 // the vignette stays on the cover's edges; cEdge hides the seam
+      byId("bottom3").style.top = 1280 + dy + "px";
+      byId("grain").style.height = LAY.H + "px";
+      ["t1", "t2", "tZ", "g1", "head", "g2", "end", "qcpa", "hands"].forEach((id) => (byId(id).style.display = "none"));
+      byId("cover").style.display = "block";
+      ransom(byId("cT1"), "PICK YOUR", 54, 21); ransom(byId("cT2"), "POISON", 68, 23);
+      document.querySelectorAll("#cover .rl").forEach((el) => (el.style.opacity = 1));
+      [["cT1", 34], ["cT2", 104], ["cScrim", 900], ["cS1", 1002], ["cS2", 1128], ["cDate", 1312]].forEach(([id, y]) => (byId(id).style.top = OY + y + "px"));
+    }
+    document.querySelectorAll(".w").forEach((el) => {     // fit every line to the frame width (measured unscaled: the
+      const prev = el.style.transform; el.style.transform = "none";   // timeline has already set the slam-in scale)
+      const r = document.createRange(); r.selectNodeContents(el);
+      const w = r.getBoundingClientRect().width, base = parseFloat(getComputedStyle(el).fontSize);
+      el.style.transform = prev;
+      if (w > 1040) el.style.fontSize = (base * 1040 / w).toFixed(1) + "px";
+    });
+    ["g1", "g2"].forEach((g) => {                          // one size per stack (its widest word sets it)
+      const els = [...byId(g).children], fs = Math.min(...els.map((el) => parseFloat(el.style.fontSize || getComputedStyle(el).fontSize)));
+      els.forEach((el) => (el.style.fontSize = fs + "px"));
+    });
+    // signal ready only once the first frame is drawn (the renderer starts capturing as soon as __meta appears)
+    window.__seek = seek;
+    await seek(0);
+    window.__tl = tl;
+    window.__meta = { duration: POSTER ? 0.1 : D, width: 1080, height: LAY.H };
+  })();
+</script>
+</body>
+</html>
