@@ -22,7 +22,7 @@
   @font-face { font-family: "Open Sans"; font-weight: 700; src: url("../shared/fonts/open-sans-latin-700-normal.woff2") format("woff2"); }
   :root {
     --navy: #0F2557; --navy-deep: #081937; --navy-light: #1A3473;
-    --azure: #4DA3FF; --cyan: #6FF2FF; --light-blue: #DCE5F2; --error: #FF6B7A;
+    --azure: #4DA3FF; --cyan: #6FF2FF; --light-blue: #DCE5F2; --error: #FF6B7A; --warn: #FFA033;
     --cyan-glow: 0 0 16px rgba(111, 242, 255, 0.55); --cyan-glow-soft: 0 0 12px rgba(111, 242, 255, 0.40);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -89,6 +89,10 @@
   .tap::before { width: 22px; height: 22px; background: var(--cyan); box-shadow: var(--cyan-glow); }
   .tap::after { width: var(--r, 64px); height: var(--r, 64px); border: 3px solid var(--cyan); box-shadow: var(--cyan-glow); }
 
+  /* opening: the warning sign (brand status amber, solid, never glows), then the alert card in front of it */
+  #warn { position: absolute; left: 235px; top: 128px; width: 440px; height: 392px; opacity: 0; transform-origin: 50% 63%; }
+  #warn svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; transform-origin: 50% 63%; }
+  #warn .ripple { opacity: 0; }
   /* opening: the alert card */
   #alert { position: absolute; left: 550px; top: 380px; width: 820px; padding: 34px 44px 38px; border-radius: 22px; opacity: 0;
            background: var(--navy-light); border: 1px solid rgba(77, 163, 255, 0.3); box-shadow: 0 30px 90px rgba(3, 10, 25, 0.7); }
@@ -126,6 +130,15 @@
 <body>
   <div id="bg"></div><div id="grid"></div>
 
+  <div id="warn">
+    <svg class="ripple" viewBox="-20 -20 440 392"><defs><mask id="ringMask" maskUnits="userSpaceOnUse" x="-60" y="-60" width="520" height="472">
+      <polygon points="200,30 375,325 25,325" fill="#fff" stroke="#fff" stroke-width="56" stroke-linejoin="round"/>
+      <polygon points="200,30 375,325 25,325" fill="#000" stroke="#000" stroke-width="44" stroke-linejoin="round"/></mask></defs>
+      <rect x="-60" y="-60" width="520" height="472" fill="var(--warn)" mask="url(#ringMask)"/></svg>
+    <svg class="tri" viewBox="-20 -20 440 392">
+      <polygon points="200,30 375,325 25,325" fill="var(--warn)" stroke="var(--warn)" stroke-width="50" stroke-linejoin="round"/>
+      <rect x="186" y="105" width="28" height="135" rx="14" fill="#fff"/><circle cx="200" cy="282" r="17" fill="#fff"/></svg>
+  </div>
   <div id="alert">
     <div class="row"><div class="dot"></div>DISRUPTED<span class="when">Just now</span></div>
     <h1>Operations disrupted.</h1>
@@ -287,13 +300,32 @@
     tl.fromTo(el.querySelector(".tally"), { opacity: 0 }, { opacity: 1, duration: 0.3, immediateRender: false }, lastTick + 0.2);
   }
 
+  // ---------- the opening: a warning sign rings at the centre ("You've just been notified"), then slides up and
+  // behind the alert card as the card lands ("Operations are down"). The sign pulses with the card's red dot. ----------
+  function openAlert(pop, move, moveDur, card, out, outDur) {
+    const C = { x: 505, y: 165, scale: 1.25 };      // from its place behind the card to the centre of the screen
+    tl.fromTo("#warn", { opacity: 0, ...C, scale: 0.6 }, { opacity: 1, ...C, duration: 0.32, ease: "back.out(2)" }, pop);
+    tl.fromTo("#warn", { ...C }, { x: 0, y: 0, scale: 1, duration: moveDur, ease: "power3.inOut", immediateRender: false }, move);
+    const p0 = pop + 0.32, HALF = 0.45;
+    tl.fromTo("#warn .tri", { scale: 1 }, { scale: 1.1, duration: HALF, ease: "sine.inOut", yoyo: true,
+                                            repeat: Math.ceil((out - p0) / HALF) }, p0);
+    for (let t = p0; t < out - 0.3; t += 2 * HALF) {   // a thin ring goes out on every beat: bright, then gone quickly
+      tl.fromTo("#warn .ripple", { scale: 1 }, { scale: 1.4, duration: 0.7, ease: "power2.out", immediateRender: false }, t);
+      tl.fromTo("#warn .ripple", { opacity: 1 }, { opacity: 0, duration: 0.7, ease: "power4.in", immediateRender: false }, t);
+    }
+    tl.fromTo("#alert", { opacity: 0, y: -50, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.6)" }, card);
+    const d0 = p0 + 2 * HALF * Math.ceil((card + 0.35 - p0) / (2 * HALF));   // in step with the sign
+    tl.fromTo("#alert .dot", { scale: 1 }, { scale: 1.35, duration: HALF, ease: "sine.inOut", yoyo: true,
+                                             repeat: Math.ceil((out - d0) / HALF) }, d0);
+    tl.to(["#alert", "#warn"], { opacity: 0, y: -40, duration: outDur, ease: "power2.in" }, out);
+  }
+
   // ---------- the long cut ----------
   function buildLong() {
     gsap.set("#endA, #endB", { opacity: 0 });
-    // 1. ALERT: operations are down, cause unknown
-    tl.fromTo("#alert", { opacity: 0, y: -50, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.6)" }, 0.12);
-    tl.fromTo("#alert .dot", { scale: 1 }, { scale: 1.35, duration: 0.45, ease: "sine.inOut", yoyo: true, repeat: 9 }, 0.5);
-    tl.to("#alert", { opacity: 0, y: -40, duration: 0.35, ease: "power2.in" }, beat("question").start - 0.3);
+    // 1. ALERT: the sign on "You've just been notified", the card on "operations are down"; cause unknown
+    openAlert(wt("alert", "You've") - 0.05, wt("alert", "operations") - 0.4, 0.5, wt("alert", "operations") - 0.06,
+              beat("question").start - 0.3, 0.35);
 
     // 2. QUESTION: what do we restore first? the five assets are down around it
     const q0 = beat("question").start;
@@ -421,11 +453,9 @@
   // ---------- the short cut: the same story at 30 s, without the map ----------
   function buildShort() {
     gsap.set("#endA, #endB", { opacity: 0 });
-    // ALERT, then the question
-    tl.fromTo("#alert", { opacity: 0, y: -50, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.6)" }, 0.05);
-    tl.fromTo("#alert .dot", { scale: 1 }, { scale: 1.35, duration: 0.45, ease: "sine.inOut", yoyo: true, repeat: 6 }, 0.4);
+    // ALERT (the sign on "Operations", the card on "are down"), then the question
     const q0 = beat("question").start;
-    tl.to("#alert", { opacity: 0, y: -40, duration: 0.25, ease: "power2.in" }, q0 - 0.45);   // gone before the question arrives
+    openAlert(0.03, 0.38, 0.45, wt("alert", "are") + 0.12, q0 - 0.45, 0.25);   // gone before the question arrives
     tl.fromTo("#question", { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: 0.4, ease: "power3.out" }, q0 - 0.12);
     const chips = [["Process", "Production Operations", 170, 250], ["System", "SCADA / Plant Control", 1330, 215], ["System", "Network Core Switching", 250, 720],
                    ["Facility", "Primary Data Center", 1290, 735], ["Facility", "Production Plant A", 770, 830]];

@@ -64,7 +64,7 @@ screen, including captions generated from the voice, reads **TLC_TRNG**. DST is 
 
 | Time | Picture | On-screen text | Narration (as spoken) |
 |---|---|---|---|
-| 0:00-0:05 | Brand-styled alert card slides in on navy: a red "Disrupted" status dot and "Operations disrupted. Cause unknown." | OPERATIONS DISRUPTED. CAUSE UNKNOWN. | You've just been notified: operations are down, and no one knows why. |
+| 0:00-0:05 | A solid amber warning sign pulses at the centre on "notified", then slides up and behind the brand-styled alert card as it lands on "operations are down": a red "Disrupted" status dot and "Operations disrupted. Cause unknown." | OPERATIONS DISRUPTED. CAUSE UNKNOWN. | You've just been notified: operations are down, and no one knows why. |
 | 0:05-0:10 | The card shrinks away; the question fills the frame. | WHAT DO WE RESTORE FIRST? | What do you restore first? The answer's in your plans, buried in a binder. |
 | 0:10-0:20 | **Asset Details** for the five assets in quick succession: Production Operations, SCADA / Plant Control, Network Core Switching, Primary Data Center, Production Plant A. Brand callouts stay fixed on the same spots while the pages change underneath: Restoration Score, Contact, Impact, Dependencies. | EVERY ASSET. THE SAME PAGE. | In the TLC Training Decision Support Tool, every process, system and facility has the same page: Restoration Score, contact, impact and dependencies. |
 | 0:20-0:24 | **Add to Scenario** taps; the scenario count climbs to 5. | 5 ASSETS. 1 SCENARIO. | Add the ones that are down to a scenario. |
@@ -78,7 +78,7 @@ screen, including captions generated from the voice, reads **TLC_TRNG**. DST is 
 
 | Time | Picture | On-screen text | Narration (as spoken) |
 |---|---|---|---|
-| 0:00-0:04 | The alert card | OPERATIONS DISRUPTED. CAUSE UNKNOWN. | Operations are down, and no one knows why. What do you restore first? |
+| 0:00-0:04 | The warning sign, then the alert card | OPERATIONS DISRUPTED. CAUSE UNKNOWN. | Operations are down, and no one knows why. What do you restore first? |
 | 0:04-0:10 | The asset pages flip, with the fixed callouts | EVERY ASSET. THE SAME PAGE. | In the TLC Training Decision Support Tool, every asset has the same page: score, contact, impact, dependencies. |
 | 0:10-0:16 | Add to scenario, the ranking, then **Total Cascade** | RANKED. HIGHER SCORE, ADDRESSED FIRST. | Add them to a scenario. The DST ranks what to restore first, and what goes down with them. |
 | 0:16-0:20 | **What-If Analysis**: SCADA to **Manual Ops** | WHAT IF IT RUNS ON MANUAL? | Test a workaround before you commit people. |

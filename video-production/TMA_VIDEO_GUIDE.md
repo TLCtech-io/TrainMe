@@ -632,6 +632,16 @@ The DST's screens appear as captured. Everything around them is brand:
     - The end card keeps the short on-screen tagline, "The DST ranks. You decide.", like every other super (they
       condense the narration). Its two halves come up on "The DST" and "you make". In the 30 s cut, the call to
       action comes up just after "decisions".
+  - **Draft 4 (2026-11-01): a warning sign opens both cuts (the user's idea).**
+    - A solid warning triangle with rounded corners and a white "!" in the brand's status amber, `--tlc-warn` #FFA033
+      (the brand system has no yellow; status colors are allowed here because the sign is a status). Status colors
+      never glow, so the pulse is a scale beat in step with the card's red Disrupted dot, plus a thin amber ring that
+      goes out on each beat (a nod to the halo in "Prepare_Vid 2 Phone Alerts 1", without a glow). Keep the ring
+      bright and fade it fast: amber faded slowly over navy turns muddy brown.
+    - **60 s:** the sign pops in at the centre on "You've just been notified", then slides up and to the left as the
+      card lands in front of it on "operations are down". The "!" stays clear of the card's left edge.
+    - **30 s:** the sign comes in on "Operations", and the card lands on "are down".
+    - Both leave together just before the question. The shared code is `openAlert()` in `index.html`.
 
 - [ ] **Before planning content for the next Uptown Sound show:**
   - Research the current FB, TikTok and IG ranking signals (hook and retention, shares and saves, TikTok search
