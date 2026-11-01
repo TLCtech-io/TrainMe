@@ -458,33 +458,62 @@ website. 16:9, narrated with a Descript AI voice.
   desktop views.
 - **The demo is a fictional organization with sample data.** Put a small "Demo data" note on screen wherever the
   tool appears, so nobody reads it as a real client's plan.
-- **Look:**
-  - The UI is navy with amber and mustard accents, a green Map tile, and red DISRUPTED chips.
-  - The page's own screenshots sit in a Mac browser frame and an iPhone frame.
-  - Use the TLC_TRNG brand design system (section 6) and `motion/shared/brand/tlc-trng-horizontal-white.png` for the
-    end card.
+- **Look:** the demo UI uses generic colors: navy with amber and mustard, a green Map tile, and red DISRUPTED chips.
+  The video does not borrow them. It follows the TLC_TRNG company brand system (see "Brand for the video" below).
 - **Screen names seen in those screenshots:**
   - the Home tiles: Processes, Systems & Technology, Facilities, Scenario Builder, TLC_TRNG Map, Critical Contacts,
     Current Scenario, My Scenarios;
   - What-If Analysis states: Disrupted, Being Fixed, Manual Ops, Unable to Repair;
   - the report title: "Scenario Impact Report".
 
-### The story spine (settled in script draft 2)
+### The story spine (the user's direction, script draft 3)
 
-A gas leak downtown, drawn with the map's circle tool → the facilities inside go into a scenario → the tool ranks what
-to restore first and shows the cascade → a what-if changes the order → the report, and a summary shared from a phone.
+Operations are suddenly disrupted and nobody knows why → a quick tour of the asset page, which is the same for every
+process, system and facility → five assets go into one scenario → the ranking and the cascade → one what-if (SCADA to
+Manual Ops) → the report and a summary shared from a phone → quick hits of the map and live weather → the end card.
 
-- **Not a storm.** The map's weather, radar and NWS alert polygons are live NWS data, and there are no alerts over
-  Washington, DC, where the demo organization sits. A storm can't be shot on demand, and faking an alert inside the
-  tool's screen would misrepresent it.
-- **The circle tool works on any day.** The live weather can sit in the background unmentioned.
+- **The assets** (the user's picks): Production Operations (process), SCADA / Plant Control and Network Core Switching
+  (systems), Primary Data Center and Production Plant A (facilities).
+- **The payoff:** the report's first Critical Question, "Is the source of the disruption known, and is it internal or
+  external?", answers the opening.
+- **Not a map or storm opening.** The map's weather, radar and NWS alert polygons are live, and there are no alerts
+  over Washington, DC, where the demo organization sits. The map appears only in the closing hits; the user will say
+  where in the US an alert is active at capture time.
 - **The lesson for any demo shoot:** check which parts of a product show live data before building a story on them.
+- **Settled by the user** (script section 6):
+  - Adding goes to the scenario in progress, or starts one.
+  - What-if is per asset, and tapping its chip shows the four state definitions.
+  - The report runs Executive Summary, then Critical Questions, then Initial Actions / Considerations.
 
 **Spoken vs written:** the narration says "TLC Training", so the AI voice reads it right. Everything on screen,
 including captions generated from the voice, reads **TLC_TRNG**.
 
-**No relay fact-checks.** The DST Code session's brief is the handoff. I check the script against the brief and the
-public sources myself, and say exactly where they disagree (script section 6).
+**No relay fact-checks, and keep the checking light.** The DST Code session's brief is the handoff, and the user
+settles open points directly. Draft 2 over-corrected: it removed "in minutes" and "emergency managers", which the user
+confirmed were right. Draft 3 restores them.
+
+### Brand for the video (TLC_TRNG company system)
+
+Source: Dropbox `/2_TLC_TRNG/4_Branding/ds-bundle`:
+- `guidelines/brand-design-system.md` v0.4 and `tokens/colors.css`;
+- `styles.css`;
+- `guidelines/logos/logos.md` and the 2026 logo masters.
+
+The DST's screens appear as captured. Everything around them is brand:
+
+- **Color ratio:** navy dominates at 60-70% (`--tlc-navy` #0F2557, `--tlc-navy-deep` #081937, `--tlc-navy-light`
+  #1A3473). The accents together get 5-10%.
+- **Azure (#4DA3FF on navy) is structure:** rules, labels, step numbers, borders. It never glows.
+- **Cyan (#6FF2FF) is signal:** only the live and the clickable (tap indicators, the call-to-action), and it always
+  glows.
+- **Status colors are only for status:** `--tlc-error` #FF6B7A for "Disrupted", always with a label.
+- **No gold or yellow** anywhere in the brand graphics, and no pure black.
+- **Type:** Montserrat 600-900 for headlines, Open Sans 400/600 for body. Both are in `motion/shared/fonts`.
+- **Logo:** `tlc-trng-horizontal-gray-white.png` on dark, with clear space equal to the cloud mark's height. Never
+  recolor it. Use only the 2026 masters. The repo's `motion/shared/brand/tlc-trng-horizontal-white.png` may predate
+  them, so pull from the bundle at build time.
+- **PREPARE (`--prep-*`) and TrainMe (`--tm-*`) palettes** are for their own material only, never for company content
+  like the DST.
 
 ### Working plan
 
@@ -499,9 +528,10 @@ public sources myself, and say exactly where they disagree (script section 6).
   - The demo path is trimmed from the brief's walkthrough: open on the map, draw the area, see the ranking and the
     cascade, run one what-if, then the report shared from a phone.
   - Tagline: "The DST ranks. You decide."
-  - Draft 2 (the same day) opens on the gas-leak circle instead of a storm, and checks every line against the brief,
-    the page and the PDF (section 6).
-  - It also gives the user step-by-step instructions for the iPhone Share Summary recording (section 7).
+  - Draft 2 (the same day) opened on a gas-leak circle and checked every line against the sources.
+  - **Draft 3** (the same day) follows the user's direction: the unknown-cause opening, five chosen assets, the
+    asset-page tour, map hits at the end, the brand look, and restored draft 1 lines. The 60 s cut is 131 words and
+    the 30 s cut 69.
 - **Built to work muted.** Booth screens usually play without sound, so on-screen text carries the message and the
   narration supports it. The ending loops back into the opening. Export 30 s and 60 s cuts from the same shots.
 - **Voice first.** Make the Descript AI voice from the final script, then time the picture to it (word timings).
@@ -512,11 +542,10 @@ public sources myself, and say exactly where they disagree (script section 6).
 
 - [ ] **DST commercial:**
   - The user adds `DST_USER` and `DST_PASSWORD` as environment variables, then starts a new session for the capture.
-  - The user approves `motion/dst-commercial/script.md` (draft 2), then makes the Descript AI voice.
-  - The user makes the iPhone Share Summary recording (script section 7).
-  - At capture: confirm whether Add N to scenario is one tap, and pick a what-if change that visibly re-orders the
-    list (script section 6, items 3-4).
-  - Then: build the 60 s and 30 s cuts, timed to the voice.
+  - The user approves `motion/dst-commercial/script.md` (draft 3), then makes the Descript AI voice.
+  - The user makes the iPhone Share Summary recording (script section 7, with the five assets).
+  - At capture, the user says where in the US an NWS alert is active, for the map hits.
+  - Then: build the 60 s and 30 s cuts in the brand system, timed to the voice.
 
 - [ ] **Before planning content for the next Uptown Sound show:**
   - Research the current FB, TikTok and IG ranking signals (hook and retention, shares and saves, TikTok search

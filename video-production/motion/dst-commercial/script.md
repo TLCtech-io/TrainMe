@@ -1,160 +1,154 @@
-# DST commercial: script and storyboard (draft 2)
+# DST commercial: script and storyboard (draft 3)
 
 A 30-60 s commercial for the TLC_TRNG Decision Support Tool, for a conference booth loop and the website. 16:9,
 narrated with a Descript AI voice.
 
 **Sources:**
-- **[Brief]** `fact-brief.md`, from the DST Code session (release 3.3, checked 2026-10-31).
-- **[Page]** the public quick-start page, https://tlctrng.com/dst.
-- **[PDF]** the demo's overview, https://tlctrng.demo-dst.com/overview.pdf (10 pages).
-
-Section 6 checks every claim against them. There is no separate fact-check round with the DST session.
+- **[Brief]** `fact-brief.md`.
+- **[Page]** https://tlctrng.com/dst.
+- **[PDF]** the demo's overview, `/overview.pdf`.
+- **[Report]** the sample Scenario Impact Report "Flash flooding, logistics corridor" (18 pages, 2026-10-31).
+- **The user's answers** of 2026-11-01.
 
 **Built to work muted.** Booth screens usually play without sound, so the on-screen text tells the whole story by
-itself. The narration adds detail for the website. The end card fades back into the opening shot, so the booth
-version loops cleanly.
+itself. The narration adds detail for the website. The end card fades back into the opening, so the booth version
+loops cleanly.
 
-**How TLC_TRNG is said.** The narration column spells the brand the way it is said, "TLC Training", so the AI voice
-reads it right. Everything on screen, including any captions generated from the voice, must read **TLC_TRNG** [Brief
-§4]. DST is said "D-S-T".
+**How TLC_TRNG is said.** The narration column spells it "TLC Training" so the AI voice reads it right. Everything on
+screen, including captions generated from the voice, reads **TLC_TRNG**. DST is said "D-S-T".
 
 ---
 
 ## 1. Who it's for, and the problem
 
-- **Who it's for:** the people who make the call when operations are disrupted. That means leaders and duty officers
-  at ports, utilities, local governments and other organizations that run critical operations [Brief §1].
+- **Who it's for:** the people who make the call when operations are disrupted. That means executives, emergency
+  managers and duty officers at ports, utilities, local governments and other organizations that run critical
+  operations.
 - **The problem:** when several things go down at once, every leader asks the same question: what do we restore
   first? The answer is already in their continuity plans. But a plan in a binder or a spreadsheet can't give it to
-  them in the moment [Brief §1].
-- **The answer, in one line:** the DST turns those plans into a ranked restoration order and a leadership brief, in a
-  few taps, on phone, tablet or desktop [Brief §2, §4].
-- **Tagline:** *The DST ranks. You decide.* [Brief §4: "It ranks and shows consequences. People decide."]
+  them in the moment.
+- **The answer, in one line:** the DST turns those plans into a ranked restoration order and a leadership brief, in
+  minutes, on any device.
+- **Tagline:** *The DST ranks. You decide.*
 
-## 2. The demo path for the spot
+## 2. The story
 
-**Why not a storm.** The map's weather, radar and NWS alert polygons are live National Weather Service data [Brief §4;
-PDF p.8], and there are no active alerts over Washington, DC, where the demo organization sits. A storm opening can't
-be shot on demand, and faking an alert inside the tool's own screen would misrepresent the product.
+**The opening.** Operations are suddenly disrupted, and nobody knows why yet. No map, no storm.
 
-**What opens it instead: a local incident drawn with the circle tool.** The tool drops "a center point/incident
-location" and a radius, then lists the facilities inside [PDF p.8; Brief §2 row 2]. It works the same on any day.
-- **The incident:** a gas leak downtown with an evacuation zone. That is everyday, plausible in any city, and
-  naturally a circle.
-- **Alternative:** a water main break or a power outage, drawn with the polygon tool.
-- The map's live weather stays visible in the background, whatever it shows on capture day. The narration doesn't
-  mention it.
+**The assets** (the user's picks):
+
+| Type | Asset |
+|---|---|
+| Process | Production Operations |
+| System | SCADA / Plant Control |
+| System | Network Core Switching |
+| Facility | Primary Data Center |
+| Facility | Production Plant A |
 
 **The path:**
-1. Drop the incident point and draw the zone around downtown DC.
-2. Add the facilities inside to a scenario.
-3. Show the ranked restoration order, then the cascade.
-4. Run one what-if.
-5. Show the report, then a summary shared from a phone.
-
-Left out to save time:
-- Sign-in and Home.
-- Opening a single asset's details. Its 21 / 19 / 40 dependency numbers [Brief §2 row 1] are B-roll if a beat needs
-  filling.
+1. A quick tour of the asset page, showing that every process, system and facility uses the same page.
+2. Add the five assets to one scenario.
+3. The ranked restoration order and the cascade.
+4. One what-if, on the asset whose chip is tapped. Tapping the chip shows the definitions of the four states.
+5. The report: Executive Summary, Critical Questions, Initial Actions / Considerations [Report]. Its first Critical
+   Question, "Is the source of the disruption known, and is it internal or external?", answers the opening.
+6. A summary shared from a phone.
+7. Before the end card, quick hits of the map and live weather, and of drawing an area and adding its facilities to a
+   scenario.
 
 ---
 
-## 3. 60-second cut (about 140 words of narration)
-
-| Time | Picture (exact screen names) | On-screen text | Narration (as spoken) |
-|---|---|---|---|
-| 0:00-0:05 | **TLC_TRNG Map** over Washington, DC. The circle tool drops an incident point and the radius sweeps out; four facility pins inside light up. | GAS LEAK DOWNTOWN. 4 FACILITIES INSIDE THE ZONE. | A gas leak downtown. Four of your facilities are inside the evacuation zone. |
-| 0:05-0:12 | The map dims behind the question. | WHAT DO WE RESTORE FIRST? | When several things go down at once, every leader asks: what do we restore first? Your plans hold the answer. A binder can't hand it to you in the moment. |
-| 0:12-0:19 | The facility list (Operations Center / EOC, Headquarters Building, Security Command Center, Primary Data Center). Tap **Add 4 to scenario**. | ONE TAP. ONE SCENARIO. | In the TLC Training Decision Support Tool, everything inside the zone goes into a scenario in one tap. |
-| 0:19-0:28 | **Scenario Builder**: the **Scenario Summary** tiles fill in, then the assets rank 01-04. Zoom to the top **Restoration Score**. | RANKED BY RESTORATION SCORE. Higher score, addressed first. | The DST ranks them by Restoration Score, built from your own priorities and dependencies. Higher score, addressed first. |
-| 0:28-0:33 | Tap **Total Cascade**; the downstream list opens and the count is highlighted. | SEE WHAT FAILS NEXT | Total Cascade shows everything that goes down with them. |
-| 0:33-0:41 | **What-If Analysis**: one asset's chip changes (for example **Disrupted** to **Manual Ops**), and the list re-orders. | TEST A WORKAROUND FIRST | Have a workaround? Switch an asset to Manual Ops and watch the order change, before you commit people. |
-| 0:41-0:51 | **Report Preview**: the **Scenario Impact Report** (Executive Summary, Critical Questions, Initial Actions). Then your iPhone recording: **Share Summary** opens the share sheet. | BRIEF LEADERSHIP IN SECONDS | Then brief leadership: a Scenario Impact Report with critical questions and initial actions up front, or a summary shared from your phone in seconds. |
-| 0:51-1:00 | End card: TLC_TRNG logo, "Decision Support Tool", the tagline, the call to action. Fades back into the opening map. | The DST ranks. You decide. / Book a live demo · tlctrng.com/dst | The DST ranks. You decide. Ready to operationalize your plans? Book a live demo. |
-
-## 4. 30-second cut (about 60 words)
+## 3. 60-second cut (about 130 words of narration)
 
 | Time | Picture | On-screen text | Narration (as spoken) |
 |---|---|---|---|
-| 0:00-0:04 | **TLC_TRNG Map**: the incident circle sweeps out over four facilities | GAS LEAK. 4 FACILITIES INSIDE. WHAT DO YOU RESTORE FIRST? | A gas leak downtown. Four facilities inside the zone. What do you restore first? |
-| 0:04-0:10 | The facility list, then **Add 4 to scenario** | ONE TAP. ONE SCENARIO. | The TLC Training Decision Support Tool puts them all in a scenario in one tap. |
-| 0:10-0:17 | **Scenario Builder** ranking, then **Total Cascade** | RANKED. HIGHER SCORE, ADDRESSED FIRST. | It ranks them by Restoration Score and shows everything that goes down with them. |
-| 0:17-0:21 | **What-If Analysis**: one chip changes, the order moves | TEST A WORKAROUND FIRST | Test a workaround before you commit people. |
-| 0:21-0:26 | Report, then **Share Summary** on your iPhone | BRIEF LEADERSHIP IN SECONDS | Then brief leadership in seconds. |
-| 0:26-0:30 | End card | The DST ranks. You decide. / Book a live demo · tlctrng.com/dst | The DST ranks. You decide. Book a live demo. |
+| 0:00-0:05 | Brand-styled alert card slides in on navy: a red "Disrupted" status dot and "Operations disrupted. Cause unknown." | OPERATIONS DISRUPTED. CAUSE UNKNOWN. | You've just been notified: operations are down, and no one knows why. |
+| 0:05-0:10 | The card shrinks away; the question fills the frame. | WHAT DO WE RESTORE FIRST? | What do you restore first? The answer's in your plans, buried in a binder. |
+| 0:10-0:20 | **Asset Details** for the five assets in quick succession: Production Operations, SCADA / Plant Control, Network Core Switching, Primary Data Center, Production Plant A. Brand callouts stay fixed on the same spots while the pages change underneath: Restoration Score, Contact, Impact, Dependencies. | EVERY ASSET. THE SAME PAGE. | In the TLC Training Decision Support Tool, every process, system and facility has the same page: Restoration Score, contact, impact and dependencies. |
+| 0:20-0:24 | **Add to Scenario** taps; the scenario count climbs to 5. | 5 ASSETS. 1 SCENARIO. | Add the ones that are down to a scenario. |
+| 0:24-0:32 | **Scenario Builder**: the **Scenario Summary** tiles fill in, the five assets rank 01-05, then **Total Cascade** opens. | RANKED BY RESTORATION SCORE. Higher score, addressed first. | The DST ranks them by Restoration Score. Higher score, addressed first. Total Cascade shows everything that goes down with them. |
+| 0:32-0:38 | **What-If Analysis**: tap SCADA / Plant Control's chip, and the four definitions appear. Choose **Manual Ops**; SCADA leaves the cascade and the total drops. | WHAT IF IT RUNS ON MANUAL? | Running the plant on manual? Mark SCADA as Manual Ops and watch the cascade shrink. |
+| 0:38-0:48 | **Report Preview**: the **Executive Summary**, then **Critical Questions** with 01 highlighted ("Is the source of the disruption known…"), then **Initial Actions / Considerations**. Then the iPhone: **Share Summary** opens the share sheet. | BRIEF LEADERSHIP IN SECONDS | Then brief leadership: an executive summary, critical questions and initial actions, ready to share from your phone. |
+| 0:48-0:54 | Quick hits: **TLC_TRNG Map** with a live NWS alert and the radar; the circle tool draws an area; **Add N to scenario**. | LIVE NWS WEATHER. MAP SELECTION. | Plus live weather, and a map that finds the facilities in any area. |
+| 0:54-1:00 | End card on navy: TLC_TRNG logo, "Decision Support Tool", the tagline, a glowing cyan call-to-action. Fades back into the opening. | The DST ranks. You decide. / Ready to operationalize your plans? / Book a live demo · tlctrng.com/dst | The DST ranks. You decide. Book a live demo. |
+
+## 4. 30-second cut (about 65 words)
+
+| Time | Picture | On-screen text | Narration (as spoken) |
+|---|---|---|---|
+| 0:00-0:04 | The alert card | OPERATIONS DISRUPTED. CAUSE UNKNOWN. | Operations are down, and no one knows why. What do you restore first? |
+| 0:04-0:10 | The asset pages flip, with the fixed callouts | EVERY ASSET. THE SAME PAGE. | In the TLC Training Decision Support Tool, every asset has the same page: score, contact, impact, dependencies. |
+| 0:10-0:16 | Add to scenario, the ranking, then **Total Cascade** | RANKED. HIGHER SCORE, ADDRESSED FIRST. | Add them to a scenario. The DST ranks what to restore first, and what goes down with them. |
+| 0:16-0:20 | **What-If Analysis**: SCADA to **Manual Ops** | WHAT IF IT RUNS ON MANUAL? | Test a workaround before you commit people. |
+| 0:20-0:25 | The report, then **Share Summary** on the iPhone | BRIEF LEADERSHIP IN SECONDS | Then brief leadership in seconds. |
+| 0:25-0:30 | End card | The DST ranks. You decide. / Book a live demo · tlctrng.com/dst | The DST ranks. You decide. Book a live demo. |
 
 ---
 
-## 5. Look
+## 5. Look: the TLC_TRNG brand system
 
-- **Frames:** desktop shots sit in a clean browser frame, and phone shots in an iPhone frame, like the screenshots
-  on tlctrng.com/dst.
-- **Color:** navy, amber and mustard to match the tool, and the TLC_TRNG brand design system for type and the end
-  card.
-- **Demo data tag:** a small "Demo · simulated data" note in a lower corner of every shot of the tool [Page; PDF p.2].
-- **The URL** stays on screen only. Spoken aloud, it is a mouthful.
+Source: Dropbox `/2_TLC_TRNG/4_Branding/ds-bundle` (brand-design-system.md v0.4, tokens/colors.css, styles.css,
+logos/logos.md).
 
-## 6. Source check
+**The DST's screens appear as captured.** They are the product, in its own colors. Everything around them follows
+the brand system: the background, frames, type, callouts, the alert card and the end card.
 
-### Where the sources disagree, or the handoff was unclear
+**Color (`--tlc-*` tokens):**
+- **Navy dominates**, at 60-70% of the frame: `--tlc-navy` #0F2557, `--tlc-navy-deep` #081937, with
+  `--tlc-navy-light` #1A3473 for panels and gradient stops.
+- **Text:** white headlines, with `--tlc-light-blue` #DCE5F2 for secondary text on navy.
+- **Azure (#4DA3FF on navy) is structure:** callout rules and labels, step numbers, borders. It is always flat and
+  never glows.
+- **Cyan (#6FF2FF) is signal, and always glows:**
+  - It is only for the live and the clickable: the tap indicator on each tap, and the "Book a live demo" button.
+  - It stays scarce, about a third of the 5-10% accent share at most.
+- **Status colors are only for status:** the alert card's "Disrupted" dot uses `--tlc-error` #FF6B7A, with a text
+  label. They never glow and are never decoration.
+- **No gold or yellow anywhere in the brand graphics.** The DST's own UI uses amber and mustard, so the frame must
+  not echo it.
+- **No pure black.**
 
-1. **Weather as the demo path.**
-   - [Brief §3] builds its whole walkthrough on "Severe weather near the operations area" (steps 2-3: NWS alert
-     polygons, then the circle around the storm).
-   - [Brief §4], Avoid row 3, says "Only the weather is live", and [PDF p.8] says the alerts are real NWS alerts ("For
-     the demo, all active alerts are displayed").
-   - So the brief's path can only be shot when real severe weather is over DC. Draft 1 repeated this: I flagged it as
-     an open item but still opened on it. Draft 2 opens on the incident circle instead (section 2).
-2. **What leads the report.**
-   - [Brief §2 row 5] puts the **Executive Summary** at the top, with Critical Questions and Initial Actions.
-   - [Page] ("Generate the report") and [PDF p.7] say the report "leads with Critical Questions and Initial
-     Actions".
-   - The report screenshot on [Page] shows the Executive Summary above both.
-   - The narration now says "critical questions and initial actions up front", and the picture shows the Executive
-     Summary. That is true under every source.
-3. **Adding the map's facilities to a scenario.**
-   - [Brief §2 row 2, §3 step 4] say one tap: **Add N to scenario**.
-   - [PDF p.8] says you can add them "to current or new scenario", which may mean a choice step.
-   - I'll check at capture. If it takes two taps, "in one tap" becomes "in a couple of taps".
-4. **Which what-if moves the order.**
-   - [Brief §2 row 4] says a state change "updates the ranking, the actions and the cascade counts at once".
-   - Neither it nor [PDF p.6] says which state moves which asset.
-   - I'll try the states at capture and use one that visibly re-orders the list. The on-screen text and narration
-     don't name the direction.
+**Type:** Montserrat 700-900 for headlines and supers, and Open Sans 400/600 for labels and the demo-data tag. Both are
+already in `motion/shared/fonts`.
 
-### My own errors in draft 1, now fixed
+**Patterns from styles.css:**
+- callouts as white or light-blue cards with a 4 px azure left border;
+- static labels as flat azure pills;
+- the call-to-action as a cyan pill with navy-deep text and the cyan glow.
 
-- **The report and the phone.** Draft 1 said the Scenario Impact Report is "shared right from your phone".
-  - [PDF p.7] and [Brief §2 row 5]: **Share Summary** sends a short summary from the phone; the full report is **Print
-    / Save PDF**.
-  - The narration now keeps them separate.
-- **"Brief leadership in one tap"** is now "in seconds", the brief's own wording [Brief §2 row 5: "shared from a phone
-  in seconds"].
-- **"In minutes"** (section 1) and **"emergency managers"** (who it's for) were not in any source. Both are gone.
+**Logo (2026 masters only):**
+- `tlc-trng-horizontal-gray-white.png` on navy (the primary on dark), with clear space equal to the cloud mark's
+  height.
+- Never recolor it, and never use the badge as a wordmark.
+- Pull the files from the ds-bundle at build time; the copy in `motion/shared/brand` may be pre-2026.
 
-### Confirmed as written
+**Frames:** desktop shots in a clean, minimal browser frame and phone shots in an iPhone frame, both in navy or
+navy-light, not Mac default gray.
 
-| Line | Source |
-|---|---|
-| "Your plans hold the answer" | [Page]: "A real build uses your assets, your dependencies, and your contacts." [Brief §1]: plans in binders and spreadsheets. |
-| "Everything inside the zone goes into a scenario" | [Brief §2 row 2, §3 step 4]; [PDF p.8] |
-| "Ranks them by Restoration Score, built from your own priorities and dependencies. Higher score, addressed first." | [Brief §4] (category, priority within category, downstream dependencies); [Page]: "Higher score, addressed first." |
-| "Total Cascade shows everything that goes down with them." | [Brief §4]: "everything downstream across all levels"; [PDF p.2] |
-| "Switch an asset to Manual Ops and watch the order change" | [Brief §2 row 4, §3 step 7]; [PDF p.6] (subject to item 4 above) |
-| "A summary shared from your phone" | [PDF p.7]: Share Summary opens the native share sheet; [Brief §3 step 9] |
-| "The DST ranks. You decide." | [Brief §4], Avoid row 2 |
-| Facility names in the zone | [Brief §3 step 3], given as examples; confirmed at capture |
+**Demo data tag:** a small "Demo · simulated data" in Open Sans 600, light blue on navy, in a lower corner of every
+shot of the tool.
+
+---
+
+## 6. Settled with you (2026-11-01)
+
+- **Adding to a scenario:** items go into the scenario in progress. If none is open, adding them starts a new one.
+- **What-if is per asset.** Changing an asset's chip changes that asset in the scenario. Tapping the chip shows the
+  definitions of the four states. Assets set to Manual Ops or Being Fixed drop out of the cascade [Report p.1, p.3].
+- **The report order** is Executive Summary, Critical Questions, Initial Actions / Considerations [Report p.1].
+- **The weather is live.** It appears only in the closing hits. At capture you'll tell me where in the US an alert is
+  active, and I'll move the map there.
 
 ## 7. Your iPhone recording (Share Summary)
 
-The share sheet only exists on a real phone, so this one shot comes from you. Record in portrait, and do two or three
-takes with slow, deliberate taps.
+Record in portrait, and do two or three takes with slow, deliberate taps.
 
-1. Turn on **Do Not Disturb** (or any Focus), so no notifications appear in the recording.
+1. Turn on **Do Not Disturb** (or any Focus), so no notifications appear.
 2. In Safari, open **tlctrng.demo-dst.com** and sign in with the demo account.
-3. Build the same scenario as the desktop shots, so the names match. Open **Facilities**, use **Multi-Select** to pick
-   **Operations Center / EOC**, **Headquarters Building**, **Security Command Center** and **Primary Data Center**,
-   and add them to a scenario.
+3. Build the same scenario as the desktop shots, by adding these five:
+   - **Production Operations** (Processes);
+   - **SCADA / Plant Control** and **Network Core Switching** (Systems & Technology);
+   - **Primary Data Center** and **Production Plant A** (Facilities).
 4. Start **Screen Recording** from Control Center, and wait two seconds.
 5. Open **Current Scenario**, then tap **Generate Report**.
 6. On **Report Preview**, pause two seconds, then scroll down slowly once.
@@ -165,7 +159,8 @@ takes with slow, deliberate taps.
 ## 8. Order of work
 
 1. You approve this script, or mark changes.
-2. You make the Descript AI voice from the narration column. Make sure any captions read TLC_TRNG.
-3. In a new session with the demo login in the environment, I capture the desktop shots to match.
+2. You make the Descript AI voice from the narration column. Any captions must read TLC_TRNG.
+3. In a new session with the demo login in the environment, I capture the desktop shots. You tell me where to find an
+   active alert for the map hits.
 4. You record the iPhone shot.
-5. I build the 60 s and 30 s cuts, timed to the voice.
+5. I build the 60 s and 30 s cuts in the brand system, timed to the voice.
