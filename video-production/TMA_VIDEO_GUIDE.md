@@ -407,8 +407,13 @@ website. 16:9, narrated with a Descript AI voice.
   sign-in is not known yet.
 - **The data is simulated.** The public overview PDF (linked from the login page, `/overview.pdf`, 10 pages) says so,
   and says the demo works the same way as the live tool. It is safe to show in a public video.
-- **Credentials** come from environment secrets, never chat: `DST_USER` and `DST_PASSWORD` (set in the cloud
-  environment's settings, under Network secrets or as environment variables). Only a new session picks them up.
+- **Credentials** come from the environment, never chat: `DST_USER` and `DST_PASSWORD`, set as **environment
+  variables** in the cloud environment's settings. Use one of the public demo accounts from the tlctrng.com/dst
+  access form, not an admin login. Only a new session picks them up.
+  - Network secrets don't fit this login. They inject a fixed header, but the DST signs in through a form backed by
+    Amazon Cognito, and the browser gets a token that lasts about an hour.
+  - Other visitors may share the demo account. Capture without saving scenarios (or clean up afterward), and stay out
+    of the Admin Portal.
 - **Capture size:** at a 1920 px wide viewport the login card stretches edge to edge. A 1280x720 viewport with
   `deviceScaleFactor` 1.5 (1920x1080) or 3 (3840x2160, for zooms) looks like a laptop screen and reads on a booth TV.
 
@@ -471,14 +476,18 @@ restore first and shows the cascade → a what-if toggle changes the plan → on
 
 ### Working plan
 
-- **The DST Code session writes a fact brief.** It covers:
-  - the users and the problem;
-  - the top features, with exact screen names;
-  - the best demo workflow;
-  - terms to use and avoid;
-  - anything not shipped.
-- **I write the narration and storyboard from it,** and the DST session fact-checks them. At about 150 words a minute,
-  30 s is about 75 words and 60 s about 150.
+- **The fact brief:** `motion/dst-commercial/fact-brief.md`, from the DST Code session (release 3.3, 2026-10-31).
+  - It covers the users and the problem, the features with exact screen names, a demo walkthrough, and the terms to
+    use and avoid.
+  - Its Avoid list is binding for this spot: no AI, no "decides" or "predicts", no "real-time monitoring", no
+    "dashboard", no unshipped features, no client names.
+  - The user trimmed the access items, since all demo data is public on purpose.
+- **The script:** `motion/dst-commercial/script.md` (draft 1, 2026-11-01). It has a 60 s cut of 135 words and a 30 s
+  cut of 67, each with picture, on-screen text and narration per beat.
+  - The demo path is trimmed from the brief's walkthrough: open on the map, draw the area, see the ranking and the
+    cascade, run one what-if, then the report shared from a phone.
+  - Tagline: "The DST ranks. You decide."
+  - Next: the DST session fact-checks section 6 of the script.
 - **Built to work muted.** Booth screens usually play without sound, so on-screen text carries the message and the
   narration supports it. The ending loops back into the opening. Export 30 s and 60 s cuts from the same shots.
 - **Voice first.** Make the Descript AI voice from the final script, then time the picture to it (word timings).
@@ -488,9 +497,11 @@ restore first and shows the cascade → a what-if toggle changes the plan → on
 ## 14. Open items
 
 - [ ] **DST commercial:**
-  - The user adds `DST_USER` and `DST_PASSWORD` as environment secrets, then starts a new session for the capture.
-  - The DST Code session writes the fact brief.
-  - Then: script, voice, shot list, capture, build.
+  - The user adds `DST_USER` and `DST_PASSWORD` as environment variables, then starts a new session for the capture.
+  - The DST session fact-checks `motion/dst-commercial/script.md` (section 6).
+  - The user decides how TLC_TRNG is said aloud.
+  - Optional: a 10-second iPhone screen recording of Share Summary opening the share sheet.
+  - Then: final script, voice, capture, build.
 
 - [ ] **Before planning content for the next Uptown Sound show:**
   - Research the current FB, TikTok and IG ranking signals (hook and retention, shares and saves, TikTok search
