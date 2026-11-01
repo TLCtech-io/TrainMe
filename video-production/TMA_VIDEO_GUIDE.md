@@ -469,10 +469,22 @@ website. 16:9, narrated with a Descript AI voice.
   - What-If Analysis states: Disrupted, Being Fixed, Manual Ops, Unable to Repair;
   - the report title: "Scenario Impact Report".
 
-### A possible story spine (to check against the DST session's brief)
+### The story spine (settled in script draft 2)
 
-Storm warning on the map → draw the impact area → the facilities inside drop into a scenario → the tool ranks what to
-restore first and shows the cascade → a what-if toggle changes the plan → one tap shares the summary with leadership.
+A gas leak downtown, drawn with the map's circle tool → the facilities inside go into a scenario → the tool ranks what
+to restore first and shows the cascade → a what-if changes the order → the report, and a summary shared from a phone.
+
+- **Not a storm.** The map's weather, radar and NWS alert polygons are live NWS data, and there are no alerts over
+  Washington, DC, where the demo organization sits. A storm can't be shot on demand, and faking an alert inside the
+  tool's screen would misrepresent it.
+- **The circle tool works on any day.** The live weather can sit in the background unmentioned.
+- **The lesson for any demo shoot:** check which parts of a product show live data before building a story on them.
+
+**Spoken vs written:** the narration says "TLC Training", so the AI voice reads it right. Everything on screen,
+including captions generated from the voice, reads **TLC_TRNG**.
+
+**No relay fact-checks.** The DST Code session's brief is the handoff. I check the script against the brief and the
+public sources myself, and say exactly where they disagree (script section 6).
 
 ### Working plan
 
@@ -487,7 +499,9 @@ restore first and shows the cascade → a what-if toggle changes the plan → on
   - The demo path is trimmed from the brief's walkthrough: open on the map, draw the area, see the ranking and the
     cascade, run one what-if, then the report shared from a phone.
   - Tagline: "The DST ranks. You decide."
-  - Next: the DST session fact-checks section 6 of the script.
+  - Draft 2 (the same day) opens on the gas-leak circle instead of a storm, and checks every line against the brief,
+    the page and the PDF (section 6).
+  - It also gives the user step-by-step instructions for the iPhone Share Summary recording (section 7).
 - **Built to work muted.** Booth screens usually play without sound, so on-screen text carries the message and the
   narration supports it. The ending loops back into the opening. Export 30 s and 60 s cuts from the same shots.
 - **Voice first.** Make the Descript AI voice from the final script, then time the picture to it (word timings).
@@ -498,10 +512,11 @@ restore first and shows the cascade → a what-if toggle changes the plan → on
 
 - [ ] **DST commercial:**
   - The user adds `DST_USER` and `DST_PASSWORD` as environment variables, then starts a new session for the capture.
-  - The DST session fact-checks `motion/dst-commercial/script.md` (section 6).
-  - The user decides how TLC_TRNG is said aloud.
-  - Optional: a 10-second iPhone screen recording of Share Summary opening the share sheet.
-  - Then: final script, voice, capture, build.
+  - The user approves `motion/dst-commercial/script.md` (draft 2), then makes the Descript AI voice.
+  - The user makes the iPhone Share Summary recording (script section 7).
+  - At capture: confirm whether Add N to scenario is one tap, and pick a what-if change that visibly re-orders the
+    list (script section 6, items 3-4).
+  - Then: build the 60 s and 30 s cuts, timed to the voice.
 
 - [ ] **Before planning content for the next Uptown Sound show:**
   - Research the current FB, TikTok and IG ranking signals (hook and retention, shares and saves, TikTok search
