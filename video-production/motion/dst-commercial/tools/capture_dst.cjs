@@ -26,7 +26,8 @@ const boxes = {};
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
   const browser = await chromium.launch({ proxy: process.env.HTTPS_PROXY ? { server: process.env.HTTPS_PROXY } : undefined });
-  const ctx = await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: DSF });
+  // times on screen (alert expiry, report timestamps) in the demo organization's zone, not the container's UTC
+  const ctx = await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: DSF, timezoneId: process.env.DST_TZ || "America/New_York" });
   const page = await ctx.newPage();
   page.on("dialog", (d) => d.dismiss());
   const pause = (ms) => page.waitForTimeout(ms);

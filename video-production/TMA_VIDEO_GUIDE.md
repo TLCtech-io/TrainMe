@@ -569,7 +569,22 @@ The DST's screens appear as captured. Everything around them is brand:
     - The five-asset scenario reads: 5 assets, 2 departments, 24 direct, 43 total cascade. The ranking is Network
       Core Switching 90, Primary Data Center 90, SCADA 74, Production Plant A 72, Production Operations 70.
     - **SCADA to Manual Ops makes the cascade 41 (direct 22)**, so "watch the cascade shrink" is true on screen.
-  - Still to capture: the map hits. The user says where in the US an NWS alert is active.
+  - **Map hits (2026-11-01):**
+    - The Las Vegas warnings ended before capture, so the hits use **Phoenix**: a Flood Warning for Maricopa, AZ,
+      until Nov 2, 9:45 AM ET.
+    - `motion/dst-commercial/tools/capture_map.cjs` moves the map's camera there (the Mapbox map is reached through
+      the page's React tree) and shoots the warning shapes and the popup (`map-phoenix-alerts.png`,
+      `map-phoenix-popup.png`).
+    - App quirk: a fresh page loads the alerts but draws no shapes until the alert button is switched off and on
+      again.
+    - Both capture scripts run on Eastern time (`timezoneId`), so on-screen times read as they do for the user,
+      not in the container's UTC.
+    - **Radar:** headless capture fires before the rain tiles load, and the loop steps in bursts. The user is
+      taking 3-4 still frames (Phoenix, radar on, same framing; popup open and closed). The build cross-fades
+      them under a slow push-in.
+    - **Draw an area:** the map's "Select facilities by area" tool, in Radius mode (click a centre, move out,
+      click). The capture script's area step needs one full run; the first was interrupted after the growing
+      circle.
   - Then: build the 60 s and 30 s cuts in the brand system, timed to the voice.
 
 - [ ] **Before planning content for the next Uptown Sound show:**
