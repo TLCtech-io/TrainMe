@@ -620,6 +620,23 @@ Agreed with the user after reviewing the pilots. The plan for Span of Control is
     smaller was unreadable), so the footage stays visible. Long explanations (S31 communications, S34 distance) get
     an opaque explainer section inside the overlay (switchboard, map), above the caption band.
   - The whole plate-spinning set (S19 to S24) runs 62.67 s.
+- **Segments E to K (built overnight 2026-11-19, while the user held approvals):**
+  - Pages `segE.html`, `segF.html`, `segG.html`, `segH.html`, `segIJK.html` share `lib/kit.js` (big-centred header that
+    scales into place, org-chart boxes and drawn connectors, a direct-reports counter, chips, people icons) and
+    `lib/page.css`. `tools/build_scenes.sh` renders any list of "scene|full or overlay|name|from|to" specs; each
+    `build_seg*.sh` lists its segment. A scene that mixes graphics and stock is one master timeline rendered in parts.
+  - Charts carry over between scenes (S67 to S68, S72 to S73 to S75) so each scene opens where the last one ended.
+  - S46 is the user's topic card 3, rebuilt by Agent Underlord from the opening topic screen (two lines, size 100).
+  - S81: pilot 4 fades out at about 863.06; a graphic sits above it from there (experience and comfort differ,
+    "3 is not a magic number", different spans per supervisor). Pilot 4 itself sits above the Captions layer, so
+    captions are hidden from about 826 to 865 (it was like that before; flagged to the user, not changed).
+  - The utility convoy (S64, S65) is AI: a Seedream 5 Pro still, then Kling 3.0 pro, 14 s, no sound (490 credits).
+    An extra truck slid in after 12.5 s, so only the first 12.3 s are used, slowed to 0.89x.
+  - QC found: a studio-white or AR-headset stock pick, a campaign-style table with a flag, generic trucks for a
+    specific vehicle, a blank card between two overlay states, and a tile from an earlier state showing through.
+    All fixed in one Underlord pass.
+- **Real plate-spinning video:** `s19-20-brenn.html?video=src/<file>.mp4` plays footage in the same TV layout,
+  seeking frame by frame (H.264 works in the headless Chromium). Retime `VBEATS` to the footage when it arrives.
 - **Publishes made for this (private, visible only to the user):** WORKING audio (word timing) and RAW video at 720p
   (to see Rick's slides), 2026-11-19.
 

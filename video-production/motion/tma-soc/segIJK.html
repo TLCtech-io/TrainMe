@@ -156,8 +156,9 @@ KIT.start((K) => {
       for (let j = 0; j < 12; j++) { const p = K.person(400 + j * 102, 470, j % 3 === 0 ? "var(--amber-deep)" : "var(--blue)", 0.8); K.pop(p, 19.8 + j * 0.06, 0.3); }
       const all = K.chip("Responsible for everyone and everything under you", 0, 0, "var(--ink)", "#fff", 34); center(all); all.style.top = "580px"; K.rise(all, 20.6, 16);
       // part b: the board after check-in
-      const scr = el("", { position: "absolute", inset: 0, background: "var(--bg)" }); K.hide(scr); tl.set(scr, { opacity: 1 }, 29.99);
-      const brd = el("card", { left: "360px", top: "170px", width: "1200px", height: "420px" },
+      const scr = el("", { position: "absolute", inset: 0, background: "var(--bg)", zIndex: 3 }); K.hide(scr); tl.set(scr, { opacity: 1 }, 29.99);
+      tl.set(tiles, { opacity: 0 }, 29.99);
+      const brd = el("card", { left: "360px", top: "170px", width: "1200px", height: "420px", zIndex: 4 },
         `<div style="position:absolute;left:40px;top:30px;font:900 28px/1 Roboto;letter-spacing:0.14em;color:var(--blue)">ON SCENE</div>
          <div id="tot" style="position:absolute;right:40px;top:18px;font:900 64px/1 Roboto">14</div>`);
       K.hide(brd); tl.set(brd, { opacity: 1 }, 29.99);
@@ -167,9 +168,9 @@ KIT.start((K) => {
         K.slide(row, 30.2 + i * 0.15, -40);
       });
       [[560, "Branch"], [960, "Division"], [1360, "Group"]].forEach(([x, l], i) => {
-        const b = K.chip(`${l} leaders`, x - 140, 640, "var(--ink)", "#fff", 28); b.style.top = "620px"; K.pop(b, 31.4 + i * 0.2, 0.5);
+        const b = K.chip(`${l} leaders`, x - 140, 640, "var(--ink)", "#fff", 28); b.style.top = "620px"; b.style.zIndex = 4; K.pop(b, 31.4 + i * 0.2, 0.5);
       });
-      const up = K.chip("Supports leadership", 0, 0, "var(--blue)", "#fff", 34); center(up); up.style.top = "84px"; K.pop(up, 32.2, 0.5);
+      const up = K.chip("Supports leadership", 0, 0, "var(--blue)", "#fff", 34); center(up); up.style.top = "84px"; up.style.zIndex = 4; K.pop(up, 32.2, 0.5);
     } else {
       // overlay part: check-in / check-out
       const a = el("ochip", { left: "120px", top: "110px", background: "#22a35a" }, "Check in"); K.slide(a, 25.05, -80);
@@ -235,6 +236,10 @@ KIT.start((K) => {
     gsap.set([...sqBox, ...ftBox.slice(1), ...icons.slice(3)], { opacity: 0 }); gsap.set([ftBox[0], ...icons.slice(0, 3)], { opacity: 0 });
     tl.to(ftBox[0], { opacity: 1, duration: 0.3 }, 2.4);
     icons.slice(0, 3).forEach((p, i) => tl.to(p, { opacity: 1, duration: 0.2 }, 3.45 + i * 0.1));
+    const k85 = el("kicker", { left: "0", right: "0", top: "120px", justifyContent: "center", fontSize: "32px" }, `<span class="bar"></span>Marine Corps · the lowest level`);
+    K.fadeIn(k85, 0.4, 0.3); K.out(k85, 2.3, 0.2);
+    const q85 = el("", { position: "absolute", left: 0, right: 0, top: "330px", textAlign: "center", font: "900 160px/1 Roboto", color: "var(--line)" }, "?");
+    K.pop(q85, 0.6, 1.4, "power3.out"); K.out(q85, 2.3, 0.15);
     const lab = el("", { position: "absolute", left: 0, right: 0, top: "90px", textAlign: "center", font: "900 84px/1 Roboto", color: "var(--ink)" }, "Fire team");
     const sub = el("", { position: "absolute", left: 0, right: 0, top: "190px", textAlign: "center", font: "700 44px/1 Roboto", color: "var(--slate)" }, "3 Marines");
     K.pop(lab, 2.4, 1.3, "power3.out"); K.rise(sub, 3.6, 16);

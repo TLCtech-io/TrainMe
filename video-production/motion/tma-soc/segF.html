@@ -225,6 +225,8 @@ KIT.start((K) => {
     };
     const g1 = mk("Senior computer tech", "Tech", LAPTOP.replace('width="80" height="64"', 'width="60" height="48"'), 2.7, 4.75, "var(--blue)");
     tl.to(g1, { opacity: 0, duration: 0.25 }, 6.2);
+    tl.to(card, { opacity: 0, scale: 0.9, duration: 0.25 }, 6.2);
+    tl.fromTo(card, { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)", immediateRender: false }, 7.15);
     const g2 = mk("Senior mechanic", "Mechanic", WR_S.replace('width="70" height="70"', 'width="50" height="50"'), 7.3, 8.7, "var(--amber)");
   }
 

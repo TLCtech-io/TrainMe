@@ -1,0 +1,69 @@
+# label,start,end (timeline seconds in "IMP - Span of Control VISUAL"), segments E to K as placed 2026-11-19
+S42 graphic,445.80,450.09
+S43 graphic,450.09,456.99
+S44 graphic,456.99,469.50
+S45 stock listening,469.50,478.31
+S46 topic card 3,478.31,488.47
+S47 graphic,488.47,491.44
+S48a stock crane,491.44,494.88
+S48b graphic,494.88,516.03
+S49a graphic,516.03,528.50
+S49 stock manager,528.50,532.80
+S49b graphic,532.80,543.14
+S50 graphic,543.14,550.39
+S51 stock warehouse,550.39,559.96
+S52 graphic,559.96,565.36
+S53 graphic,565.36,568.47
+S54a stock lab,568.47,571.90
+S54b stock IT,571.90,575.42
+S54c stock engineer,575.42,577.80
+S55a stock control room,577.80,584.08
+S55b stock mechanic,584.08,587.37
+S56 graphic,587.37,595.77
+S57 graphic,595.77,607.70
+S58 graphic,607.70,620.06
+S59 graphic,620.06,629.30
+S60a stock carpenter,629.30,631.05
+S60b stock wiring,631.05,633.75
+S60c stock house,633.75,636.53
+S61 stock foreman,636.53,644.76
+S62 graphic,644.76,652.75
+S63 graphic,652.75,656.02
+S64a stock storm,656.02,661.92
+S64b stock convoy,661.92,671.71
+S65a stock trucks,671.71,675.71
+S65b graphic convoy,675.71,681.61
+S65c stock linemen,681.61,687.01
+S65d stock supervisor,687.01,692.51
+S66 graphic,692.51,699.07
+S67 graphic,699.07,715.03
+S68 graphic,715.03,722.17
+S69 graphic,722.17,728.02
+S70a stock team,728.02,734.24
+S70b stock leader,734.24,744.98
+S71 graphic,744.98,748.97
+S72 graphic,748.97,756.50
+S73 graphic,756.50,776.60
+S74 stock base camp,776.60,784.82
+S75 graphic,784.82,791.98
+S76 graphic,791.98,804.93
+S77 graphic,804.93,813.29
+S78 graphic,813.29,826.15
+S79-80 pilot 4,826.15,863.06
+S81 graphic,863.06,883.83
+S82a graphic,883.83,906.60
+S82 stock check-in,906.60,913.83
+S82b graphic,913.83,919.77
+S83 graphic,919.77,930.35
+S84 stock marines,930.35,943.99
+S85 graphic,943.99,959.20
+S86 graphic,959.20,968.31
+S87a graphic,968.31,977.51
+S87 stock leader,977.51,983.57
+S88 graphic,983.57,998.80
+S89a graphic,998.80,1005.70
+S89b stock class,1005.70,1011.70
+S89c stock relief,1011.70,1016.80
+S89d stock food bank,1016.80,1023.36
+S90a stock organizer,1023.36,1034.56
+S90b graphic,1034.56,1036.20
