@@ -591,12 +591,28 @@ Agreed with the user after reviewing the pilots. The plan for Span of Control is
   - Underlord picks close matches, not exact ones, and only spot-checks frames. Claude verifies every shot on a private
     publish of the composition (frames at each shot), flags loose matches and visible real names or logos, and the
     user swaps any shot in Descript.
-  - Work happens in "IMP - Span of Control STOCK TEST (Claude)" (a duplicate of WORKING), never in WORKING itself.
+  - Work happens in "IMP - Span of Control VISUAL" (a duplicate of WORKING, renamed from "STOCK TEST (Claude)" on
+    2026-11-19 with the user's OK), never in WORKING itself.
+  - Underlord's placements add new scene breaks, so later jobs give it timeline times (seconds), never scene numbers.
+  - When the library has no fitting landscape shot (S13 dry cleaner: only a "mall boutique" match), make an AI still
+    (Seedream 5 Pro, 30 credits) and give it a slow push-in with `motion/tma-soc/tools/still_clip.sh`.
 - **AI shots:** realistic people and physics still read as AI (the user on S23: "very AI, not representative of the
   original"). Prefer stock or graphics for performers; keep AI for settings and objects, and for callbacks to the
   user's own AI series (the S37 kitchen shot was approved). AI shots use OpenArt (Plus plan); Kling 3.0
   image-to-video at 1080p, 7 s, no sound is 245 credits. Start each AI shot from a still, and use the user's kitchen
   series as the reference for kitchen callbacks.
+- **Segments B and C (2026-11-19):**
+  - S19 to S20: the user's allowable-use GIF of Erich Brenn (Ed Sullivan Show) in a vintage TV
+    (`s19-20-brenn.html`). Real video can replace it: it needs 30.95 s in total (S19 18.22 s, S20 12.73 s). The
+    captions spell the name "Eric Brent"; the performer is Erich Brenn.
+  - S21, S22, S24: one illustrated plate-spinning stage (`segB-plates.html`, `?scene=21|22|24`) that changes per
+    factor (distance, mixed plates, fragile china). S23 is the AI cruise ship in a storm: Kling 3.0 from a still, with
+    a calm-motion prompt (smoother than v1); a Veo 3.1 take of the same shot was chaotic and rejected.
+  - Segment C (S25 to S37, the nine factors, `segC.html`): full graphic clips for S25 and S32; every other scene is
+    stock with a transparent overlay. Each factor's card flies in big, then parks top left as a badge (scale 0.62:
+    smaller was unreadable), so the footage stays visible. Long explanations (S31 communications, S34 distance) get
+    an opaque explainer section inside the overlay (switchboard, map), above the caption band.
+  - The whole plate-spinning set (S19 to S24) runs 62.67 s.
 - **Publishes made for this (private, visible only to the user):** WORKING audio (word timing) and RAW video at 720p
   (to see Rick's slides), 2026-11-19.
 

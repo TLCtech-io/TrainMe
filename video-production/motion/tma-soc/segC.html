@@ -1,0 +1,193 @@
+<!doctype html>
+<!-- IMP - Span of Control, segment C: the nine factors (scenes 25 to 37). ?scene=N picks the scene; each clip is its
+     scene's length. Scenes 25 and 32 are full graphic clips. The others are transparent overlays (ProRes 4444) that sit
+     on Descript stock: each factor's card flies in on Rick's word, then shrinks to a "Factor n of 9" badge for the rest
+     of the scene. Scenes 31 and 34 also have an opaque graphic section (the switchboard, the distance map).
+     Times are seconds from each scene's start, from Rick's words (whisper, 2026-11-19). ?preview adds a stand-in frame. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="../shared/tma.css" />
+<style>
+  html, body { background: transparent; }
+  .full, .full body { background: var(--bg); }
+  .preview:not(.full) body { background: linear-gradient(135deg, #5b6470, #2f3640 60%, #20252c); }
+  #pv { position: absolute; inset: 0; display: none; background: linear-gradient(180deg, rgba(0,0,0,0) 62%, rgba(0,0,0,0.78) 100%); }
+  .preview #pv { display: block; }
+
+  /* the factor card, then the badge */
+  #card { position: absolute; left: 510px; top: 110px; width: 900px; height: 176px; border-radius: 30px; background: #fff; transform-origin: 0 0;
+          box-shadow: 0 24px 60px rgba(0,0,0,0.35); display: flex; align-items: center; gap: 30px; padding: 0 40px; }
+  #card .n { font: 900 128px/1 "Roboto"; color: var(--blue); width: 90px; text-align: center; }
+  #card .k { font: 900 28px/1 "Roboto"; letter-spacing: 0.18em; color: var(--blue); }
+  #card .l { font: 900 66px/1.05 "Roboto"; color: var(--ink); margin-top: 10px; white-space: nowrap; }
+
+  .chipX { position: absolute; height: 92px; padding: 0 34px; border-radius: 46px; font: 900 52px/92px "Roboto"; color: #fff; white-space: nowrap;
+           box-shadow: 0 12px 30px rgba(0,0,0,0.35); }
+  .bignum { position: absolute; font: 900 200px/1 "Roboto"; color: #fff; text-shadow: 0 8px 30px rgba(0,0,0,0.5); }
+  .lab { position: absolute; font: 900 46px/1 "Roboto"; color: #fff; text-shadow: 0 6px 20px rgba(0,0,0,0.5); white-space: nowrap; }
+  .word { position: absolute; left: 0; right: 0; text-align: center; font: 900 96px/1 "Roboto"; color: #fff; text-shadow: 0 6px 28px rgba(0,0,0,0.5); }
+
+  /* full scenes: the nine tiles */
+  .tile { position: absolute; width: 360px; height: 120px; border-radius: 22px; background: #fff; box-shadow: var(--shadow);
+          display: flex; align-items: center; gap: 18px; padding: 0 24px; }
+  .tile b { font: 900 60px/1 "Roboto"; color: var(--blue); width: 44px; text-align: center; flex: none; }
+  .tile span { font: 700 32px/1.1 "Roboto"; }
+  .tile.blank span { color: var(--line); }
+  .ttl { position: absolute; left: 0; right: 0; text-align: center; font: 900 84px/1 "Roboto"; color: var(--ink); }
+
+  /* opaque graphic sections inside overlays */
+  .sect { position: absolute; inset: 0; background: var(--bg); opacity: 0; }
+  .person { position: absolute; width: 70px; height: 96px; }
+  .person .h { position: absolute; left: 19px; top: 0; width: 32px; height: 32px; border-radius: 50%; background: currentColor; }
+  .person .b { position: absolute; left: 6px; top: 38px; width: 58px; height: 54px; border-radius: 29px 29px 10px 10px; background: currentColor; }
+  .bub { position: absolute; width: 64px; height: 44px; border-radius: 14px; background: #fff; border: 4px solid var(--blue); box-shadow: var(--shadow); }
+  .bar { position: absolute; height: 26px; border-radius: 13px; background: var(--faint); overflow: hidden; }
+  .bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--red); }
+  .dot { position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="pv"></div>
+<script src="../shared/gsap.min.js"></script>
+<script src="../shared/motion.js"></script>
+<script>
+  const q = new URLSearchParams(location.search);
+  const SCENE = Number(q.get("scene") || 26);
+  const FULL = [25, 32].includes(SCENE);
+  if (FULL) document.documentElement.classList.add("full");
+  if (q.has("preview")) document.documentElement.classList.add("preview");
+  const LEN = { 25: 5.45, 26: 11.98, 27: 12.63, 28: 13.40, 29: 12.08, 30: 16.23, 31: 22.32, 32: 7.29, 34: 20.15, 35: 12.09, 36: 13.05, 37: 24.52 };
+  const D = LEN[SCENE] + 0.05;
+  const FACTORS = ["Leader's experience", "Team's experience", "Friction", "Distractions", "Communications", "Task variety", "Distance", "Safety", "Complexity"];
+  const root = document.getElementById("root");
+  const el = (cls, css, html = "", parent = root) => { const d = document.createElement("div"); d.className = cls; Object.assign(d.style, css); d.innerHTML = html; parent.appendChild(d); return d; };
+  const tl = gsap.timeline({ paused: true });
+  const pop = (node, t, from = 0.6, ease = "back.out(2)") => { gsap.set(node, { opacity: 0 }); tl.fromTo(node, { opacity: 0, scale: from }, { opacity: 1, scale: 1, duration: 0.3, ease, immediateRender: false }, t); };
+  const fade = (node, t, d = 0.25) => tl.to(node, { opacity: 0, duration: d }, t);
+
+  // the factor card: in big at t, then shrinks to a top-left badge after `hold`
+  const factorCard = (n, t, hold = 1.8) => {
+    const c = el("", {}, `<div class="n">${n}</div><div><div class="k">FACTOR ${n} OF 9</div><div class="l">${FACTORS[n - 1]}</div></div>`);
+    c.id = "card"; gsap.set(c, { opacity: 0 });
+    tl.fromTo(c, { opacity: 0, scale: 0.6, x: 120, y: 30 }, { opacity: 1, scale: 1, x: 0, y: 0, duration: 0.4, ease: "back.out(1.8)", immediateRender: false }, t);
+    tl.to(c, { x: 100 - 510, y: 50 - 110, scale: 0.62, duration: 0.55, ease: "power3.inOut" }, t + hold);
+  };
+
+  // ------------------------------------------------------------------ full scenes
+  if (SCENE === 25 || SCENE === 32) {
+    const lit = SCENE === 25 ? 0 : 5;
+    const tiles = FACTORS.map((f, i) => el(`tile ${i < lit ? "" : "blank"}`, { left: `${380 + (i % 3) * 400}px`, top: `${210 + Math.floor(i / 3) * 140}px` },
+      `<b>${i + 1}</b><span>${i < lit ? f : "?"}</span>`));
+    if (SCENE === 25) {
+      // "let's discuss in detail some of those factors" (2.66) "that influence span of control"
+      tiles.forEach((t, i) => { gsap.set(t, { opacity: 0 }); tl.fromTo(t, { opacity: 0, rotationX: -90, y: 20 }, { opacity: 1, rotationX: 0, y: 0, duration: 0.4, ease: "back.out(1.6)", immediateRender: false }, 0.3 + i * 0.09); });
+      const ttl = el("ttl", { top: "80px" }, "9 FACTORS"); pop(ttl, 2.6, 1.5, "power3.out");
+    } else {
+      // "other factors" (0.55) ... "the variety and intricacy of tasks" (4.77): tile 6 comes forward
+      tiles.forEach((t) => { gsap.set(t, { opacity: 0 }); tl.fromTo(t, { opacity: 0 }, { opacity: 1, duration: 0.3, immediateRender: false }, 0.1); });
+      const six = tiles[5];
+      tl.to(tiles.filter((_, i) => i !== 5), { opacity: 0.12, duration: 0.3 }, 4.5);
+      tl.call(() => { six.classList.remove("blank"); six.querySelector("span").textContent = FACTORS[5]; }, null, 4.7);
+      tl.to(six, { left: "780px", top: "330px", scale: 1.45, duration: 0.5, ease: "back.out(1.4)" }, 4.7);
+      const TASKS = [["Inspect", 330, 250], ["Repair", 1430, 240], ["Triage", 300, 520], ["Haul", 1470, 540], ["Report", 880, 150], ["Wire", 900, 610]];
+      TASKS.forEach(([txt, x, y], i) => {
+        const c = el("chipX", { left: `${x}px`, top: `${y}px`, background: ["#2c7ef4", "#f2a93b", "#e62324", "#22a35a", "#485563", "#7a4cc2"][i], fontSize: "40px", height: "76px", lineHeight: "76px" }, txt);
+        pop(c, 5.4 + i * 0.12, 0.4);
+        tl.to(c, { rotation: (i % 2 ? 8 : -8), y: (i % 2 ? 14 : -14), duration: 0.5, yoyo: true, repeat: 2, ease: "sine.inOut" }, 5.8 + i * 0.05);
+      });
+    }
+  }
+
+  // ------------------------------------------------------------------ overlays
+  if (SCENE === 26) {
+    factorCard(1, 0.95);
+    // "three burners at once" (8.01) "but not four" (9.91) "yet" (10.31)
+    const a = el("chipX", { left: "1290px", top: "280px", background: "#22a35a" }, "3 burners ✓"); pop(a, 8.0);
+    const b = el("chipX", { left: "1290px", top: "400px", background: "#e62324" }, "4 burners ✗"); pop(b, 9.85);
+    const c = el("chipX", { left: "1290px", top: "520px", background: "#f2a93b", color: "#1d2633" }, "…yet"); pop(c, 10.3);
+  }
+  if (SCENE === 27) {
+    // "four" (5.83) "five" (6.43) "six burners" (7.03) "and the ovens" (8.37)
+    [["4", 5.8], ["5", 6.4], ["6", 7.0]].forEach(([n, t], i) => {
+      const d = el("bignum", { left: `${1180 + i * 200}px`, top: "220px" }, n); pop(d, t, 1.6, "power3.out");
+      if (i < 2) tl.to(d, { opacity: 0.35, duration: 0.2 }, t + 0.5);
+    });
+    const l = el("lab", { left: "1190px", top: "440px" }, "burners + the ovens"); pop(l, 7.3, 0.8);
+    tl.to(root.children, { opacity: 0, duration: 0.3 }, 9.4);
+  }
+  if (SCENE === 28) {
+    factorCard(2, 1.45);
+    const t = el("chipX", { left: "1250px", top: "320px", background: "#2c7ef4" }, "More supervision"); pop(t, 5.0);
+    fade(t, 9.0);
+  }
+  if (SCENE === 29) factorCard(3, 0.05, 2.0);
+  if (SCENE === 30) {
+    factorCard(4, 0.62);
+    const a = el("chipX", { left: "1280px", top: "300px", background: "#f2a93b", color: "#1d2633" }, "Pot holders?"); pop(a, 4.7);
+    const b = el("chipX", { left: "1280px", top: "420px", background: "#f2a93b", color: "#1d2633" }, "Tongs?"); pop(b, 5.85);
+    fade([a, b], 8.3);
+  }
+  if (SCENE === 31) {
+    factorCard(5, 0.55);
+    // the leader as switchboard: "the leader's time is simply spent sharing information from one person to another" (16.07 to 20.49)
+    const s0 = el("sect", {}); tl.to(s0, { opacity: 1, duration: 0.3 }, 15.9);
+    el("ttl", { top: "90px", fontSize: "64px" }, "The leader becomes the switchboard", s0);
+    const s = el("", { position: "absolute", inset: "0", transform: "scale(1.35)", transformOrigin: "50% 38%" }, "", s0);
+    const L = [[360, 300], [300, 450], [420, 450]], R = [[1500, 300], [1440, 450], [1560, 450]];
+    L.forEach(([x, y]) => el("person", { left: `${x}px`, top: `${y}px`, color: "var(--blue)" }, '<div class="h"></div><div class="b"></div>', s));
+    R.forEach(([x, y]) => el("person", { left: `${x}px`, top: `${y}px`, color: "var(--amber-deep)" }, '<div class="h"></div><div class="b"></div>', s));
+    const lead = el("person", { left: "925px", top: "340px", color: "var(--ink)", transform: "scale(1.5)" }, '<div class="h"></div><div class="b"></div>', s);
+    const bar = el("bar", { left: "660px", top: "560px", width: "600px" }, "<i></i>", s);
+    el("lab", { left: "660px", top: "600px", color: "var(--slate)", textShadow: "none", fontSize: "30px" }, "leader's time spent relaying", s);
+    let t0 = 16.2, gap = 0.9;
+    for (let k = 0; k < 9; k++) {
+      const fromL = k % 2 === 0, b = el("bub", { left: fromL ? "420px" : "1500px", top: "330px", width: "80px", height: "56px" }, "", s); gsap.set(b, { opacity: 0 });
+      tl.set(b, { opacity: 1 }, t0);
+      tl.to(b, { left: "925px", top: "300px", duration: gap * 0.45, ease: "power1.inOut" }, t0);
+      tl.to(b, { left: fromL ? "1500px" : "420px", top: "330px", duration: gap * 0.45, ease: "power1.inOut" }, t0 + gap * 0.5);
+      tl.set(b, { opacity: 0 }, t0 + gap);
+      t0 += gap; gap = Math.max(0.35, gap * 0.82);
+    }
+    tl.fromTo(bar.querySelector("i"), { width: "0%" }, { width: "92%", duration: 5.6, ease: "power1.in" }, 16.3);
+  }
+  if (SCENE === 34) {
+    factorCard(7, 0.0);
+    // the map: "the greater the distance ... the more effort has to be spent moving between them" (8.55 to 15.4)
+    const s = el("sect", {}); tl.to(s, { opacity: 1, duration: 0.3 }, 8.5); tl.to(s, { opacity: 0, duration: 0.3 }, 15.3);
+    s.style.backgroundImage = "linear-gradient(rgba(154,166,178,0.18) 2px, transparent 2px), linear-gradient(90deg, rgba(154,166,178,0.18) 2px, transparent 2px)";
+    s.style.backgroundSize = "80px 80px";
+    el("ttl", { top: "90px", fontSize: "64px" }, "More distance, more time moving", s);
+    const teams = [[360, 300], [1560, 280], [1300, 620], [520, 600]];
+    teams.forEach(([x, y]) => { for (let k = 0; k < 3; k++) el("dot", { left: `${x + (k - 1) * 62}px`, top: `${y}px`, background: "var(--blue)", width: "52px", height: "52px", margin: "-26px 0 0 -26px" }, "", s); });
+    const leader = el("dot", { left: "360px", top: "300px", background: "var(--red)", width: "70px", height: "70px", margin: "-35px 0 0 -35px", boxShadow: "0 0 0 10px rgba(230,35,36,0.2)" }, "", s);
+    const path = [[360, 300], [1560, 280], [1300, 620], [520, 600], [360, 300]];
+    path.slice(1).forEach(([x, y], i) => tl.to(leader, { left: `${x}px`, top: `${y}px`, duration: 1.4, ease: "power1.inOut" }, 9.0 + i * 1.5));
+    const bar = el("bar", { left: "610px", top: "430px", width: "700px", height: "34px", borderRadius: "17px" }, "<i></i>", s);
+    el("lab", { left: "610px", top: "478px", color: "var(--slate)", textShadow: "none", fontSize: "36px" }, "time on the move", s);
+    tl.fromTo(bar.querySelector("i"), { width: "0%" }, { width: "85%", duration: 6, ease: "none" }, 9.0);
+  }
+  if (SCENE === 35) {
+    factorCard(8, 0.2);
+    const t = el("chipX", { left: "1210px", top: "320px", background: "#e62324" }, "Reduce your span"); pop(t, 9.7);
+  }
+  if (SCENE === 36) {
+    // "responders" (2.49) "the public" (3.45) "the environment" (4.15)
+    [["RESPONDERS", 2.45, 190], ["THE PUBLIC", 3.4, 320], ["THE ENVIRONMENT", 4.1, 450]].forEach(([w, t, y]) => {
+      const d = el("word", { top: `${y}px` }, w); pop(d, t, 1.4, "power3.out"); fade(d, 7.0, 0.3);
+    });
+  }
+  if (SCENE === 37) {
+    factorCard(9, 2.25);
+    // "researching" (9.16) "subject matter experts" (11.64) "understanding" (13.16); gone before the kitchen (17.66)
+    [["Research", 9.1], ["Experts", 11.6], ["Understanding", 13.1]].forEach(([w, t], i) => {
+      const c = el("chipX", { left: "1290px", top: `${260 + i * 120}px`, background: "#2c7ef4" }, w); pop(c, t); fade(c, 17.3);
+    });
+    tl.to("#card", { opacity: 0, duration: 0.3 }, 17.4);
+  }
+
+  M.register(tl, { duration: D, width: 1920, height: 1080 });
+</script>
+</body>
+</html>
