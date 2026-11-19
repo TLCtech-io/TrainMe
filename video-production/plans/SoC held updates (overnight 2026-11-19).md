@@ -14,7 +14,8 @@ Project "3-TMA Video Production". Status1 field 1211761155622080, In Progress op
 - **SoC-S77 (comment):** Segments I to K placed: S77 names-and-titles cheat sheet then "Delegate your authority"; S78 deputies (the IC dragged into an hour-long meeting, the deputy steps in); S81 continues after pilot 4 fades (863.06): experience and comfort differ, "3 is not a magic number", different spans per supervisor; S82 the 14 NIMS characteristics (not silos, they connect), accountability, check-in/check-out on stock, on-scene board; S83 plug in / unplug; S84 rule of three over Marines stock; S85 fire team, squad, platoon zoom; S86 up to the commandant; S87 draw the line at three, then a leader briefing; S88 recap with "1:5 (except on the test)"; S89 learn the other modules, then training and volunteer stock; S90 engage / divide / support, then "That's leadership."
 - **SoC-S19 (comment):** The S19-S20 page now takes real video (`s19-20-brenn.html?video=src/<file>.mp4`) in the same TV-and-graphics layout. Waiting on the user's footage (30.95 s needed in total).
 - **SoC-0.5 AI shots (comment):** Overnight AI: utility bucket-truck convoy, Seedream 5 Pro still (30) and Kling 3.0 image-to-video, pro, 14 s, no sound (490).
-- **Credits overnight (comment on SoC-0.3):** Agent Underlord placement: E 30.9, F 25.1, G and H 36.7, I to K 25.1 (117.8 total, plus any fix pass).
+- **Credits overnight (comment on SoC-0.3):** Agent Underlord: E 30.9, F 25.1, G and H 36.7, I to K 25.1, QC fix pass 13.5 (131.3 total). OpenArt: 520 (convoy still 30, Kling video 490); balance about 10,250.
+- **QC (comment on SoC-S42):** Private publish checked at the start, middle and end of every shot from 445.8 to 1036.3, plus the narration pauses against WORKING (no stock sound). Fixed in one pass: S61 foreman (AR headset), S82 check-in (campaign table with a flag), S64/S65 convoy (generic trucks, now AI), S55 blank card, S82 leftover tile, S85 empty opening.
 
 ## Questions for the user
 
