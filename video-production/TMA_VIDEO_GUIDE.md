@@ -635,6 +635,9 @@ Agreed with the user after reviewing the pilots. The plan for Span of Control is
   - QC found: a studio-white or AR-headset stock pick, a campaign-style table with a flag, generic trucks for a
     specific vehicle, a blank card between two overlay states, and a tile from an earlier state showing through.
     All fixed in one Underlord pass.
+- **Status (2026-11-19):** the user accepted "IMP - Span of Control VISUAL" as a draft and sent it to Rick for review.
+  The user will make a few manual tweaks in Descript, so re-pull the timeline before any further Claude edits.
+  A new process and structure for separating video work is coming; wait for it before starting another lesson.
 - **Real plate-spinning video:** `s19-20-brenn.html?video=src/<file>.mp4` plays footage in the same TV layout,
   seeking frame by frame (H.264 works in the headless Chromium). Retime `VBEATS` to the footage when it arrives.
 - **Publishes made for this (private, visible only to the user):** WORKING audio (word timing) and RAW video at 720p
