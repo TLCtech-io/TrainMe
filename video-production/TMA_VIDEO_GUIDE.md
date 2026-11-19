@@ -580,8 +580,21 @@ Agreed with the user after reviewing the pilots. The plan for Span of Control is
 - **Pilot 3 v2 (2026-11-19):** `motion/tma-soc/pilot3-v2.html` and `build_pilot3.sh`. One master timeline, four
   scene clips (S38 to S41). Lessons for every scene clip: render each clip at least as long as its scene (round up to
   the next frame, or Descript leaves a gap); preview with `?preview`, which overlays a stand-in caption gradient.
-- **Stock and AI:** the Pexels credential form was declined on 2026-11-19, so a key would go in the cloud
-  environment's settings (network secret for api.pexels.com). AI shots use OpenArt (Plus plan); Kling 3.0
+- **Stock comes from Descript's own library, placed by Agent Underlord (tested 2026-11-19, segment A).** Pexels has
+  paused new API keys, and Pixabay and DVIDS take their keys in the URL, which network secrets can't add.
+  - Claude writes the shot list with word-timed cuts (about 4 s a shot) and search terms; Underlord searches the
+    library, trims each shot to its times, full frame and muted, below the Captions and Gradient layers.
+  - Claude's graphics that sit on footage are transparent overlays (ProRes 4444, `render.cjs --alpha`), one per scene,
+    exactly the scene's length; Underlord puts them above the stock and below Captions and Gradient. Descript keeps
+    the transparency. Graphics-only scenes stay full clips.
+  - Cost: about 2 Underlord credits a shot (17 shots and 4 overlays: 32.8 credits; the duplicate: 5.8).
+  - Underlord picks close matches, not exact ones, and only spot-checks frames. Claude verifies every shot on a private
+    publish of the composition (frames at each shot), flags loose matches and visible real names or logos, and the
+    user swaps any shot in Descript.
+  - Work happens in "IMP - Span of Control STOCK TEST (Claude)" (a duplicate of WORKING), never in WORKING itself.
+- **AI shots:** realistic people and physics still read as AI (the user on S23: "very AI, not representative of the
+  original"). Prefer stock or graphics for performers; keep AI for settings and objects, and for callbacks to the
+  user's own AI series (the S37 kitchen shot was approved). AI shots use OpenArt (Plus plan); Kling 3.0
   image-to-video at 1080p, 7 s, no sound is 245 credits. Start each AI shot from a still, and use the user's kitchen
   series as the reference for kitchen callbacks.
 - **Publishes made for this (private, visible only to the user):** WORKING audio (word timing) and RAW video at 720p
