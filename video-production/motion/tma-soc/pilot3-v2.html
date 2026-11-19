@@ -1,0 +1,245 @@
+<!doctype html>
+<!-- IMP - Span of Control, pilot 3 v2 (WORKING scenes 38 to 41, 6:44.2 to 7:25.8).
+     One master timeline; build.sh renders it as one clip per scene, each exactly its scene's length.
+     Notes from the user (2026-11-19): the FEMA / NIMS title opens big and centred, then scales to its header;
+     no small pill; nothing important under the caption gradient (bottom third); social-media motion.
+     ?preview adds a stand-in caption gradient and caption for stills (never in the render). -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="../shared/tma.css" />
+<style>
+  #stage { position: absolute; inset: 0; transform-origin: 50% 40%; }
+
+  /* phase 1: the doctrine */
+  #doc { position: absolute; left: 360px; top: 150px; width: 360px; height: 480px; border-radius: 22px; background: var(--white);
+         box-shadow: 0 24px 60px rgba(29, 38, 51, 0.16), 0 3px 8px rgba(29, 38, 51, 0.08); overflow: hidden; }
+  #doc .band { height: 104px; background: var(--blue); color: var(--white); display: flex; align-items: center; padding: 0 30px;
+               font: 900 54px/1 "Roboto"; letter-spacing: 0.04em; }
+  #doc .ln { height: 14px; border-radius: 7px; background: var(--faint); margin: 26px 30px 0; transform-origin: 0 50%; }
+  #lockup { position: absolute; left: 790px; top: 210px; transform-origin: 0 0; white-space: nowrap; }
+  #lockup .fema { font: 900 168px/0.9 "Roboto"; letter-spacing: 0.02em; color: var(--blue); }
+  #lockup .nims { font: 900 80px/1.04 "Roboto"; letter-spacing: -0.01em; margin-top: 18px; }
+  #lockup .nims span { display: inline-block; }
+
+  /* phase 2: 1:5 */
+  #t1, #t1b { top: 216px; }
+  .ratio { position: absolute; left: 120px; top: 330px; display: flex; align-items: baseline; gap: 22px; font: 900 250px/1 "Roboto"; letter-spacing: -0.02em; }
+  .ratio .colon { color: var(--line); }
+  .ratio .five { color: var(--blue); display: inline-block; min-width: 150px; }
+  .rlab { position: absolute; left: 126px; top: 600px; font: 700 36px/1.2 "Roboto"; color: var(--slate); }
+  .node { position: absolute; height: 78px; border-radius: 16px; background: var(--white); border: 3px solid var(--blue);
+          display: flex; align-items: center; justify-content: center; font: 700 25px/1 "Roboto"; box-shadow: var(--shadow); }
+  .node.sup { background: var(--blue); color: var(--white); font-size: 30px; height: 90px; }
+  .wire { position: absolute; background: var(--line); }
+
+  /* phase 3: it depends on the factors */
+  .tile { position: absolute; width: 300px; height: 110px; border-radius: 18px; background: var(--white); box-shadow: var(--shadow);
+          display: flex; align-items: center; gap: 16px; padding: 0 20px; }
+  .tile b { font: 900 52px/1 "Roboto"; color: var(--blue); width: 38px; text-align: center; flex: none; }
+  .tile span { font: 700 28px/1.1 "Roboto"; }
+
+  /* phase 4 and 5: search and rescue */
+  #acres { position: absolute; left: 180px; top: 262px; width: 800px; height: 380px; border-radius: 22px; overflow: hidden; box-shadow: var(--shadow);
+           background: linear-gradient(135deg, #c9d8c3, #a9bf9f 55%, #93ab88); }
+  #acres svg { position: absolute; inset: 0; }
+  #scan { position: absolute; top: 0; bottom: 0; width: 160px; background: linear-gradient(90deg, rgba(44,126,244,0), rgba(44,126,244,0.35), rgba(44,126,244,0)); }
+  #acreNum { position: absolute; left: 1060px; top: 290px; font: 900 200px/1 "Roboto"; letter-spacing: -0.02em; color: var(--blue); }
+  #acreLab { position: absolute; left: 1068px; top: 500px; font: 900 64px/1 "Roboto"; }
+  .frow { position: absolute; left: 120px; width: 1680px; height: 172px; display: flex; align-items: center; padding: 0 36px; gap: 24px; }
+  .frow .lab { width: 590px; flex: none; }
+  .frow .lab h3 { font: 900 40px/1.1 "Roboto"; }
+  .frow .lab .conds { display: flex; gap: 10px; margin-top: 12px; }
+  .cond { height: 46px; padding: 0 16px; border-radius: 999px; background: var(--red); color: var(--white); font: 700 24px/46px "Roboto"; white-space: nowrap; }
+  .people { display: flex; gap: 6px; flex: none; }
+  .person { position: relative; width: 58px; height: 92px; color: var(--faint); }
+  .person .head { position: absolute; left: 14px; top: 0; width: 30px; height: 30px; border-radius: 50%; background: currentColor; }
+  .person .body { position: absolute; left: 3px; top: 36px; width: 52px; height: 50px; border-radius: 27px 27px 10px 10px; background: currentColor; }
+  .person .fill { position: absolute; inset: 0; }
+  .count { font: 900 120px/1 "Roboto"; width: 160px; text-align: right; flex: none; }
+
+  /* stand-in caption gradient and caption, for review stills only */
+  #pv { position: absolute; inset: 0; display: none; pointer-events: none;
+        background: linear-gradient(180deg, rgba(0,0,0,0) 62%, rgba(0,0,0,0.78) 100%); }
+  #pv div { position: absolute; left: 0; right: 0; top: 860px; text-align: center; font: 500 46px/1.2 "Roboto"; color: #fff; }
+  .preview #pv { display: block; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <!-- phase 1 -->
+  <div id="doc"><div class="band">NIMS</div></div>
+  <div id="lockup">
+    <div class="fema">FEMA</div>
+    <div class="nims"><span>National</span> <span>Incident</span><br/><span>Management</span> <span>System</span></div>
+  </div>
+
+  <!-- phase 2 -->
+  <div class="title" id="t1">Optimal span of control</div>
+  <div class="title" id="t1b">It depends on the factors</div>
+  <div class="ratio" id="ratio"><span id="one">1</span><span class="colon" id="colon">:</span><span class="five" id="five">5</span></div>
+  <div class="rlab" id="rlab">supervisor : subordinates</div>
+  <div class="rlab" id="rlab2">a guideline, not a rule</div>
+  <div id="chart"></div>
+  <div id="tiles"></div>
+
+  <!-- phase 4 and 5 -->
+  <div class="kicker" id="k2" style="font-size: 30px; top: 92px"><span class="bar"></span>In the field · Search and rescue</div>
+  <div class="title" id="t2" style="top: 140px">Same leader. Different span.</div>
+  <div id="acres">
+    <svg viewBox="0 0 800 380" preserveAspectRatio="none" id="contours"></svg>
+    <div id="scan"></div>
+  </div>
+  <div id="acreNum">0</div>
+  <div id="acreLab">acres</div>
+  <div class="card frow" id="rowA" style="top: 262px">
+    <div class="lab"><h3>Level ground,<br/>little underbrush</h3></div>
+    <div class="people" id="peopleA"></div>
+    <div class="count" id="countA" style="color: var(--blue)">0</div>
+  </div>
+  <div class="card frow" id="rowB" style="top: 458px">
+    <div class="lab"><h3>Challenging terrain</h3>
+      <div class="conds"><span class="cond" id="c1">Rough terrain</span><span class="cond" id="c2">Less experience</span><span class="cond" id="c3">Bad weather</span></div></div>
+    <div class="people" id="peopleB"></div>
+    <div class="count" id="countB" style="color: var(--red)">0</div>
+  </div>
+</div>
+<div id="pv"><div>a sample caption sits here, over the gradient</div></div>
+
+<script src="../shared/gsap.min.js"></script>
+<script src="../shared/motion.js"></script>
+<script>
+  if (location.search.includes("preview")) document.body.classList.add("preview");
+  // Master time 0 = WORKING 404.20 s (scene 38). Scene starts: 38 at 0, 39 at 14.23, 40 at 21.36, 41 at 32.99; end 41.60.
+  const D = 41.70;   // scene 41 ends at 41.60; a little extra so every clip covers its scene fully
+  // Rick's words (whisper, 2026-11-19), in master seconds.
+  const W = { fema: 2.74, national: 3.42, incident: 3.84, management: 4.30, system: 4.84, says: 7.50, optimal: 8.10, one: 11.02,
+              supervisor: 11.28, five: 12.42, s39: 14.23, five2: 15.86, but: 16.48, based: 17.52, factors: 18.60,
+              s40: 21.36, search: 23.56, covering: 25.48, hundred: 26.44, on: 27.58, comfortably: 29.94, twelve: 31.66,
+              terrain: 33.78, challenging: 34.50, experienced: 35.82, weather: 36.62, more: 38.82, four: 39.24 };
+
+  // doc lines
+  const doc = document.getElementById("doc");
+  [0.92, 0.7, 0.84, 0.6, 0.88, 0.74, 0.5].forEach((w) => { const d = document.createElement("div"); d.className = "ln"; d.style.width = `${w * 300}px`; doc.appendChild(d); });
+
+  // org chart: one supervisor, five subordinates
+  const chart = document.getElementById("chart");
+  const add = (parent, cls, css, html = "") => { const d = document.createElement("div"); d.className = cls; Object.assign(d.style, css); d.innerHTML = html; parent.appendChild(d); return d; };
+  const supX = 1330, subW = 164, gap = 26, subY = 520;
+  const subXs = [0, 1, 2, 3, 4].map((i) => supX - (5 * subW + 4 * gap) / 2 + subW / 2 + i * (subW + gap));
+  add(chart, "node sup", { left: `${supX - 150}px`, top: "300px", width: "300px" }, "Supervisor").id = "sup";
+  add(chart, "wire", { left: `${supX - 2}px`, top: "390px", width: "4px", height: "56px" }).id = "stem";
+  add(chart, "wire", { left: `${subXs[0]}px`, top: "444px", width: `${subXs[4] - subXs[0]}px`, height: "4px" }).id = "bus";
+  subXs.forEach((x, i) => {
+    add(chart, "wire", { left: `${x - 2}px`, top: "444px", width: "4px", height: `${subY - 444}px` }).id = `stub${i}`;
+    add(chart, "node", { left: `${x - subW / 2}px`, top: `${subY}px`, width: `${subW}px` }, "Subordinate").id = `sub${i}`;
+  });
+
+  // the nine factors (same tiles as the factor tracker in scenes 25 to 37)
+  const FACTORS = ["Leader's experience", "Team's experience", "Friction", "Distractions", "Communications", "Task variety", "Distance", "Safety", "Complexity"];
+  const tiles = document.getElementById("tiles");
+  FACTORS.forEach((f, i) => add(tiles, "tile", { left: `${880 + (i % 3) * 318}px`, top: `${296 + Math.floor(i / 3) * 124}px` }, `<b>${i + 1}</b><span>${f}</span>`).id = `tile${i}`);
+
+  // terrain: contour lines and a search grid
+  const svg = document.getElementById("contours");
+  let paths = "";
+  for (let k = 0; k < 7; k++) {
+    const y = 40 + k * 50, a = 18 + (k % 3) * 8;
+    paths += `<path d="M -10 ${y} C 160 ${y - a}, 300 ${y + a}, 420 ${y - a / 2} S 680 ${y + a}, 820 ${y}" fill="none" stroke="rgba(40,60,40,0.28)" stroke-width="3"/>`;
+  }
+  for (let x = 100; x < 800; x += 100) paths += `<line x1="${x}" y1="0" x2="${x}" y2="380" stroke="rgba(255,255,255,0.55)" stroke-width="2" stroke-dasharray="8 10"/>`;
+  svg.innerHTML = paths;
+
+  // people rows: 12 slots each; row A fills all 12, row B fills only 4
+  const person = (color) => `<div class="person"><div class="head"></div><div class="body"></div>
+    <div class="fill" style="color:${color}"><div class="head"></div><div class="body"></div></div></div>`;
+  document.getElementById("peopleA").innerHTML = Array.from({ length: 12 }, () => person("var(--blue)")).join("");
+  document.getElementById("peopleB").innerHTML = Array.from({ length: 12 }, () => person("var(--red)")).join("");
+
+  const tl = gsap.timeline({ paused: true });
+  const pop = (sel, t, from = 0.6, d = 0.45, origin = "50% 50%") =>
+    tl.fromTo(sel, { opacity: 0, scale: from }, { opacity: 1, scale: 1, duration: d, ease: "back.out(2)", transformOrigin: origin, immediateRender: false }, t);
+  const inUp = (sel, t, d = 0.5) => tl.fromTo(sel, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: d, ease: "power3.out", immediateRender: false }, t);
+  const out = (sel, t, d = 0.35, y = -40) => tl.to(sel, { opacity: 0, y: `-=${Math.abs(y)}`, duration: d, ease: "power2.in" }, t);   // relative, so moved items keep their place
+
+  gsap.set(["#doc", "#lockup", "#lockup .nims span", "#t1", "#t1b", "#ratio", "#rlab", "#rlab2", "#chart > *", "#tiles > *",
+            "#k2", "#t2", "#acres", "#acreNum", "#acreLab", "#rowA", "#rowB", ".cond"], { opacity: 0 });
+
+  // a slow push on the stage within each phase (social-style motion, never still)
+  tl.fromTo("#stage", { scale: 1 }, { scale: 1.035, duration: W.s40, ease: "none" }, 0);
+  tl.fromTo("#stage", { scale: 1 }, { scale: 1.03, duration: D - W.s40, ease: "none", immediateRender: false }, W.s40);
+
+  // ---- phase 1 (scene 38): the doctrine, then FEMA's National Incident Management System, big and centred
+  tl.fromTo("#doc", { opacity: 0, x: 420, y: 90, rotation: -9 }, { opacity: 1, x: 420, y: 0, rotation: -3, duration: 0.6, ease: "back.out(1.6)" }, 0.05);
+  doc.querySelectorAll(".ln").forEach((el, i) => tl.fromTo(el, { scaleX: 0 }, { scaleX: 1, duration: 0.3, ease: "power2.out" }, 0.45 + i * 0.12));
+  tl.set("#lockup", { opacity: 1 }, W.fema - 0.05);
+  tl.fromTo("#lockup .fema", { opacity: 0, scale: 1.8 }, { opacity: 1, scale: 1, duration: 0.35, ease: "power3.out", transformOrigin: "0% 60%" }, W.fema - 0.05);
+  tl.fromTo("#doc", { x: 420 }, { x: 0, duration: 0.45, ease: "power3.inOut", immediateRender: false }, W.fema - 0.25);   // centred until FEMA lands
+  ["national", "incident", "management", "system"].forEach((w, i) =>
+    tl.fromTo(`#lockup .nims span:nth-child(${i < 2 ? i + 1 : i + 2})`, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.3, ease: "back.out(2)" }, W[w] - 0.06));
+  // ...then it scales down to its header place as the title arrives
+  tl.to("#doc", { x: -700, y: 120, rotation: -16, opacity: 0, duration: 0.6, ease: "power3.in" }, W.says - 0.3);
+  tl.to("#lockup", { x: 120 - 790, y: 56 - 210, scale: 0.4, duration: 0.75, ease: "power3.inOut" }, W.says - 0.2);
+
+  // ---- phase 2 (scene 38): optimal span of control, 1 : 5
+  inUp("#t1", W.optimal);
+  tl.fromTo("#ratio", { opacity: 0 }, { opacity: 1, duration: 0.01, immediateRender: false }, W.one - 0.05);
+  tl.set(["#colon", "#five"], { opacity: 0 }, 0);
+  tl.fromTo("#one", { scale: 0.3 }, { scale: 1, duration: 0.45, ease: "back.out(2.4)", transformOrigin: "50% 85%" }, W.one - 0.05);
+  pop("#sup", W.supervisor);
+  tl.fromTo("#stem", { opacity: 1, scaleY: 0 }, { scaleY: 1, duration: 0.25, transformOrigin: "50% 0%", immediateRender: false }, W.supervisor + 0.35);
+  tl.fromTo("#bus", { opacity: 1, scaleX: 0 }, { scaleX: 1, duration: 0.35, transformOrigin: "50% 50%", immediateRender: false }, W.five - 0.3);
+  tl.fromTo(["#colon", "#five"], { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: 0.35, ease: "power3.out", transformOrigin: "50% 85%", immediateRender: false }, W.five - 0.04);
+  subXs.forEach((_, i) => {
+    const t = W.five + i * 0.09;
+    tl.fromTo(`#stub${i}`, { opacity: 1, scaleY: 0 }, { scaleY: 1, duration: 0.2, transformOrigin: "50% 0%", immediateRender: false }, t);
+    tl.fromTo(`#sub${i}`, { opacity: 0, y: 26, scale: 0.8 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(2)", immediateRender: false }, t + 0.06);
+  });
+  inUp("#rlab", W.five + 0.8);
+
+  // ---- phase 3 (scene 39): sometimes 1:5, but it depends on the factors
+  tl.fromTo("#five", { scale: 1 }, { scale: 1.18, duration: 0.18, yoyo: true, repeat: 1, ease: "power2.out", transformOrigin: "50% 85%", immediateRender: false }, W.five2);
+  tl.to(["#chart > *"], { opacity: 0, y: -20, duration: 0.3, stagger: 0.02, ease: "power2.in" }, W.but);
+  out("#t1", W.based - 0.35);
+  inUp("#t1b", W.based - 0.05);
+  out("#rlab", W.based - 0.3, 0.25, -20);
+  FACTORS.forEach((_, i) => pop(`#tile${i}`, W.factors - 0.1 + i * 0.07, 0.5, 0.4));
+  inUp("#rlab2", W.factors + 1.0);
+
+  // ---- phase 4 (scene 40): search and rescue, over a hundred acres
+  out(["#lockup", "#t1b", "#ratio", "#rlab2", "#tiles > *"], W.s40 - 0.05, 0.3, -60);
+  tl.fromTo("#k2", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.45, ease: "power3.out", immediateRender: false }, W.s40 + 0.2);
+  inUp("#t2", W.s40 + 0.4);
+  tl.fromTo("#acres", { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.6)", immediateRender: false }, W.search - 0.2);
+  tl.fromTo("#scan", { x: -180 }, { x: 820, duration: 2.2, ease: "none", repeat: 1 }, W.search);
+  pop("#acreNum", W.covering - 0.1, 0.6, 0.4, "0% 80%");
+  inUp("#acreLab", W.hundred + 0.2);
+  out(["#acres", "#acreNum", "#acreLab"], W.on - 0.3, 0.3, -30);
+  inUp("#rowA", W.on - 0.05);
+
+  // ---- phase 5 (scene 41): challenging terrain, no more than four
+  inUp("#rowB", W.terrain - 0.15);
+  pop("#c1", W.challenging - 0.05, 0.5, 0.35, "0% 50%");
+  pop("#c2", W.experienced - 0.2, 0.5, 0.35, "0% 50%");
+  pop("#c3", W.weather - 0.05, 0.5, 0.35, "0% 50%");
+  const fills = (row, n, t0, span) => {
+    document.querySelectorAll(`#${row} .person .fill`).forEach((el, i) => {
+      tl.set(el, { opacity: 0 }, 0);
+      if (i < n) tl.fromTo(el, { opacity: 0, scale: 0.3 }, { opacity: 1, scale: 1, duration: 0.28, ease: "back.out(2.6)", transformOrigin: "50% 100%", immediateRender: false }, t0 + (i * span) / n);
+    });
+  };
+  fills("peopleA", 12, W.comfortably, W.twelve - W.comfortably - 0.15);
+  fills("peopleB", 4, W.more - 0.1, 0.45);
+  tl.fromTo("#countA", { scale: 1 }, { scale: 1.25, duration: 0.16, yoyo: true, repeat: 1, ease: "power2.out", immediateRender: false }, W.twelve);
+  tl.fromTo("#countB", { scale: 1 }, { scale: 1.3, duration: 0.16, yoyo: true, repeat: 1, ease: "power2.out", immediateRender: false }, W.four);
+
+  const acre = document.getElementById("acreNum"), cA = document.getElementById("countA"), cB = document.getElementById("countB");
+  M.register(tl, { duration: D, width: 1920, height: 1080 }, (t) => {
+    const a = Math.round(M.keys([[W.covering, 0], [W.hundred + 0.3, 100]], t));
+    acre.textContent = a >= 100 ? "100+" : String(a);
+    cA.textContent = Math.round(M.keys([[W.comfortably, 0], [W.twelve, 12]], t));
+    cB.textContent = Math.round(M.keys([[W.more - 0.1, 0], [W.four, 4]], t));
+  });
+</script>
+</body>
+</html>
