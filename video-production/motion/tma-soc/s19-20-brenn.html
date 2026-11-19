@@ -81,19 +81,31 @@
     [26.23, 2.45, 3.45, 0.6, 1.10, 50, 45],  // "as soon as we think we're in control"
     [28.30, 3.45, 5.07, 1.0, 1.00, 50, 50],  // "we start spinning another one on another stick"
   ];
-  // all 76 frames preloaded and stacked; one is shown at a time
+  // ?video=<file> swaps the GIF for real footage (the user is sourcing a clean video of the act, 2026-11-19).
+  // VBEATS work like BEATS but in the video's own seconds: [start, video from, video to (loops), speed, zoom, cx%, cy%].
+  // Until the real video is cut, one beat plays it straight through. Retime these to the footage once it is in src/.
+  const VIDEO = new URLSearchParams(location.search).get("video");
+  const VBEATS = [[0.00, 0.0, 9999, 1.0, 1.00, 50, 50]];
   const gifwrap = document.getElementById("gifwrap"), bgwrap = document.getElementById("bgwrap");
   const FR = [], BG = [];
-  for (let i = 0; i < 76; i++) {
-    const n = String(i).padStart(3, "0");
-    const a = new Image(); a.src = `src/brenn/f_${n}.jpg`; gifwrap.appendChild(a); FR.push(a);
-    const b = new Image(); b.src = `src/brenn/b_${n}.jpg`; bgwrap.appendChild(b); BG.push(b);
+  let vA = null, vB = null;
+  if (VIDEO) {
+    const mk = (parent, css) => { const v = document.createElement("video"); v.src = VIDEO; v.muted = true; v.preload = "auto"; v.playsInline = true;
+      Object.assign(v.style, css); parent.appendChild(v); return v; };
+    vA = mk(gifwrap, { position: "absolute", left: 0, top: 0, width: "100%", height: "100%", objectFit: "cover" });
+    vB = mk(bgwrap, { position: "absolute", left: "-60px", top: "-60px", width: "2040px", height: "1200px", objectFit: "cover", filter: "blur(18px)", opacity: 0.75 });
+  } else {
+    // all 76 GIF frames preloaded and stacked; one is shown at a time
+    for (let i = 0; i < 76; i++) {
+      const n = String(i).padStart(3, "0");
+      const a = new Image(); a.src = `src/brenn/f_${n}.jpg`; gifwrap.appendChild(a); FR.push(a);
+      const b = new Image(); b.src = `src/brenn/b_${n}.jpg`; bgwrap.appendChild(b); BG.push(b);
+    }
   }
+  const beatAt = (list, t) => { let b = list[0]; for (const x of list) if (t >= x[0]) b = x; return b; };
   let last = -1;
   function frameAt(t) {
-    let b = BEATS[0];
-    for (const x of BEATS) if (t >= x[0]) b = x;
-    const [t0, g0, g1, sp, z, cx, cy] = b;
+    const [t0, g0, g1, sp, z, cx, cy] = beatAt(BEATS, t);
     const span = g1 - g0, g = g0 + (((t - t0) * sp) % span);
     const f = Math.min(75, Math.floor(g * 15));
     if (f !== last) {
@@ -102,6 +114,20 @@
     }
     gifwrap.style.transformOrigin = `${cx}% ${cy}%`;
     gifwrap.style.transform = `scale(${z})`;
+  }
+  // video mode: seek both videos to the beat's time and wait until the frame is ready
+  const seekVideo = (v, time) => new Promise((res) => {
+    if (Math.abs(v.currentTime - time) < 0.001 && v.readyState >= 2) return res();
+    const done = () => { v.removeEventListener("seeked", done); res(); };
+    v.addEventListener("seeked", done); v.currentTime = time;
+  });
+  async function videoAt(t) {
+    const [t0, v0, v1, sp, z, cx, cy] = beatAt(VBEATS, t);
+    const end = Math.min(v1, vA.duration - 0.04), span = Math.max(0.04, end - v0);
+    const vt = v0 + (((t - t0) * sp) % span);
+    gifwrap.style.transformOrigin = `${cx}% ${cy}%`;
+    gifwrap.style.transform = `scale(${z})`;
+    await Promise.all([seekVideo(vA, vt), seekVideo(vB, vt)]);
   }
 
   const tl = gsap.timeline({ paused: true });
@@ -133,12 +159,19 @@
   tl.to("#plus", { opacity: 0, y: -40, duration: 0.4 }, 29.6);
 
   const num = document.getElementById("num");
-  Promise.all([...FR, ...BG].map((im) => im.decode().catch(() => {}))).then(() => M.register(tl, { duration: D, width: 1920, height: 1080 }, (t) => {
-    frameAt(t);
+  const update = (t) => {
+    if (!VIDEO) frameAt(t);
     // plates spinning: 1 to 7 while Rick lists them (21.2 to 26.0), then one more on "another one"
     const n = t < 28.39 ? Math.round(M.keys([[21.0, 1], [26.0, 7]], t)) : 8;
     num.textContent = n;
-  }));
+  };
+  const ready = VIDEO
+    ? Promise.all([vA, vB].map((v) => new Promise((r) => (v.readyState >= 1 ? r() : v.addEventListener("loadedmetadata", r, { once: true })))))
+    : Promise.all([...FR, ...BG].map((im) => im.decode().catch(() => {})));
+  ready.then(() => {
+    M.register(tl, { duration: D, width: 1920, height: 1080 }, update);
+    if (VIDEO) window.__seek = async (t) => { tl.seek(t, false); update(t); await videoAt(t); };
+  });
 </script>
 </body>
 </html>
