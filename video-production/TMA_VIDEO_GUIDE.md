@@ -1,6 +1,6 @@
 # TMA Video Production Guide
 
-Last updated: 2026-10-26 (Pick Your Poison social posts; guidelines, not rules). First written 2026-10-09 (research session in Claude Code using the Descript connector, drive TLC_TRNG).
+Last updated: 2026-11-19 (TMA visual process v2, section 14). Before that: 2026-10-26 (guidelines, not rules). First written 2026-10-09 (research session in Claude Code using the Descript connector, drive TLC_TRNG).
 
 Working reference for producing TrainMe (TMA) course videos in Descript with Claude. Read this before any Descript or video work, and update it as decisions are made.
 
@@ -127,7 +127,7 @@ Folder `IMP - RIck`:
 
 | Project | Project id | Compositions | Status |
 |---|---|---|---|
-| IMP - Span of Control | `ef5c9feb-d4c2-40f3-805b-8ccd00d1d811` | RAW `b92bcb95-ee49-4ead-9b06-300c7eb1ac7b` (18:11); WORKING `0bc559be-4ee4-4311-bd21-bf4471e1c905` (17:15) | **Next up.** Some assets already imported (s1.png, s8b/s9b/s10b.mp4, B03.png, an OpenArt image, a Regenerate audio patch). No visual composition yet. |
+| IMP - Span of Control | `ef5c9feb-d4c2-40f3-805b-8ccd00d1d811` | RAW `b92bcb95-ee49-4ead-9b06-300c7eb1ac7b` (18:11); WORKING `0bc559be-4ee4-4311-bd21-bf4471e1c905` (17:16, the visual pass is done here); DEMO `02aa6239-86ee-4740-a5db-03c60e1b963a` (3:04 sampler, unlisted) | **In progress (2026-11-19).** 0:00 to 1:35 done and locked; pilots 3 and 4 placed. Plan for the rest: section 14. |
 | IMP - Management By Objectives RAW | `4ca04f93-f200-426f-ba15-80399c9a113f` | RAW; WORKING Draft; Draft Lessons 1.1 to 1.4 | Split into four lesson drafts. No overlay media in the project yet. |
 | IMP Recording 091726 | `820ef294-30f6-47ac-a8b9-4d8f32809b12` | Recording 1 (28:11); Recording 2 (1:47); Copy of Recording 2 (0:44); Untitled (0:07) | New Sep 17 session with Travis and Rick. Topic not yet identified. Not yet in the RAW/WORKING structure. |
 
@@ -262,7 +262,12 @@ Source lives in `video-production/motion/` (see its README). HTML + GSAP composi
 - **Style:** TMA light grey background, Roboto, blue/amber/red accents, white cards.
 - **Captions:** the bottom 22% of the frame stays clear for Descript's captions.
 - **Timing:** comes from paragraph timecodes. Each file's `T = {...}` block retimes it.
-- **Status:** awaiting the user's review. Not imported into Descript yet.
+- **Outcome (user review, 2026-11-19):**
+  - Pilot 1 unused: the user already had a screen for each topic card.
+  - Pilot 2 replaced by real b-roll of gas burners lighting in sequence, which fit the cue better.
+  - Pilot 3 used. The FEMA / NIMS title came in too late and too small, so the user added the FEMA logo as filler;
+    the yellow pill didn't read over the caption gradient and was too small to add anything.
+  - Pilot 4 used. It ran a few seconds into the next scene, so it only filled its first scene until the user fixed it.
 
 **PREPARE Vid 5: Claude Edit Playbook version**
 - **Storyboard:** `motion/prepare-vid5/storyboard.md`, 11 cards for 14 transcript lines.
@@ -539,7 +544,43 @@ The DST's screens appear as captured. Everything around them is brand:
 - **Capture with Playwright:** high-resolution stills for zooms and callouts, plus short scripted clips of clicks,
   typing and scrolling. Capture from a shot list matched to the script.
 
-## 14. Open items
+## 14. TMA visual process v2 (from 2026-11-19)
+
+Agreed with the user after reviewing the pilots. The plan for Span of Control is
+`plans/IMP Span of Control - visual plan.md`; scene list and word timing are in `motion/tma-soc/data/`.
+
+- **Plan the whole lesson first, then build.** One scene-by-scene plan (timecode, line, visual, type, keywords),
+  reviewed by the user once, before anything is made. Check what already exists first (topic cards, b-roll in the
+  project, the user's own finds).
+- **Most appropriate asset, not cheapest.** Quality first: real b-roll beat a motion graphic for the burners.
+- **Templates, but not rinse and repeat.** Reuse the org-chart builder and other templates across lessons, and still
+  change the visual idea every scene or two. Don't stay on one visual or visual idea too long.
+- **Scene breaks rule placement.** In Descript, a clip dropped into a scene fills only that scene, even if the clip
+  is longer. So every clip starts and ends exactly at scene breaks: one MP4 per scene, named with its scene number.
+  A visual that spans scenes is rendered once and cut at the breaks. The user can remove scene breaks where a theme
+  should carry across scenes.
+- **Time to words, one clip per idea.** Cuts inside a scene clip land on Rick's words (word timing from whisper on a
+  private audio publish of WORKING, approved 2026-11-19). Re-pull the scene list (Agent Underlord, read-only, about
+  7.7 credits) and the words after any edit to the WORKING composition.
+- **Pacing:** the reference lesson changes visual about every 4 to 6 seconds. Black in the WORKING composition only
+  means nothing is placed yet; it is not a style.
+- **Caption gradient:** a Gradient layer darkens the bottom third under the captions, over everything. Keep anything
+  important above it, and never put small or low-contrast details there.
+- **Motion:** titles open big and centred, then scale to their place. No tiny decorative details (the pilot 3 pill).
+  Social-media motion: punch-ins, kinetic type, quick builds.
+- **GIFs of film and TV moments are fine.** When Claude can't find one, put a labelled placeholder and search keywords
+  for Descript's catalog.
+- **Rick's slides are placeholders** that guided the narration (they are visible in the RAW video). Rebuild and
+  improve their charts rather than copying them.
+- **Locked:** Span of Control 0:00 to 1:35. Anything after can still be edited.
+- **Planning in Asana (proposed):** the user runs the LMS and DST builds with Asana as the plan of record (sections
+  per sprint, task IDs, a Status1 field, comments tagging the user for questions). Same idea proposed for TMA video.
+- **Publishes made for this (private, visible only to the user):** WORKING audio (word timing) and RAW video at 720p
+  (to see Rick's slides), 2026-11-19.
+
+---
+
+## 15. Open items
 
 - [ ] **DST commercial:**
   - The user adds `DST_USER` and `DST_PASSWORD` as environment variables, then starts a new session for the capture.

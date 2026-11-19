@@ -1,0 +1,636 @@
+{
+ "composition": "IMP - Span of Control WORKING (0bc559be-4ee4-4311-bd21-bf4471e1c905)",
+ "source": "Agent Underlord read-only scene list, 2026-11-19 (base script layers, Captions and Gradient omitted from layers)",
+ "scenes": [
+  {
+   "scene": 1,
+   "start": 0.0,
+   "end": 8.05,
+   "first_words": "One of the key management characteristics",
+   "layers": "s1-1.png"
+  },
+  {
+   "scene": 2,
+   "start": 8.05,
+   "end": 9.54,
+   "first_words": "Three major topics.",
+   "layers": "Topics"
+  },
+  {
+   "scene": 3,
+   "start": 9.54,
+   "end": 17.32,
+   "first_words": "The first is understanding why it's",
+   "layers": "Topics"
+  },
+  {
+   "scene": 4,
+   "start": 17.32,
+   "end": 23.59,
+   "first_words": "Second, understanding the factors and strain",
+   "layers": "Topics"
+  },
+  {
+   "scene": 5,
+   "start": 23.59,
+   "end": 28.54,
+   "first_words": "And the third thing is tips",
+   "layers": "Topics"
+  },
+  {
+   "scene": 6,
+   "start": 28.54,
+   "end": 40.13,
+   "first_words": "So first, the danger of overextension.",
+   "layers": "Sticker, ZLINE range"
+  },
+  {
+   "scene": 7,
+   "start": 40.13,
+   "end": 48.77,
+   "first_words": "It has six burners, two ovens,",
+   "layers": "openart image"
+  },
+  {
+   "scene": 8,
+   "start": 48.77,
+   "end": 54.58,
+   "first_words": "But I've learned the hard way that",
+   "layers": "s8b"
+  },
+  {
+   "scene": 9,
+   "start": 54.58,
+   "end": 65.97,
+   "first_words": "Whenever I try to have four",
+   "layers": "s8b, s9b"
+  },
+  {
+   "scene": 10,
+   "start": 65.97,
+   "end": 78.13,
+   "first_words": "In fact, I've learned that if one",
+   "layers": "s10b"
+  },
+  {
+   "scene": 11,
+   "start": 78.13,
+   "end": 87.19,
+   "first_words": "I hope this metaphor will explain",
+   "layers": "Kitchen Gas Burners"
+  },
+  {
+   "scene": 12,
+   "start": 87.19,
+   "end": 95.17,
+   "first_words": "The fact is that the human",
+   "layers": "Human brain"
+  },
+  {
+   "scene": 13,
+   "start": 95.17,
+   "end": 102.79,
+   "first_words": "When we overextend ourselves, we forget important",
+   "layers": ""
+  },
+  {
+   "scene": 14,
+   "start": 102.79,
+   "end": 109.06,
+   "first_words": "Yeah, calendar apps and lists help us,",
+   "layers": ""
+  },
+  {
+   "scene": 15,
+   "start": 109.06,
+   "end": 122.44,
+   "first_words": "In normal life, you might disappoint friends",
+   "layers": ""
+  },
+  {
+   "scene": 16,
+   "start": 122.44,
+   "end": 138.67,
+   "first_words": "When you're managing a project, especially one",
+   "layers": ""
+  },
+  {
+   "scene": 17,
+   "start": 138.67,
+   "end": 153.79,
+   "first_words": "If that project is managing a life",
+   "layers": ""
+  },
+  {
+   "scene": 18,
+   "start": 153.79,
+   "end": 159.39,
+   "first_words": "Let's talk about the factors that test",
+   "layers": ""
+  },
+  {
+   "scene": 19,
+   "start": 159.39,
+   "end": 177.61,
+   "first_words": "This great video from the old Ed",
+   "layers": ""
+  },
+  {
+   "scene": 20,
+   "start": 177.61,
+   "end": 190.34,
+   "first_words": "Like the Great Eric Brent, see how",
+   "layers": ""
+  },
+  {
+   "scene": 21,
+   "start": 190.34,
+   "end": 196.73,
+   "first_words": "So what would make Eric's trick even",
+   "layers": ""
+  },
+  {
+   "scene": 22,
+   "start": 196.73,
+   "end": 203.15,
+   "first_words": "Or if the plates were all different",
+   "layers": ""
+  },
+  {
+   "scene": 23,
+   "start": 203.15,
+   "end": 209.47,
+   "first_words": "If the stage were moving, for example,",
+   "layers": ""
+  },
+  {
+   "scene": 24,
+   "start": 209.47,
+   "end": 222.06,
+   "first_words": "While the show has added suspense, when",
+   "layers": ""
+  },
+  {
+   "scene": 25,
+   "start": 222.06,
+   "end": 227.51,
+   "first_words": "So let's discuss in detail some of",
+   "layers": ""
+  },
+  {
+   "scene": 26,
+   "start": 227.51,
+   "end": 239.49,
+   "first_words": "The first is the leader's experience. So",
+   "layers": ""
+  },
+  {
+   "scene": 27,
+   "start": 239.49,
+   "end": 252.12,
+   "first_words": "A more experienced cook can commit to",
+   "layers": ""
+  },
+  {
+   "scene": 28,
+   "start": 252.12,
+   "end": 265.52,
+   "first_words": "It's also about experience of the team",
+   "layers": ""
+  },
+  {
+   "scene": 29,
+   "start": 265.52,
+   "end": 277.6,
+   "first_words": "Sometimes you get people who just don't",
+   "layers": ""
+  },
+  {
+   "scene": 30,
+   "start": 277.6,
+   "end": 293.83,
+   "first_words": "distractions.... if I were in a different",
+   "layers": ""
+  },
+  {
+   "scene": 31,
+   "start": 293.83,
+   "end": 316.15,
+   "first_words": "Also communication matters. If you're struggling to",
+   "layers": ""
+  },
+  {
+   "scene": 32,
+   "start": 316.15,
+   "end": 323.44,
+   "first_words": "There are other factors that involve span",
+   "layers": ""
+  },
+  {
+   "scene": 33,
+   "start": 323.44,
+   "end": 334.39,
+   "first_words": "If the people you're leading are all",
+   "layers": ""
+  },
+  {
+   "scene": 34,
+   "start": 334.39,
+   "end": 354.54,
+   "first_words": "Distance is another thing. The distance that",
+   "layers": ""
+  },
+  {
+   "scene": 35,
+   "start": 354.54,
+   "end": 366.63,
+   "first_words": "Safety, of course, plays a role. If",
+   "layers": ""
+  },
+  {
+   "scene": 36,
+   "start": 366.63,
+   "end": 379.68,
+   "first_words": "If the entire incident is fraught with",
+   "layers": ""
+  },
+  {
+   "scene": 37,
+   "start": 379.68,
+   "end": 404.2,
+   "first_words": "The last factor I want to talk",
+   "layers": "FEMA logo"
+  },
+  {
+   "scene": 38,
+   "start": 404.2,
+   "end": 418.43,
+   "first_words": "The doctrine that all of this comes",
+   "layers": "FEMA logo, pilot 3"
+  },
+  {
+   "scene": 39,
+   "start": 418.43,
+   "end": 425.56,
+   "first_words": "Sometimes it's one to five, but again,",
+   "layers": "pilot 3"
+  },
+  {
+   "scene": 40,
+   "start": 425.56,
+   "end": 437.19,
+   "first_words": "Sometimes I've led groups of search and",
+   "layers": "pilot 3"
+  },
+  {
+   "scene": 41,
+   "start": 437.19,
+   "end": 445.8,
+   "first_words": "if the terrain were more challenging, the",
+   "layers": "pilot 3"
+  },
+  {
+   "scene": 42,
+   "start": 445.8,
+   "end": 450.09,
+   "first_words": "So understand all these things must be",
+   "layers": ""
+  },
+  {
+   "scene": 43,
+   "start": 450.09,
+   "end": 456.99,
+   "first_words": "Good A good rule of thumb,",
+   "layers": ""
+  },
+  {
+   "scene": 44,
+   "start": 456.99,
+   "end": 469.5,
+   "first_words": "And understand this is not just about",
+   "layers": ""
+  },
+  {
+   "scene": 45,
+   "start": 469.5,
+   "end": 478.31,
+   "first_words": "People simply have limits and you need",
+   "layers": ""
+  },
+  {
+   "scene": 46,
+   "start": 478.31,
+   "end": 488.47,
+   "first_words": "So besides reducing factors that we just",
+   "layers": ""
+  },
+  {
+   "scene": 47,
+   "start": 488.47,
+   "end": 491.44,
+   "first_words": "The first is create middle management.",
+   "layers": ""
+  },
+  {
+   "scene": 48,
+   "start": 491.44,
+   "end": 516.03,
+   "first_words": "The Incident Management System is a modular",
+   "layers": ""
+  },
+  {
+   "scene": 49,
+   "start": 516.03,
+   "end": 543.14,
+   "first_words": "The entire reason for middle management to",
+   "layers": ""
+  },
+  {
+   "scene": 50,
+   "start": 543.14,
+   "end": 550.39,
+   "first_words": "We talk about operations, we can divide",
+   "layers": ""
+  },
+  {
+   "scene": 51,
+   "start": 550.39,
+   "end": 559.96,
+   "first_words": "So if you've got two warehouses and",
+   "layers": ""
+  },
+  {
+   "scene": 52,
+   "start": 559.96,
+   "end": 565.36,
+   "first_words": "When we divide geographically, we call them",
+   "layers": ""
+  },
+  {
+   "scene": 53,
+   "start": 565.36,
+   "end": 568.47,
+   "first_words": "Another way to do it is based",
+   "layers": ""
+  },
+  {
+   "scene": 54,
+   "start": 568.47,
+   "end": 577.8,
+   "first_words": "This is especially useful if people performing",
+   "layers": ""
+  },
+  {
+   "scene": 55,
+   "start": 577.8,
+   "end": 587.37,
+   "first_words": "For example, in a factory, all the",
+   "layers": ""
+  },
+  {
+   "scene": 56,
+   "start": 587.37,
+   "end": 595.77,
+   "first_words": "While each leader may have the same",
+   "layers": ""
+  },
+  {
+   "scene": 57,
+   "start": 595.77,
+   "end": 607.7,
+   "first_words": "So when we group people by their",
+   "layers": ""
+  },
+  {
+   "scene": 58,
+   "start": 607.7,
+   "end": 620.06,
+   "first_words": "In terms of units that are actually",
+   "layers": ""
+  },
+  {
+   "scene": 59,
+   "start": 620.06,
+   "end": 629.3,
+   "first_words": "Task force is when you combine different",
+   "layers": ""
+  },
+  {
+   "scene": 60,
+   "start": 629.3,
+   "end": 636.53,
+   "first_words": "You get some carpenters, a plumber and",
+   "layers": ""
+  },
+  {
+   "scene": 61,
+   "start": 636.53,
+   "end": 644.76,
+   "first_words": "Whoever leads that needs to know enough",
+   "layers": ""
+  },
+  {
+   "scene": 62,
+   "start": 644.76,
+   "end": 652.75,
+   "first_words": "Contrast that with a strike team. A",
+   "layers": ""
+  },
+  {
+   "scene": 63,
+   "start": 652.75,
+   "end": 656.02,
+   "first_words": "We designate a strike team leader to",
+   "layers": ""
+  },
+  {
+   "scene": 64,
+   "start": 656.02,
+   "end": 671.71,
+   "first_words": "And you've seen an example of this",
+   "layers": ""
+  },
+  {
+   "scene": 65,
+   "start": 671.71,
+   "end": 692.51,
+   "first_words": "What you may not notice in that",
+   "layers": ""
+  },
+  {
+   "scene": 66,
+   "start": 692.51,
+   "end": 699.07,
+   "first_words": "In other sections, we call them units",
+   "layers": ""
+  },
+  {
+   "scene": 67,
+   "start": 699.07,
+   "end": 715.03,
+   "first_words": "So, for example, in planning a",
+   "layers": ""
+  },
+  {
+   "scene": 68,
+   "start": 715.03,
+   "end": 722.17,
+   "first_words": "They report to the planning section chief,",
+   "layers": ""
+  },
+  {
+   "scene": 69,
+   "start": 722.17,
+   "end": 728.02,
+   "first_words": "And yes, units exist within logistics and",
+   "layers": ""
+  },
+  {
+   "scene": 70,
+   "start": 728.02,
+   "end": 744.98,
+   "first_words": "In each case, people work within their",
+   "layers": ""
+  },
+  {
+   "scene": 71,
+   "start": 744.98,
+   "end": 748.97,
+   "first_words": "Now let's talk about branches and we",
+   "layers": ""
+  },
+  {
+   "scene": 72,
+   "start": 748.97,
+   "end": 756.5,
+   "first_words": "When you've got a bunch of units,",
+   "layers": ""
+  },
+  {
+   "scene": 73,
+   "start": 756.5,
+   "end": 776.6,
+   "first_words": "So in this case, if a logistics",
+   "layers": ""
+  },
+  {
+   "scene": 74,
+   "start": 776.6,
+   "end": 784.82,
+   "first_words": "When incidents are very large or need",
+   "layers": ""
+  },
+  {
+   "scene": 75,
+   "start": 784.82,
+   "end": 791.98,
+   "first_words": "This helps maintain the manageable span of",
+   "layers": ""
+  },
+  {
+   "scene": 76,
+   "start": 791.98,
+   "end": 804.93,
+   "first_words": "Operations can do the same thing. Branches",
+   "layers": ""
+  },
+  {
+   "scene": 77,
+   "start": 804.93,
+   "end": 813.29,
+   "first_words": "Now, how do you keep all these",
+   "layers": ""
+  },
+  {
+   "scene": 78,
+   "start": 813.29,
+   "end": 826.15,
+   "first_words": "You can have example, the incident commander",
+   "layers": ""
+  },
+  {
+   "scene": 79,
+   "start": 826.15,
+   "end": 844.1,
+   "first_words": "By appointing a support position and putting",
+   "layers": "pilot 4"
+  },
+  {
+   "scene": 80,
+   "start": 844.1,
+   "end": 862.27,
+   "first_words": "There's no reason you can't appoint multiple",
+   "layers": "pilot 4"
+  },
+  {
+   "scene": 81,
+   "start": 862.27,
+   "end": 883.83,
+   "first_words": "Obviously, every person in the chain of",
+   "layers": "pilot 4"
+  },
+  {
+   "scene": 82,
+   "start": 883.83,
+   "end": 919.77,
+   "first_words": "The 14 management principles of incident management",
+   "layers": ""
+  },
+  {
+   "scene": 83,
+   "start": 919.77,
+   "end": 930.35,
+   "first_words": "Another principle is this modular organization that",
+   "layers": ""
+  },
+  {
+   "scene": 84,
+   "start": 930.35,
+   "end": 943.99,
+   "first_words": "It is interesting to study the United",
+   "layers": ""
+  },
+  {
+   "scene": 85,
+   "start": 943.99,
+   "end": 959.2,
+   "first_words": "For example, the lowest level, what they",
+   "layers": ""
+  },
+  {
+   "scene": 86,
+   "start": 959.2,
+   "end": 968.31,
+   "first_words": "It goes all the way up to",
+   "layers": ""
+  },
+  {
+   "scene": 87,
+   "start": 968.31,
+   "end": 983.57,
+   "first_words": "So if this group draws a line",
+   "layers": ""
+  },
+  {
+   "scene": 88,
+   "start": 983.57,
+   "end": 998.8,
+   "first_words": "So couple of things to think about",
+   "layers": ""
+  },
+  {
+   "scene": 89,
+   "start": 998.8,
+   "end": 1023.36,
+   "first_words": "So obviously learn the other modules on",
+   "layers": ""
+  },
+  {
+   "scene": 90,
+   "start": 1023.36,
+   "end": 1036.26,
+   "first_words": "Don't wait to be formally assigned as",
+   "layers": ""
+  }
+ ]
+}
