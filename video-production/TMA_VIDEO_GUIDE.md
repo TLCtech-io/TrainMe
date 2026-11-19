@@ -594,6 +594,13 @@ Agreed with the user after reviewing the pilots. The plan for Span of Control is
   - Work happens in "IMP - Span of Control VISUAL" (a duplicate of WORKING, renamed from "STOCK TEST (Claude)" on
     2026-11-19 with the user's OK), never in WORKING itself.
   - Underlord's placements add new scene breaks, so later jobs give it timeline times (seconds), never scene numbers.
+  - QC every placement with `motion/tma-soc/tools/qc_publish.py` on a private 1080p publish (the download is a
+    10.5 fps preview): contact sheets at the start, middle and end of each shot (shot lists in `motion/tma-soc/data/`),
+    plus a check that the narration pauses are no louder than in WORKING, which catches stock that kept its sound.
+  - Segment C needed a fix pass (23.2 credits) and a one-line follow-up (7.7) after QC. Typical misses: studio or
+    white-background shots, tiny GIFs blown up (ask for GIPHY sources at least 400 px wide), and clips that open on
+    black (move the in-point). Underlord reports its own frame checks too optimistically, so always re-publish and
+    re-check after a fix.
   - When the library has no fitting landscape shot (S13 dry cleaner: only a "mall boutique" match), make an AI still
     (Seedream 5 Pro, 30 credits) and give it a slow push-in with `motion/tma-soc/tools/still_clip.sh`.
 - **AI shots:** realistic people and physics still read as AI (the user on S23: "very AI, not representative of the
