@@ -573,8 +573,17 @@ Agreed with the user after reviewing the pilots. The plan for Span of Control is
 - **Rick's slides are placeholders** that guided the narration (they are visible in the RAW video). Rebuild and
   improve their charts rather than copying them.
 - **Locked:** Span of Control 0:00 to 1:35. Anything after can still be edited.
-- **Planning in Asana (proposed):** the user runs the LMS and DST builds with Asana as the plan of record (sections
-  per sprint, task IDs, a Status1 field, comments tagging the user for questions). Same idea proposed for TMA video.
+- **Asana is the plan of record (from 2026-11-19):** project "3-TMA Video Production" (team TLC_TRNG, private),
+  modelled on the user's DST project. Sections per plan segment (SoC 0 setup, SoC A to K, parking lot); one task per
+  scene named `SoC-S<n>` holding its plan row; the Status1 field; comments tagging the user for questions and
+  approvals. Keep task status and comments current as clips are delivered.
+- **Pilot 3 v2 (2026-11-19):** `motion/tma-soc/pilot3-v2.html` and `build_pilot3.sh`. One master timeline, four
+  scene clips (S38 to S41). Lessons for every scene clip: render each clip at least as long as its scene (round up to
+  the next frame, or Descript leaves a gap); preview with `?preview`, which overlays a stand-in caption gradient.
+- **Stock and AI:** the Pexels credential form was declined on 2026-11-19, so a key would go in the cloud
+  environment's settings (network secret for api.pexels.com). AI shots use OpenArt (Plus plan); Kling 3.0
+  image-to-video at 1080p, 7 s, no sound is 245 credits. Start each AI shot from a still, and use the user's kitchen
+  series as the reference for kitchen callbacks.
 - **Publishes made for this (private, visible only to the user):** WORKING audio (word timing) and RAW video at 720p
   (to see Rick's slides), 2026-11-19.
 
