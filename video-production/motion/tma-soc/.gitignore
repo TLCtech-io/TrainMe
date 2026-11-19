@@ -1,2 +1,3 @@
-# Renders stay out of git; rebuild with the build scripts
+# Renders and source shots stay out of git
 out/
+src/
