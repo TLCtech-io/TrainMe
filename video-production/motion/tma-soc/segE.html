@@ -1,0 +1,125 @@
+<!doctype html>
+<!-- IMP - Span of Control, segment E (scenes 42 to 47): rules of thumb, and the tips begin. ?scene=N picks the scene.
+     Full graphic clips: 42, 43, 44, 47. Scene 45 is a transparent overlay on Descript stock (a leader listening).
+     Scene 46 is the user's own topic card 3, copied in Descript. Times are seconds from each scene's start (whisper words). -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="../shared/tma.css" />
+<link rel="stylesheet" href="lib/page.css" />
+<style>
+  .tile { position: absolute; width: 360px; height: 120px; border-radius: 22px; background: #fff; box-shadow: var(--shadow);
+          display: flex; align-items: center; gap: 18px; padding: 0 24px; border: 4px solid transparent; }
+  .tile b { font: 900 60px/1 Roboto; color: var(--blue); width: 44px; text-align: center; flex: none; }
+  .tile span { font: 700 32px/1.1 Roboto; }
+  .warn { position: absolute; left: 360px; width: 1200px; height: 140px; border-radius: 28px; background: #fff; box-shadow: var(--shadow);
+          display: flex; align-items: center; gap: 34px; padding: 0 40px; font: 900 56px/1 Roboto; color: var(--ink); }
+  .warn svg { flex: none; }
+  #stamp { position: absolute; left: 960px; top: 430px; transform: translate(-50%, -50%) rotate(-8deg); padding: 20px 56px;
+           border: 14px solid var(--red); border-radius: 26px; color: var(--red); font: 900 190px/1 Roboto; letter-spacing: 0.02em;
+           background: rgba(255,255,255,0.92); white-space: nowrap; box-shadow: 0 30px 70px rgba(230,35,36,0.25); }
+  .thing { position: absolute; top: 300px; width: 300px; height: 330px; border-radius: 28px; background: #fff; box-shadow: var(--shadow);
+           display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; }
+  .thing .t { font: 900 36px/1.1 Roboto; color: var(--ink); text-align: center; }
+  .badge { position: absolute; right: -22px; top: -22px; min-width: 84px; height: 84px; padding: 0 16px; border-radius: 42px; background: var(--red);
+           color: #fff; font: 900 44px/84px Roboto; text-align: center; box-shadow: 0 10px 24px rgba(230,35,36,0.35); }
+  .soft { position: absolute; left: 120px; font: 900 72px/1 Roboto; color: #fff; text-shadow: 0 6px 26px rgba(0,0,0,0.55); white-space: nowrap; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="pv"></div>
+<script src="../shared/gsap.min.js"></script>
+<script src="../shared/motion.js"></script>
+<script src="lib/kit.js"></script>
+<script>
+window.SCENE_LEN = { 42: 4.29, 43: 6.90, 44: 12.51, 45: 8.81, 47: 2.97 };
+const FACTORS = ["Leader's experience", "Team's experience", "Friction", "Distractions", "Communications", "Task variety", "Distance", "Safety", "Complexity"];
+const ICON = {
+  warn: `<svg width="92" height="84" viewBox="0 0 92 84"><path d="M46 4 L88 80 H4 Z" fill="#ffcb73" stroke="#f2a93b" stroke-width="6" stroke-linejoin="round"/><rect x="42" y="28" width="8" height="28" rx="4" fill="#1d2633"/><circle cx="46" cy="66" r="5" fill="#1d2633"/></svg>`,
+  people: `<svg width="150" height="120" viewBox="0 0 150 120"><g fill="#2c7ef4"><circle cx="40" cy="34" r="16"/><path d="M14 98 Q14 60 40 60 Q66 60 66 98 Z"/><circle cx="110" cy="34" r="16"/><path d="M84 98 Q84 60 110 60 Q136 60 136 98 Z"/></g><g fill="#1d2633"><circle cx="75" cy="44" r="19"/><path d="M44 116 Q44 72 75 72 Q106 72 106 116 Z"/></g></svg>`,
+  todo: `<svg width="130" height="140" viewBox="0 0 130 140"><rect x="8" y="8" width="114" height="124" rx="16" fill="#e8f1ff" stroke="#2c7ef4" stroke-width="6"/><g stroke="#2c7ef4" stroke-width="8" stroke-linecap="round" fill="none"><path d="M28 42 l8 8 l14 -16"/><path d="M28 74 l8 8 l14 -16"/></g><g stroke="#9aa6b2" stroke-width="8" stroke-linecap="round"><path d="M64 44 H102"/><path d="M64 76 H102"/><path d="M28 106 H102"/></g></svg>`,
+  cal: `<svg width="140" height="140" viewBox="0 0 140 140"><rect x="8" y="20" width="124" height="112" rx="16" fill="#fff" stroke="#2c7ef4" stroke-width="6"/><rect x="8" y="20" width="124" height="32" rx="14" fill="#2c7ef4"/><g fill="#2c7ef4"><rect x="30" y="66" width="20" height="18" rx="4"/><rect x="60" y="66" width="20" height="18" rx="4"/><rect x="90" y="66" width="20" height="18" rx="4"/><rect x="30" y="96" width="20" height="18" rx="4"/><rect x="60" y="96" width="20" height="18" rx="4" fill="#e62324"/></g><rect x="34" y="6" width="10" height="28" rx="5" fill="#1d2633"/><rect x="96" y="6" width="10" height="28" rx="5" fill="#1d2633"/></svg>`,
+  chat: `<svg width="150" height="130" viewBox="0 0 150 130"><path d="M10 14 h90 a12 12 0 0 1 12 12 v44 a12 12 0 0 1 -12 12 h-54 l-22 20 v-20 h-14 a12 12 0 0 1 -12 -12 v-44 a12 12 0 0 1 12 -12z" fill="#2c7ef4"/><path d="M60 52 h68 a12 12 0 0 1 12 12 v36 a12 12 0 0 1 -12 12 h-8 v18 l-20 -18 h-40 a12 12 0 0 1 -12 -12 v-36 a12 12 0 0 1 12 -12z" fill="#ffcb73" stroke="#fff" stroke-width="5"/></svg>`,
+  board: `<svg width="150" height="130" viewBox="0 0 150 130"><rect x="6" y="6" width="138" height="118" rx="14" fill="#fff" stroke="#2c7ef4" stroke-width="6"/><g fill="#2c7ef4"><rect x="20" y="22" width="32" height="20" rx="4"/><rect x="20" y="50" width="32" height="20" rx="4"/><rect x="20" y="78" width="32" height="20" rx="4"/></g><g fill="#ffcb73"><rect x="60" y="22" width="32" height="20" rx="4"/><rect x="60" y="50" width="32" height="20" rx="4"/></g><g fill="#22a35a"><rect x="100" y="22" width="32" height="20" rx="4"/></g></svg>`,
+};
+
+KIT.start((K) => {
+  const { tl, el } = K;
+
+  if (K.SCENE === 42) {
+    // "understand all (1.26) these things (2.26) must be taken into account (3.00 / 3.50)"
+    const tiles = FACTORS.map((f, i) => el("tile", { left: `${380 + (i % 3) * 400}px`, top: `${190 + Math.floor(i / 3) * 140}px` }, `<b>${i + 1}</b><span>${f}</span>`));
+    tiles.forEach((t, i) => { K.hide(t); tl.fromTo(t, { opacity: 0, scale: 0.7, y: 30 }, { opacity: 1, scale: 1, y: 0, duration: 0.3, ease: "back.out(1.8)", immediateRender: false }, 0.1 + i * 0.06); });
+    tl.to(tiles, { borderColor: "#2c7ef4", backgroundColor: "#eaf2ff", duration: 0.15 }, 1.22);
+    tl.to(tiles, { scale: 1.06, duration: 0.15, yoyo: true, repeat: 1 }, 1.22);
+    tiles.forEach((t, i) => tl.to(t, { left: "780px", top: "330px", scale: 0.2, opacity: 0, duration: 0.45, ease: "power3.in" }, 2.75 + (i % 3) * 0.03));
+    const ok = el("", { position: "absolute", left: "860px", top: "250px", width: "200px", height: "200px", borderRadius: "50%", background: "var(--blue)",
+      boxShadow: "0 20px 50px rgba(44,126,244,0.4)", display: "flex", alignItems: "center", justifyContent: "center" },
+      `<svg width="110" height="90" viewBox="0 0 110 90"><path d="M10 48 L40 76 L100 12" fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/></svg>`);
+    K.pop(ok, 3.1, 0.3, "back.out(2.4)");
+    const txt = el("", { position: "absolute", left: 0, right: 0, top: "500px", textAlign: "center", font: "900 76px/1 Roboto", color: "var(--ink)" },
+      `Take <span style="color:var(--blue)">all nine</span> into account`);
+    K.rise(txt, 3.3, 30);
+  }
+
+  if (K.SCENE === 43) {
+    // "Good rule of thumb (0.63), if you think you're starting to forget things (2.19 / 2.83), if you're uncomfortable (3.57)
+    //  with the situation (4.57), fix it (5.99)"
+    K.header("Span of control", "A good rule of thumb", 0.05, 0.75);
+    const w1 = el("warn", { top: "300px" }, `${ICON.warn}<span>Starting to forget things?</span>`);
+    const w2 = el("warn", { top: "470px" }, `${ICON.warn}<span>Uncomfortable with the situation?</span>`);
+    K.slide(w1, 2.15, 160); K.slide(w2, 3.5, 160);
+    K.dim([w1, w2], 5.85, 0.25, 0.15);
+    const st = el("", {}, ""); st.id = "stamp"; st.textContent = "FIX IT!";
+    K.hide(st);
+    tl.fromTo(st, { opacity: 0, scale: 2.6 }, { opacity: 1, scale: 1, duration: 0.2, ease: "power4.in", immediateRender: false }, 5.9);
+    tl.fromTo(K.root, { x: 0, y: 0 }, { x: 16, y: -10, duration: 0.045, yoyo: true, repeat: 7, ease: "none", immediateRender: false }, 6.1);
+  }
+
+  if (K.SCENE === 44) {
+    // "not just about managing people (2.29). Span of control (3.17) applies to things (4.67) on your to-do list (5.27),
+    //  the meetings on your calendar (6.27 / 6.97), communications (8.07) of other projects (9.01) ... responsibility (10.59)"
+    const ppl = el("thing", { left: "810px", top: "250px" }, `${ICON.people}<div class="t">People</div>`);
+    K.pop(ppl, 0.25, 0.6);
+    const nj = K.chip("Not just people", 700, 640, "var(--ink)", "#fff", 40); nj.style.left = "0"; nj.style.right = "0"; nj.style.margin = "0 auto"; nj.style.width = "460px"; nj.style.textAlign = "center";
+    K.rise(nj, 1.6, 20); K.out(nj, 3.0, 0.2);
+    tl.to(ppl, { left: "130px", top: "300px", duration: 0.5, ease: "power3.inOut" }, 2.9);
+    K.dim(ppl, 4.6, 0.45);
+    K.header("Span of control", "applies to things, too", 3.15, 0.6, { tSize: 60 });
+    const THINGS = [["todo", "To-do list", 5.25, 14], ["cal", "Meetings", 6.25, 9], ["chat", "Communi&shy;cations", 8.05, 48], ["board", "Projects", 9.0, 6]];
+    THINGS.forEach(([ic, lab, t, n], i) => {
+      const c = el("thing", { left: `${470 + i * 340}px` }, `${ICON[ic]}<div class="t">${lab}</div><div class="badge">0</div>`);
+      K.pop(c, t, 0.5);
+      const b = c.querySelector(".badge"); const o = { v: 0 };
+      tl.to(o, { v: n, duration: Math.min(1.6, 10.55 - t), ease: "power1.in", onUpdate: () => { b.textContent = Math.round(o.v); } }, t + 0.2);
+      if (ic === "chat") tl.call(() => { b.textContent = "99+"; }, null, 10.6);
+      if (ic === "chat") tl.to(o, { v: 99, duration: 0.01 }, 10.59);
+    });
+    tl.to(K.root.querySelectorAll(".badge"), { scale: 1.35, duration: 0.16, yoyo: true, repeat: 3, ease: "sine.inOut" }, 10.6);
+    tl.fromTo(K.root.querySelectorAll(".thing"), { rotation: 0 }, { rotation: 2, duration: 0.08, yoyo: true, repeat: 5, ease: "none", immediateRender: false }, 10.65);
+  }
+
+  if (K.SCENE === 45) {
+    // overlay on a leader listening: "understand yours (3.74) and those of the people you work with (5.80 / 6.48) and respect them (7.34)"
+    const a = el("soft", { top: "110px" }, "Know your limits."), b = el("soft", { top: "200px" }, "Know theirs."),
+          c = el("soft", { top: "290px", color: "var(--amber)" }, "Respect them.");
+    K.rise(a, 3.6, 24, 0.5); K.rise(b, 5.65, 24, 0.5); K.rise(c, 7.25, 24, 0.5);
+  }
+
+  if (K.SCENE === 47) {
+    // "The first (0.19) is create (0.81) middle management (1.71 / 2.13)"
+    const k = el("kicker", { left: "0", right: "0", top: "190px", justifyContent: "center", fontSize: "30px" }, `<span class="bar"></span>Tips to fix and extend`);
+    K.fadeIn(k, 0.05);
+    const chip = K.chip("TIP 1", 0, 270, "var(--amber)", "var(--ink)", 64); Object.assign(chip.style, { left: "50%", marginLeft: "-150px", width: "300px", textAlign: "center" });
+    K.pop(chip, 0.12, 1.8, "back.out(1.6)");
+    const t = el("", { position: "absolute", left: 0, right: 0, top: "430px", textAlign: "center", font: "900 112px/1.05 Roboto", color: "var(--ink)" },
+      `<span id="w1">Create</span> <span id="w2" style="color:var(--blue)">middle management</span>`);
+    K.pop(t.querySelector("#w1"), 0.75, 1.5, "power3.out");
+    t.querySelector("#w1").style.display = t.querySelector("#w2").style.display = "inline-block";
+    K.pop(t.querySelector("#w2"), 1.65, 1.5, "power3.out");
+  }
+}, { full: [42, 43, 44, 47] });
+</script>
+</body>
+</html>

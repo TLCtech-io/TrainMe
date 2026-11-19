@@ -1,0 +1,167 @@
+<!doctype html>
+<!-- IMP - Span of Control, segment G (scenes 58 to 65): task forces and strike teams. ?scene=N picks the scene.
+     Full graphic clips: 58, 59, 62, 63, and the convoy section of 65 (4.0 to 9.9 s). Transparent overlays on Descript stock:
+     60 (the trades), 61 (the foreman), 64 (the utility convoy), 65 (linemen and the supervisor).
+     Times are seconds from each scene's start (whisper words). -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="../shared/tma.css" />
+<link rel="stylesheet" href="lib/page.css" />
+<style>
+  .vs { position: absolute; top: 290px; width: 640px; height: 360px; border-radius: 32px; background: #fff; box-shadow: var(--shadow);
+        border-top: 16px solid; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; }
+  .vs h2 { font: 900 72px/1 Roboto; letter-spacing: 0.02em; }
+  .vs .row { display: flex; gap: 22px; align-items: flex-end; }
+  .vsb { position: absolute; left: 900px; top: 400px; width: 120px; height: 120px; border-radius: 50%; background: var(--ink); color: #fff;
+         font: 900 52px/120px Roboto; text-align: center; box-shadow: var(--shadow); }
+  .tool { position: absolute; width: 170px; height: 170px; border-radius: 34px; background: #fff; box-shadow: var(--shadow);
+          display: flex; align-items: center; justify-content: center; }
+  .ochip { position: absolute; height: 76px; padding: 0 30px; border-radius: 38px; font: 900 40px/76px Roboto; color: #fff; white-space: nowrap;
+           box-shadow: 0 12px 30px rgba(0,0,0,0.35); }
+  .flow { position: absolute; left: 120px; top: 230px; display: flex; gap: 14px; align-items: center; }
+  .flow b { height: 70px; padding: 0 26px; border-radius: 16px; background: rgba(255,255,255,0.95); color: var(--ink); font: 900 34px/70px Roboto; box-shadow: 0 10px 26px rgba(0,0,0,0.3); }
+  .flow i { font: 900 40px/1 Roboto; color: #fff; font-style: normal; text-shadow: 0 4px 14px rgba(0,0,0,0.5); }
+  .road { position: absolute; left: 0; right: 0; top: 578px; height: 64px; background: #5b6470; border-top: 6px solid #9aa6b2; }
+  .road::after { content: ""; position: absolute; left: 0; right: 0; top: 26px; height: 7px;
+                 background: repeating-linear-gradient(90deg, #ffcb73 0 70px, transparent 70px 130px); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="pv"></div>
+<script src="../shared/gsap.min.js"></script>
+<script src="../shared/motion.js"></script>
+<script src="lib/kit.js"></script>
+<script>
+window.SCENE_LEN = { 58: 12.36, 59: 9.24, 60: 7.23, 61: 8.23, 62: 7.99, 63: 3.27, 64: 15.69, 65: 20.80 };
+const TRUCK = (s = 1, c = "#f2a93b") => `<svg width="${190 * s}" height="${120 * s}" viewBox="0 0 190 120"><rect x="6" y="50" width="120" height="44" rx="6" fill="${c}"/>
+  <path d="M126 58 h34 l22 18 v18 h-56 z" fill="${c}"/><rect x="136" y="62" width="22" height="14" rx="3" fill="#e8f1ff"/>
+  <path d="M30 50 L80 14" stroke="#1d2633" stroke-width="8" stroke-linecap="round"/><rect x="72" y="2" width="26" height="20" rx="4" fill="#1d2633"/>
+  <circle cx="36" cy="98" r="14" fill="#1d2633"/><circle cx="36" cy="98" r="6" fill="#9aa6b2"/><circle cx="154" cy="98" r="14" fill="#1d2633"/><circle cx="154" cy="98" r="6" fill="#9aa6b2"/></svg>`;
+const CAR = (s = 1) => `<svg width="${150 * s}" height="${90 * s}" viewBox="0 0 150 90"><rect x="56" y="10" width="30" height="8" rx="3" fill="#e62324"/><rect x="88" y="10" width="20" height="8" rx="3" fill="#2c7ef4"/>
+  <path d="M10 46 l18 -26 h70 l24 26 h18 v22 H10z" fill="#ffffff" stroke="#1d2633" stroke-width="5" stroke-linejoin="round"/><path d="M36 26 h28 v18 h-40z M70 26 h24 l16 18 h-40z" fill="#e8f1ff"/>
+  <circle cx="38" cy="70" r="13" fill="#1d2633"/><circle cx="116" cy="70" r="13" fill="#1d2633"/></svg>`;
+const ICON = {
+  hammer: `<svg width="110" height="110" viewBox="0 0 110 110"><rect x="48" y="36" width="14" height="66" rx="6" fill="#8a5a2b"/><path d="M20 20 h62 a8 8 0 0 1 8 8 v12 h-70 z" fill="#1d2633"/></svg>`,
+  wrench: `<svg width="110" height="110" viewBox="0 0 110 110"><path d="M76 10 a26 26 0 0 0 -24 34 L12 84 a10 10 0 0 0 14 14 l40 -40 a26 26 0 0 0 34 -24 l-14 14 l-14 -4 l-4 -14 z" fill="#2c7ef4"/></svg>`,
+  plug: `<svg width="110" height="110" viewBox="0 0 110 110"><rect x="36" y="10" width="10" height="28" rx="4" fill="#1d2633"/><rect x="64" y="10" width="10" height="28" rx="4" fill="#1d2633"/><path d="M24 36 h62 v18 a31 31 0 0 1 -62 0z" fill="#f2a93b"/><rect x="48" y="80" width="14" height="24" rx="5" fill="#1d2633"/></svg>`,
+  person: `<svg width="60" height="80" viewBox="0 0 60 80"><circle cx="30" cy="18" r="15" fill="#2c7ef4"/><path d="M4 78 Q4 40 30 40 Q56 40 56 78z" fill="#2c7ef4"/></svg>`,
+};
+
+KIT.start((K) => {
+  const { tl, el } = K;
+  const badge = (txt, x, y, t, color = "var(--red)") => {
+    const b = K.chip(`★ ${txt}`, x, y, color, "#fff", 38);
+    K.hide(b); tl.fromTo(b, { opacity: 0, scale: 2.2, y: -40 }, { opacity: 1, scale: 1, y: 0, duration: 0.3, ease: "back.out(2.2)", immediateRender: false }, t);
+    return b;
+  };
+
+  if (K.SCENE === 58) {
+    // "units that are actually operational (1.92), we can organize them into task forces (5.52 / 5.98) and strike teams (7.12 / 7.40).
+    //  two terms (8.56) that I want to explain (9.76) to understand how they work (11.28)"
+    K.header("Operations", "Operational units", 0.5, 1.2);
+    const a = el("vs", { left: "200px", borderColor: "var(--blue)" }, `<h2 style="color:var(--blue)">TASK FORCE</h2><div class="row">${TRUCK(0.7, "#2c7ef4")}${ICON.person}${ICON.wrench.replace(/110/g, "80")}</div><div style="font:700 34px/1 Roboto;color:var(--slate)">Different resources</div>`);
+    const b = el("vs", { left: "1080px", borderColor: "var(--amber-deep)" }, `<h2 style="color:var(--amber-deep)">STRIKE TEAM</h2><div class="row">${TRUCK(0.6)}${TRUCK(0.6)}${TRUCK(0.6)}</div><div style="font:700 34px/1 Roboto;color:var(--slate)">Same kind and type</div>`);
+    K.pop(a, 5.45, 0.6); K.pop(b, 7.05, 0.6);
+    const v = el("vsb", {}, "VS"); K.pop(v, 7.6, 0.3, "back.out(3)");
+    tl.to([a, b], { y: -10, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 9.7);
+  }
+
+  if (K.SCENE === 59) {
+    // "A task force (0.38) is when you combine (1.24) different resources (1.94 / 2.86) to get a specific job done (4.48 / 5.48),
+    //  and obviously it needs its own leader (8.24 / 8.56)"
+    K.header("Task force", "Different resources, one job", 0.1, 1.0);
+    const T = [["hammer", -300, "Carpenter"], ["wrench", 0, "Plumber"], ["plug", 300, "Electrician"]];
+    const tools = T.map(([ic, dx, l], i) => {
+      const t = el("tool", { left: `${875 + dx}px`, top: "330px" }, ICON[ic]);
+      const lab = el("", { position: "absolute", left: `${860 + dx}px`, top: "512px", width: "200px", textAlign: "center", font: "700 30px/1 Roboto", color: "var(--slate)" }, l);
+      K.hide([t, lab]);
+      tl.fromTo(t, { opacity: 0, x: (i - 1) * 500, rotation: (i - 1) * 40 }, { opacity: 1, x: 0, rotation: 0, duration: 0.45, ease: "back.out(1.5)", immediateRender: false }, 1.9 + i * 0.3);
+      tl.fromTo(lab, { opacity: 0 }, { opacity: 1, duration: 0.3, immediateRender: false }, 2.2 + i * 0.3);
+      return [t, lab];
+    });
+    const frame = el("", { position: "absolute", left: "500px", top: "290px", width: "920px", height: "290px", borderRadius: "36px", border: "6px solid var(--blue)", background: "rgba(44,126,244,0.06)" });
+    K.root.insertBefore(frame, K.root.firstChild); K.pop(frame, 3.5, 1.15, "power3.out");
+    const tf = K.chip("TASK FORCE", 0, 0, "var(--blue)", "#fff", 34); Object.assign(tf.style, { left: "830px", top: "254px" }); K.pop(tf, 3.6, 0.6);
+    const job = K.chip("One specific job", 0, 0, "var(--ink)", "#fff", 34); Object.assign(job.style, { left: "0", right: "0", top: "610px", margin: "0 auto", width: "fit-content" });
+    K.rise(job, 4.45, 20);
+    badge("Task force leader", 1300, 230, 8.2);
+  }
+
+  if (K.SCENE === 60) {
+    // overlay on the trades: "carpenters (1.04), a plumber (1.88), or an electrician (2.42) ... build a house (4.86). All of those skills (5.94) are needed (6.44)"
+    const c = [["Carpenters", 1.0, "var(--blue)"], ["Plumber", 1.85, "var(--amber)"], ["Electrician", 2.4, "#22a35a"]].map(([l, t, bg], i) => {
+      const n = el("ochip", { left: "120px", top: `${110 + i * 96}px`, background: bg, color: bg === "var(--amber)" ? "var(--ink)" : "#fff" }, l); K.slide(n, t, -80); return n;
+    });
+    tl.to(c, { left: "120px", top: "110px", opacity: 0, duration: 0.35, ease: "power3.in" }, 5.3);
+    const one = el("ochip", { left: "120px", top: "110px", background: "var(--ink)" }, "All needed: one task force"); K.pop(one, 5.6, 0.6);
+  }
+
+  if (K.SCENE === 61) {
+    // overlay on a foreman: "know enough about each skill (2.49 / 2.75) to manage it, and about the flow (5.05) of house building (5.87) to get the job done (7.41)"
+    const a = el("ochip", { left: "120px", top: "110px", background: "var(--red)" }, "★ Task force leader"); K.slide(a, 0.3, -80);
+    const k = el("ochip", { left: "120px", top: "210px", background: "rgba(29,38,51,0.85)", display: "none" }, "Knows each skill");
+    const f = el("flow", { top: "210px" }, `<b>Frame</b><i>›</i><b>Plumb</b><i>›</i><b>Wire</b><i>›</i><b>Finish</b>`);
+    const kk = el("ochip", { left: "120px", top: "210px", background: "var(--blue)" }, "Knows each skill"); K.slide(kk, 2.45, -80); K.out(kk, 4.8, 0.2);
+    [...f.children].forEach((n, i) => K.pop(n, 5.0 + i * 0.12, 0.5));
+  }
+
+  if (K.SCENE === 62) {
+    // "Contrast that with a strike team (1.74 / 1.96). A strike team is when you have multiple resources (3.86 / 4.26), but they're the same kind (5.56 / 6.10) and type (7.24)"
+    K.header("Contrast", "Strike team", 1.65, 0.8);
+    const xs = [330, 640, 950, 1260, 1570];
+    xs.forEach((x, i) => {
+      const t = el("", { position: "absolute", left: `${x - 125}px`, top: "350px" }, TRUCK(1.3));
+      K.hide(t); tl.fromTo(t, { opacity: 0, x: -400 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out", immediateRender: false }, 3.8 + i * 0.1);
+    });
+    xs.slice(0, 4).forEach((x, i) => { const e = el("", { position: "absolute", left: `${x + 120}px`, top: "390px", font: "900 64px/1 Roboto", color: "var(--slate)" }, "="); K.pop(e, 5.5 + i * 0.06, 0.4); });
+    const k1 = K.chip("Same kind", 560, 560, "var(--amber)", "var(--ink)", 36); K.pop(k1, 5.55, 0.5);
+    const k2 = K.chip("Same type", 1000, 560, "var(--amber)", "var(--ink)", 36); K.pop(k2, 7.2, 0.5);
+  }
+
+  if (K.SCENE === 63) {
+    // "designate (0.19) a strike team leader (0.99 / 1.65) to do that (2.63)"
+    const k = el("kicker", { fontSize: "26px" }, `<span class="bar"></span>Strike team`); K.fadeIn(k, 0, 0.01);
+    const xs = [520, 830, 1140, 1450];
+    xs.forEach((x) => el("", { position: "absolute", left: `${x - 125}px`, top: "380px" }, TRUCK(1.3)));
+    const car = el("", { position: "absolute", left: "70px", top: "420px" }, CAR(1.5));
+    K.hide(car); tl.fromTo(car, { opacity: 0, x: -300 }, { opacity: 1, x: 0, duration: 0.4, ease: "power3.out", immediateRender: false }, 0.6);
+    const ring = el("", { position: "absolute", left: "50px", top: "360px", width: "270px", height: "220px", borderRadius: "50%", border: "8px solid var(--red)" });
+    K.pop(ring, 1.0, 1.6, "back.out(2)");
+    badge("Strike team leader", 120, 220, 0.95);
+  }
+
+  if (K.SCENE === 64) {
+    // overlay on utility trucks: "Long rows (7.06) of electric utility line trucks (7.98 / 9.40) ... to a neighboring state (11.34 / 11.66)"
+    const a = el("ochip", { left: "120px", top: "110px", background: "var(--amber)", color: "var(--ink)" }, "Strike team"); K.slide(a, 7.0, -80);
+    const b = el("ochip", { left: "120px", top: "210px", background: "rgba(29,38,51,0.85)" }, "Same kind · same type"); K.slide(b, 8.5, -80);
+    K.out([a, b], 13.6, 0.3);
+  }
+
+  if (K.SCENE === 65) {
+    // 0 to 4.0 stock (the truck line); 4.0 to 9.9 the convoy graphic (a full clip from this page); 9.9 to 20.8 stock (linemen, then the supervisor)
+    // "a supervisor's car (4.93 / 5.81) accompanying them (6.29 / 7.13) ... supervise the line work (11.35 / 12.69) ... distributed (16.07)
+    //  and organized (16.87) and coordinated (17.69) to get the work done (19.57)"
+    if (K.q.get("part") === "convoy") {
+      document.documentElement.classList.add("full");
+      const road = el("road", {}); K.fadeIn(road, 0, 0.01);
+      const grp = el("", { position: "absolute", left: 0, top: 0, width: "3000px", height: "1080px" });
+      [0, 1, 2, 3, 4, 5].forEach((i) => el("", { position: "absolute", left: `${420 + i * 300}px`, top: "430px" }, TRUCK(1.35), grp));
+      el("", { position: "absolute", left: "180px", top: "470px" }, CAR(1.4), grp);
+      tl.fromTo(grp, { x: -900 }, { x: 0, duration: 1.4, ease: "power2.out", immediateRender: false }, 4.0);
+      tl.to(grp, { x: 60, duration: 4.4, ease: "none" }, 5.4);
+      const ring = el("", { position: "absolute", left: "160px", top: "400px", width: "260px", height: "220px", borderRadius: "50%", border: "8px solid var(--red)" });
+      K.pop(ring, 4.95, 1.7, "back.out(2)"); tl.to(ring, { x: 60, duration: 4.4, ease: "none" }, 5.4);
+      const b = badge("Supervisor = strike team leader", 120, 240, 5.0);
+      const k = el("kicker", { fontSize: "26px" }, `<span class="bar"></span>Strike team`); K.fadeIn(k, 4.0, 0.01);
+    } else {
+      const S = [["Distribute", 16.0, "var(--blue)"], ["Organize", 16.8, "var(--amber)"], ["Coordinate", 17.6, "#22a35a"]];
+      S.forEach(([l, t, bg], i) => { const n = el("ochip", { left: `${120 + i * 330}px`, top: "110px", background: bg, color: bg === "var(--amber)" ? "var(--ink)" : "#fff" }, l); K.pop(n, t, 0.5); });
+      const s = el("ochip", { left: "120px", top: "110px", background: "rgba(29,38,51,0.85)" }, "Supervises the line work"); K.slide(s, 11.3, -80); K.out(s, 15.6, 0.2);
+    }
+  }
+}, { full: [58, 59, 62, 63] });
+</script>
+</body>
+</html>

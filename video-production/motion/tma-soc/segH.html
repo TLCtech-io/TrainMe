@@ -1,0 +1,236 @@
+<!doctype html>
+<!-- IMP - Span of Control, segment H (scenes 66 to 76): units and branches. ?scene=N picks the scene.
+     Full graphic clips: 66, 67, 68, 69, 71, 72, 73, 75, 76. Transparent overlays on Descript stock: 70 (a unit at work, its leader),
+     74 (an incident base camp). Charts carry over between scenes (67 > 68, 72 > 73 > 75), so each scene starts where the last ended.
+     Times are seconds from each scene's start (whisper words). -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="../shared/tma.css" />
+<link rel="stylesheet" href="lib/page.css" />
+<style>
+  .ochip { position: absolute; height: 76px; padding: 0 30px; border-radius: 38px; font: 900 40px/76px Roboto; color: #fff; white-space: nowrap;
+           box-shadow: 0 12px 30px rgba(0,0,0,0.35); }
+  .panel { position: absolute; border-radius: 26px; background: #fff; box-shadow: var(--shadow); }
+  .row { position: absolute; left: 30px; right: 30px; height: 50px; display: flex; align-items: center; gap: 16px; font: 700 28px/1 Roboto; color: var(--ink); }
+  .row i { width: 22px; height: 22px; border-radius: 50%; flex: none; }
+  .row span:last-child { margin-left: auto; color: var(--slate); font-weight: 500; }
+  .col { position: absolute; top: 230px; width: 520px; }
+  .pill { height: 58px; margin-top: 14px; border-radius: 14px; background: #fff; border: 4px solid var(--faint); font: 700 28px/50px Roboto; text-align: center; color: var(--ink); }
+  .ttl { position: absolute; left: 0; right: 0; text-align: center; font: 900 120px/1 Roboto; letter-spacing: 0.02em; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="pv"></div>
+<script src="../shared/gsap.min.js"></script>
+<script src="../shared/motion.js"></script>
+<script src="lib/kit.js"></script>
+<script>
+window.SCENE_LEN = { 66: 6.56, 67: 15.96, 68: 7.14, 69: 5.85, 70: 16.96, 71: 3.99, 72: 7.53, 73: 20.10, 74: 8.22, 75: 7.16, 76: 12.95 };
+const BADGE = { doc: "📄", box: "📦", cash: "$" };
+const PAPER = `<svg width="150" height="160" viewBox="0 0 150 160"><g stroke="#9aa6b2" stroke-width="4" fill="#fff"><rect x="30" y="30" width="96" height="120" rx="8"/><rect x="20" y="18" width="96" height="120" rx="8"/><rect x="10" y="6" width="96" height="120" rx="8"/></g><g stroke="#9aa6b2" stroke-width="6" stroke-linecap="round"><path d="M28 36 H88"/><path d="M28 56 H88"/><path d="M28 76 H72"/></g></svg>`;
+const TABLET = `<svg width="170" height="150" viewBox="0 0 170 150"><rect x="10" y="10" width="150" height="110" rx="12" fill="#1d2633"/><rect x="20" y="20" width="130" height="90" rx="4" fill="#e8f1ff"/><g fill="#2c7ef4"><rect x="32" y="32" width="40" height="30" rx="4"/><rect x="80" y="32" width="58" height="8" rx="4"/><rect x="80" y="48" width="44" height="8" rx="4"/><rect x="32" y="72" width="106" height="8" rx="4"/><rect x="32" y="88" width="80" height="8" rx="4"/></g><rect x="56" y="124" width="58" height="12" rx="6" fill="#1d2633"/></svg>`;
+
+KIT.start((K) => {
+  const { tl, el } = K;
+  const now = (n) => { gsap.set(n, { opacity: 1 }); };
+
+  // ---- planning chart (67, 68)
+  const UNITS = [["res", 240, "Resources"], ["sit", 600, "Situation"], ["doc", 960, "Documentation"], ["demob", 1320, "Demobilization"], ["tech", 1680, "Technical<br>specialists"]];
+  const planning = (animate) => {
+    K.box("chief", 960, 190, "Planning Section Chief", "ic", 440, 80, 30);
+    UNITS.forEach(([id, x, l]) => K.box(id, x, 350, l, id === "tech" ? "ghost" : "pos", 300, 80, 28));
+    if (animate) {
+      K.pop(K.boxes.chief, 1.15, 0.7);
+      UNITS.forEach(([id], i) => { K.conn(`c${id}`, "chief", id, 1.45 + i * 0.07); K.pop(K.boxes[id], 1.55 + i * 0.08, 0.6); });
+    } else UNITS.forEach(([id]) => { const p = K.conn(`c${id}`, "chief", id, null); p.style.strokeDashoffset = 0; });
+  };
+  // ---- logistics chart (72, 73, 75)
+  const LU = [["com", "Communications"], ["med", "Medical"], ["food", "Food"], ["sup", "Supply"], ["fac", "Facilities"], ["gs", "Ground support"]];
+  const LX6 = [210, 510, 810, 1110, 1410, 1710], LXB = [230, 500, 770, 1150, 1420, 1690];
+  const logistics = (stage) => {
+    // stage 0: chief only; 1: six units under the chief; 2: two branches
+    K.box("lchief", 960, 180, "Logistics Section Chief", "ic", 440, 80, 30);
+    K.boxes.lchief.style.background = "#14407d"; K.boxes.lchief.style.borderColor = "#14407d";
+    LU.forEach(([id, l], i) => K.box(id, stage === 2 ? LXB[i] : LX6[i], stage === 2 ? 520 : 400, l, "pos", 260, 76, 27));
+    K.box("svc", 500, 350, "Service Branch", "sup", 330, 80, 30); K.box("spt", 1420, 350, "Support Branch", "sup", 330, 80, 30);
+    if (stage < 2) gsap.set([K.boxes.svc, K.boxes.spt], { opacity: 0 });
+  };
+
+  if (K.SCENE === 66) {
+    // "In other sections (0.63 / 0.93), we call them units (2.45), and units are simply collections of people (3.77 / 4.49) doing similar work (5.47 / 5.95)"
+    const S = [["Planning", 360, "📋"], ["Logistics", 960, "📦"], ["Finance/Admin", 1560, "💲"]];
+    const ttl = el("ttl", { top: "86px", color: "var(--blue)" }, "UNITS"); K.pop(ttl, 2.35, 1.5, "power3.out");
+    S.forEach(([l, x], i) => {
+      const b = K.box(`s${i}`, x, 300, l, "sec", 340, 80, 32);
+      K.hide(b); tl.fromTo(b, { opacity: 0, y: 120, scale: 0.8 }, { opacity: 1, y: 0, scale: 1, duration: 0.35, ease: "back.out(1.8)", immediateRender: false }, 0.6 + i * 0.12);
+      const color = ["#2c7ef4", "#f2a93b", "#22a35a"][i];
+      for (let j = 0; j < 4; j++) { const p = K.person(x - 150 + j * 100, 470, color, 0.9); K.pop(p, 3.75 + i * 0.15 + j * 0.05, 0.3); }
+      const tag = el("", { position: "absolute", left: `${x - 170}px`, top: "540px", width: "340px", height: "10px", borderRadius: "5px", background: color });
+      K.fadeIn(tag, 4.4 + i * 0.1, 0.2);
+    });
+    const sim = K.chip("People doing similar work", 0, 0, "var(--ink)", "#fff", 36); Object.assign(sim.style, { left: "0", right: "0", top: "590px", margin: "0 auto", width: "fit-content" });
+    K.rise(sim, 5.4, 16);
+  }
+
+  if (K.SCENE === 67) {
+    // "in planning (1.39), there's a resources unit (2.91 / 3.43) that tracks all the resources (4.73) ... at the incident (7.09). There's a documentation
+    //  unit (8.15 / 8.69) ... produce and keep track of all the paperwork (13.05), whether it's on paper (14.41) or digital (15.17)"
+    planning(true);
+    K.restyle(K.boxes.res, "grp", 2.85); K.pulse(K.boxes.res, 2.85, 1.08);
+    const board = el("panel", { left: "90px", top: "430px", width: "700px", height: "230px" },
+      `<div style="position:absolute;left:30px;top:18px;font:900 26px/1 Roboto;letter-spacing:0.12em;color:var(--blue)">RESOURCE STATUS</div>` +
+      [["#22a35a", "Engine 12", "Assigned"], ["#f2a93b", "Crew 4", "Available"], ["#e62324", "Dozer 2", "Out of service"]]
+        .map(([c, a, b], i) => `<div class="row" style="top:${58 + i * 56}px"><i style="background:${c}"></i><span>${a}</span><span>${b}</span></div>`).join(""));
+    K.pop(board, 3.9, 0.8); [...board.querySelectorAll(".row")].forEach((r, i) => K.slide(r, 4.2 + i * 0.25, -40));
+    K.out(board, 7.5, 0.25); K.restyle(K.boxes.res, "pos", 7.6);
+    K.restyle(K.boxes.doc, "grp", 8.1); K.pulse(K.boxes.doc, 8.1, 1.08);
+    const paper = el("", { position: "absolute", left: "880px", top: "450px" }, PAPER); K.pop(paper, 12.9, 0.5);
+    const tab = el("", { position: "absolute", left: "1110px", top: "455px" }, TABLET); K.pop(tab, 15.05, 0.5);
+    const arr = el("", { position: "absolute", left: "1040px", top: "500px", font: "900 60px/1 Roboto", color: "var(--slate)" }, "›"); K.fadeIn(arr, 14.6, 0.2);
+    tl.to(paper, { x: -150, duration: 0.4, ease: "power2.out" }, 14.4);
+    const p1 = K.chip("Paper", 700, 640, "var(--slate)", "#fff", 28); K.pop(p1, 14.4, 0.5);
+    const p2 = K.chip("Digital", 1120, 640, "var(--blue)", "#fff", 28); K.pop(p2, 15.1, 0.5);
+  }
+
+  if (K.SCENE === 68) {
+    // "They report to the planning section chief (1.13 / 1.79), typically, who supervises it (3.45) and understands how those things work (5.91)"
+    planning(false);
+    K.boxes.doc.style.background = "#e8f1ff"; K.boxes.doc.style.borderColor = "var(--blue)";
+    K.restyle(K.boxes.doc, "pos", 0.1);
+    UNITS.forEach(([id], i) => {
+      K.lineColor(K.lines[`c${id}`], "#2c7ef4", 0.3 + i * 0.08);
+      const B = K.boxes[id]; const x = +B.dataset.x;
+      const dot = el("", { position: "absolute", left: `${x - 12}px`, top: "296px", width: "24px", height: "24px", borderRadius: "50%", background: "var(--blue)" });
+      K.hide(dot);
+      tl.fromTo(dot, { opacity: 1, x: 0, y: 0 }, { keyframes: [{ y: -26, duration: 0.25 }, { x: 960 - x, duration: 0.4 }, { y: -66, duration: 0.25 }], immediateRender: false, ease: "none" }, 0.3 + i * 0.08);
+      tl.to(dot, { opacity: 0, duration: 0.1 }, 1.25 + i * 0.08);
+    });
+    K.pulse(K.boxes.chief, 1.7, 1.1);
+    const s1 = K.chip("Supervises", 1230, 100, "var(--amber)", "var(--ink)", 30); K.pop(s1, 3.4, 0.5);
+    const s2 = K.chip("Understands the work", 1230, 178, "var(--ink)", "#fff", 30); K.pop(s2, 4.45, 0.5);
+    const k = el("kicker", { fontSize: "26px" }, `<span class="bar"></span>Planning section`); now(k);
+  }
+
+  if (K.SCENE === 69) {
+    // "units exist within logistics (1.61) and the finance section (3.13 / 3.41) as well (4.37)"
+    const C = [["Planning", 160, ["Resources", "Situation", "Documentation", "Demobilization"], 0], ["Logistics", 700, ["Supply", "Facilities", "Ground support", "Communications"], 1.55],
+               ["Finance/Admin", 1240, ["Time", "Procurement", "Comp/claims", "Cost"], 3.05]];
+    C.forEach(([l, x, us, t], i) => {
+      const c = el("col", { left: `${x}px` }, `<div style="height:84px;border-radius:16px;background:var(--blue);color:#fff;font:900 36px/84px Roboto;text-align:center;box-shadow:var(--shadow)">${l}</div>` +
+        us.map((u) => `<div class="pill">${u} unit</div>`).join(""));
+      if (i === 0) { now(c); tl.from(c, { x: 400, duration: 0.5, ease: "power3.out" }, 0); }
+      else { K.slide(c, t, 160, 0.45); [...c.querySelectorAll(".pill")].forEach((p, j) => K.rise(p, t + 0.25 + j * 0.08, 20)); }
+    });
+    const k = el("kicker", { fontSize: "26px" }, `<span class="bar"></span>Units in every section`); K.fadeIn(k, 0.1);
+  }
+
+  if (K.SCENE === 70) {
+    // overlay on a unit at work: "people work within their unit (1.82), doing much the same thing (3.32), led by a unit leader (6.22 / 6.40) who provides
+    //  technical expertise (7.76 / 8.34), supervises the workflow (9.56 / 10.90) and reports upward (11.54 / 12.00) to the section chief (13.24 / 13.56)"
+    const u = el("ochip", { left: "120px", top: "110px", background: "rgba(29,38,51,0.85)" }, "One unit, similar work"); K.slide(u, 1.7, -80); K.out(u, 5.9, 0.2);
+    const L = [["★ Unit leader", "var(--red)", 6.15], ["Technical expertise", "var(--blue)", 7.7], ["Supervises the workflow", "var(--amber)", 9.5]];
+    L.forEach(([l, bg, t], i) => { const n = el("ochip", { left: "120px", top: `${110 + i * 96}px`, background: bg, color: bg === "var(--amber)" ? "var(--ink)" : "#fff" }, l); K.slide(n, t, -80); });
+    const up = el("", { position: "absolute", left: "1380px", top: "110px", width: "420px", textAlign: "center" },
+      `<div class="ochip" style="position:relative;display:inline-block;background:var(--blue)">Section chief</div>
+       <svg width="80" height="150" viewBox="0 0 80 150" style="display:block;margin:10px auto 0"><path d="M40 146 V20" stroke="#fff" stroke-width="12" stroke-linecap="round"/><path d="M12 46 L40 14 L68 46" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+       <div style="font:900 40px/1 Roboto;color:#fff;text-shadow:0 4px 16px rgba(0,0,0,0.6);margin-top:8px">reports upward</div>`);
+    K.rise(up, 11.5, 60, 0.45);
+    K.out(K.root.children, 14.6, 0.4);
+  }
+
+  if (K.SCENE === 71) {
+    // "let's talk about branches (1.12), and we can use the logistics section (3.16 / 3.46)"
+    const ttl = el("ttl", { top: "250px", color: "var(--amber-deep)" }, "BRANCHES"); K.pop(ttl, 0.85, 1.5, "power3.out");
+    tl.to(ttl, { top: "86px", scale: 0.75, duration: 0.45, ease: "power3.inOut" }, 2.8);
+    K.box("lchief", 960, 380, "Logistics Section Chief", "ic", 440, 80, 30);
+    K.boxes.lchief.style.background = "#14407d"; K.boxes.lchief.style.borderColor = "#14407d";
+    K.pop(K.boxes.lchief, 3.1, 0.6);
+  }
+
+  if (K.SCENE === 72) {
+    // "When you've got a bunch of units (1.25 / 1.79), they may exceed (3.27) the span of control (4.55 / 4.99) of the person who's supposed to do it (7.33)"
+    logistics(1);
+    tl.fromTo(K.boxes.lchief, { y: 200 }, { y: 0, duration: 0.5, ease: "power3.inOut", immediateRender: false }, 0);
+    LU.forEach(([id], i) => { K.conn(`l${id}`, "lchief", id, 1.2 + i * 0.06); K.pop(K.boxes[id], 1.3 + i * 0.07, 0.6); });
+    const c = K.counter("DIRECT REPORTS", "6", 1.9);
+    c.set("6", 3.25, "var(--red)");
+    tl.to(K.boxes.lchief, { backgroundColor: "#e62324", borderColor: "#e62324", duration: 0.2, yoyo: true, repeat: 3 }, 3.3);
+    const ex = K.chip("Too many direct reports", 120, 560, "var(--red)", "#fff", 32); ex.style.top = "500px"; ex.style.left = "0"; ex.style.right = "0"; ex.style.margin = "0 auto"; ex.style.width = "fit-content";
+    K.pop(ex, 4.5, 0.5);
+    const k = el("kicker", { fontSize: "26px" }, `<span class="bar"></span>Branches`); now(k);
+  }
+
+  if (K.SCENE === 73) {
+    // "a logistics section chief (1.74 / 2.46) in the dark blue box (3.46 / 3.70) ... I can't manage all six (5.52 / 6.28) ... appoint (9.28) a branch director (10.50 / 10.88)
+    //  called the service branch (12.18 / 12.46) that's going to manage three of these units (13.94 / 14.60) and another one called the support branch director (16.66 / 17.40)
+    //  who manages the other (18.82)"
+    logistics(1);
+    LU.forEach(([id]) => { const p = K.conn(`l${id}`, "lchief", id, null); p.style.strokeDashoffset = 0; });
+    const c = K.counter("DIRECT REPORTS", "6", null); now(c); c.querySelector(".cv").style.color = "var(--red)";
+    const k = el("kicker", { fontSize: "26px" }, `<span class="bar"></span>Branches`); now(k);
+    K.pulse(K.boxes.lchief, 1.7, 1.1, 2);
+    tl.to(LU.map(([id]) => K.boxes[id]), { x: 8, duration: 0.05, yoyo: true, repeat: 9, ease: "none" }, 5.5);
+    K.pulse(c, 6.2, 1.15);
+    // service branch
+    LU.forEach(([id]) => K.out(K.lines[`l${id}`], 9.3, 0.3));
+    tl.to(LU.map(([id]) => K.boxes[id]), { top: `${520 - 38}px`, duration: 0.5, ease: "power3.inOut" }, 10.4);
+    const drop = (b, t) => { tl.fromTo(b, { opacity: 0, y: -150 }, { opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.8)", immediateRender: false }, t); };
+    drop(K.boxes.svc, 12.1);
+    K.conn("lsvc", "lchief", "svc", 12.4, "var(--amber-deep)");
+    ["com", "med", "food"].forEach((id, i) => { tl.to(K.boxes[id], { left: `${LXB[i] - 130}px`, duration: 0.5, ease: "power3.inOut" }, 13.9 + i * 0.1); });
+    // support branch
+    drop(K.boxes.spt, 16.6);
+    K.conn("lspt", "lchief", "spt", 16.9, "var(--amber-deep)");
+    ["sup", "fac", "gs"].forEach((id, i) => { tl.to(K.boxes[id], { left: `${LXB[i + 3] - 130}px`, duration: 0.5, ease: "power3.inOut" }, 18.25 + i * 0.1); });
+    // new connectors drawn from the branches (computed for the final positions)
+    const fake = (id, x, y) => { const b = K.boxes[id]; b.dataset.x = x; b.dataset.y = y; };
+    LU.forEach(([id], i) => fake(id, LXB[i], 520));
+    ["com", "med", "food"].forEach((id, i) => K.conn(`b${id}`, "svc", id, 14.5 + i * 0.05, "var(--line)"));
+    ["sup", "fac", "gs"].forEach((id, i) => K.conn(`b${id}`, "spt", id, 18.85 + i * 0.05, "var(--line)"));
+    c.set("2", 19.0, "#22a35a");
+  }
+
+  if (K.SCENE === 74) {
+    // overlay on a base camp: "logs is likely to divide into branches (6.10 / 7.32)"
+    const a = el("ochip", { left: "120px", top: "110px", background: "var(--amber)", color: "var(--ink)" }, "Large incident"); K.slide(a, 0.8, -80);
+    const b = el("ochip", { left: "120px", top: "210px", background: "rgba(29,38,51,0.85)" }, "Logistics divides into branches"); K.slide(b, 6.0, -80);
+  }
+
+  if (K.SCENE === 75) {
+    // "maintain the manageable span of control (1.68 / 2.56) by providing more effective supervision (4.32 / 4.82) and coordination (5.68)"
+    logistics(2);
+    K.conn("lsvc", "lchief", "svc", null).style.strokeDashoffset = 0; K.conn("lspt", "lchief", "spt", null).style.strokeDashoffset = 0;
+    ["com", "med", "food"].forEach((id) => { K.conn(`b${id}`, "svc", id, null).style.strokeDashoffset = 0; });
+    ["sup", "fac", "gs"].forEach((id) => { K.conn(`b${id}`, "spt", id, null).style.strokeDashoffset = 0; });
+    const c = K.counter("DIRECT REPORTS", "2", null); now(c); c.querySelector(".cv").style.color = "#22a35a";
+    const k = el("kicker", { fontSize: "26px" }, `<span class="bar"></span>Branches`); now(k);
+    const ok = el("", { position: "absolute", left: "1590px", top: "140px", width: "70px", height: "70px", borderRadius: "50%", background: "#22a35a",
+      display: "flex", alignItems: "center", justifyContent: "center" }, `<svg width="40" height="32" viewBox="0 0 40 32"><path d="M4 17 L15 27 L36 5" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>`);
+    K.pop(ok, 1.6, 0.3, "back.out(3)"); K.pulse(c, 1.65, 1.12);
+    const s1 = K.chip("Supervision ✓", 560, 620, "#22a35a", "#fff", 30); K.pop(s1, 4.3, 0.5); s1.style.top = "600px"; s1.style.left = "620px";
+    const s2 = K.chip("Coordination ✓", 980, 600, "#22a35a", "#fff", 30); K.pop(s2, 5.65, 0.5);
+  }
+
+  if (K.SCENE === 76) {
+    // "Operations (0.08) can do the same thing. Branches (2.14) can contain groups and or divisions (3.32 / 4.40), and the branch director supervises (5.92 / 6.34)
+    //  just the group or division supervisors (7.82 / 8.86), who in turn lead their divisions and groups (11.94 / 12.62)"
+    const k = el("kicker", { fontSize: "26px" }, `<span class="bar"></span>Operations`); K.fadeIn(k, 0.05);
+    K.box("ops", 960, 170, "Operations Section Chief", "ic", 460, 80, 30); K.pop(K.boxes.ops, 0.1, 0.7);
+    K.box("b1", 560, 320, "Branch I", "sup", 280, 80, 32); K.box("b2", 1360, 320, "Branch II", "sup", 280, 80, 32);
+    K.conn("cb1", "ops", "b1", 2.1); K.conn("cb2", "ops", "b2", 2.2); K.pop(K.boxes.b1, 2.2, 0.6); K.pop(K.boxes.b2, 2.35, 0.6);
+    const L = [["d1", 380, "b1", "Division A", "grp"], ["d2", 740, "b1", "Division B", "grp"], ["g1", 1180, "b2", "Rescue Group", "sup"], ["g2", 1540, "b2", "Medical Group", "sup"]];
+    L.forEach(([id, x, p, l, kind], i) => { K.box(id, x, 470, l, kind === "sup" ? "pos" : "grp", 300, 76, 28); K.conn(`c${id}`, p, id, 3.3 + i * 0.25); K.pop(K.boxes[id], 3.4 + i * 0.25, 0.6); });
+    K.restyle(K.boxes.b1, "ic", 5.9); K.restyle(K.boxes.b2, "ic", 6.0);
+    ["d1", "d2", "g1", "g2"].forEach((id, i) => { K.lineColor(K.lines[`c${id}`], "#2c7ef4", 7.8 + i * 0.1); K.pulse(K.boxes[id], 7.8 + i * 0.1, 1.07); });
+    const sv = K.chip("Supervises just 2", 0, 0, "var(--ink)", "#fff", 28); Object.assign(sv.style, { left: "0", right: "0", top: "236px", margin: "0 auto", width: "fit-content" }); K.pop(sv, 6.3, 0.5);
+    ["d1", "d2", "g1", "g2"].forEach((id, i) => {
+      const x = +K.boxes[id].dataset.x;
+      for (let j = 0; j < 4; j++) { const p = K.person(x - 105 + j * 70, 600, i < 2 ? "var(--blue)" : "var(--amber-deep)", 0.62); K.pop(p, 10.2 + i * 0.2 + j * 0.05, 0.3); }
+    });
+  }
+}, { full: [66, 67, 68, 69, 71, 72, 73, 75, 76] });
+</script>
+</body>
+</html>
