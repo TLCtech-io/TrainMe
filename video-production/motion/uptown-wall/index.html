@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Uptown Sound: video wall</title>
+<!--
+  Video wall backdrop behind the ensemble at the Pick Your Poison shows: a dusty apothecary bar. The plate
+  (assets/plate.png, 5504x3072) is a Nano Banana Pro render from OpenArt (prompt in prompt.txt); it carries the
+  UPTOWN SOUND sign, the PICK YOUR POISON plaque, the menu, the labelled bottles and two blank brass medallions. This
+  page engraves the QCPA logo into the medallions (found by tools/find_medallions.py) and frames the plate for the wall:
+    ?r=169   3840x2160 (16:9, the plate trimmed 21 px a side)
+    ?r=1610  3840x2400 (16:10, the plate at full width with the dark ceiling and bar front carried on above and below)
+  render.cjs --in index.html --query r=169 --stills 0 --stills-dir <dir>
+-->
+<style>
+  * { margin: 0; padding: 0; }
+  html, body { background: #000; overflow: hidden; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script src="data/medallions.js"></script>
+<script>
+  const R = new URLSearchParams(location.search).get("r") || "169";
+  const PW = 5504, PH = 3072;
+  // the brass medallions in plate pixels: centre and the radius of the flat face inside the rim (data/medallions.js)
+  const MEDALS = window.MEDALS;
+  const OUT = R === "1610" ? { W: 3840, H: 2400 } : { W: 3840, H: 2160 };
+  const cv = document.getElementById("c"), cx = cv.getContext("2d");
+  cv.width = OUT.W; cv.height = OUT.H;
+  document.documentElement.style.width = document.body.style.width = OUT.W + "px";
+  document.documentElement.style.height = document.body.style.height = OUT.H + "px";
+  const load = (src) => new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = src; });
+
+  // The QCPA logo, engraved and filled with black like an engraved brass plate: a lit lower bevel, a dark upper
+  // bevel, the black fill, all a hair soft so it sits in the metal.
+  function engrave(logo, x, y, r, s) {
+    const h = r * 1.42 * s, w = h * (253.262 / 340.773), x0 = x * s - w / 2, y0 = y * s - h / 2 + r * 0.03 * s;
+    const tint = (col) => {
+      const o = document.createElement("canvas"); o.width = Math.ceil(w) + 8; o.height = Math.ceil(h) + 8;
+      const g = o.getContext("2d"); g.drawImage(logo, 4, 4, w, h);
+      g.globalCompositeOperation = "source-in"; g.fillStyle = col; g.fillRect(0, 0, o.width, o.height);
+      return o;
+    };
+    const lit = tint("rgba(255,232,170,0.75)"), dark = tint("rgba(30,18,6,0.9)"), fill = tint("#140c04");
+    const d = Math.max(1.5, h * 0.012);
+    cx.save();
+    cx.filter = `blur(${(d * 0.5).toFixed(2)}px)`;
+    cx.drawImage(lit, x0 - 4, y0 - 4 + d);                   // light catching the lower wall of the cut
+    cx.drawImage(dark, x0 - 4, y0 - 4 - d * 0.7);            // shadow along the upper wall
+    cx.filter = `blur(${(d * 0.25).toFixed(2)}px)`;
+    cx.globalAlpha = 0.92;
+    cx.drawImage(fill, x0 - 4, y0 - 4);
+    cx.restore();
+  }
+
+  async function draw() {
+    const [plate, logo] = await Promise.all([load("assets/plate.png"), load("../shared/brand/qcpa-logo-white.svg")]);
+    if (R === "1610") {
+      // full width; the extra height comes from the plate's own top and bottom bands, mirrored and sunk into shadow
+      const s = OUT.W / PW, ph = PH * s, pad = (OUT.H - ph) / 2;
+      // top band: the plate's top rows flipped above it
+      cx.save(); cx.translate(0, pad); cx.scale(1, -1);
+      cx.drawImage(plate, 0, 0, PW, pad / s, 0, 0, OUT.W, pad); cx.restore();
+      // bottom band: the plate's bottom rows flipped below it
+      cx.save(); cx.translate(0, pad + ph); cx.scale(1, -1);
+      cx.drawImage(plate, 0, PH - pad / s, PW, pad / s, 0, -pad, OUT.W, pad); cx.restore();
+      cx.drawImage(plate, 0, pad, OUT.W, ph);
+      MEDALS.forEach(([x, y, r]) => { cx.save(); cx.translate(0, pad); engrave(logo, x, y, r, s); cx.restore(); });
+      // the added bands fall away into darkness so the seam never reads
+      [[0, pad, true], [pad + ph, pad, false]].forEach(([y, hh, top]) => {
+        const g = cx.createLinearGradient(0, top ? y : y + hh, 0, top ? y + hh : y);
+        g.addColorStop(0, "rgba(0,0,0,0.85)"); g.addColorStop(1, "rgba(0,0,0,0.15)");
+        cx.fillStyle = g; cx.fillRect(0, y, OUT.W, hh);
+      });
+    } else {
+      const sx = (PW - PH * 16 / 9) / 2, s = OUT.W / (PW - 2 * sx);
+      cx.drawImage(plate, sx, 0, PW - 2 * sx, PH, 0, 0, OUT.W, OUT.H);
+      MEDALS.forEach(([x, y, r]) => engrave(logo, x - sx, y, r, s));
+    }
+  }
+
+  (async () => {
+    await draw();
+    window.__meta = { duration: 0.1, width: OUT.W, height: OUT.H };
+    window.__seek = async () => {};
+  })();
+</script>
+</body>
+</html>

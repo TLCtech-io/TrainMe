@@ -1,0 +1,422 @@
+<!doctype html>
+<!-- Uptown Sound, "Pick Your Poison" show reel: Poison Preview SOUND OF SILENCE. 1080x1920 at 30 fps.
+     Footage: "Silence 3" (27.9s) used as delivered: the trim, end fade, greyscale and vignette are the user's.
+     A slow, blurry, dreamy fade-in, then a white hand-drawn night scene over the singers, keyed to the verse:
+     rain blowing in from the upper left, a cobblestone street receding to the left, a street lamp with a faint warm
+     cone of light (the only colour), a show poster with the QCPA logo pasted to the lamp post, and a man from behind
+     (hat, collar up, shoulders hunched, hands in pockets) walking in from the bottom right, up the street, past the
+     lamp. He turns his collar up on the collar line; a flash on the neon-light line brings on the end card.
+     Line work "boils" at 10 fps like hand-drawn animation. Lyric timing from a whisper pass (data/whisper-words.json). -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<style>
+  @font-face { font-family: "Cormorant Garamond"; font-style: italic; font-weight: 600; src: url("../shared/fonts/cormorant-garamond-latin-600-italic.woff2") format("woff2"); }
+  @font-face { font-family: "Special Elite"; src: url("../shared/fonts/special-elite-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Anton"; src: url("../shared/fonts/anton-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Rubik Mono One"; src: url("../shared/fonts/rubik-mono-one-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Bowlby One SC"; src: url("../shared/fonts/bowlby-one-sc-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Abril Fatface"; src: url("../shared/fonts/abril-fatface-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Permanent Marker"; src: url("../shared/fonts/permanent-marker-latin-400-normal.woff2") format("woff2"); }
+  :root { --lamp: #ffd98a; --chalk: #f4f2ea; --paper: #f2ecdf; --ink: #111111; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; color: #fff; }
+  canvas, svg { position: absolute; left: 0; top: 0; }
+  #fimg, #fglow { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; opacity: 0; }
+  #vigB { position: absolute; left: 0; width: 1080px; height: 380px; display: none; background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.6)); }
+  #fglow { mix-blend-mode: screen; filter: blur(30px) brightness(1.25); }
+  #light, #rain { width: 1080px; height: 1920px; }
+  #grain { width: 1080px; height: 1920px; opacity: 0.05; mix-blend-mode: overlay; }
+  #scrim { position: absolute; left: 0; top: 0; width: 1080px; height: 820px; opacity: 0;
+           background: linear-gradient(to bottom, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.5) 55%, rgba(0,0,0,0) 100%); }
+  #flash { position: absolute; inset: 0; background: #fff; opacity: 0; }
+  #qcpa { position: absolute; opacity: 0; }
+
+  /* Ransom-note lettering (series look) */
+  .ransom { position: absolute; left: 0; width: 1080px; display: flex; justify-content: center; flex-wrap: nowrap; gap: 6px; }
+  .rl { display: inline-flex; align-items: center; justify-content: center; padding: 2px 10px 4px; line-height: 1; box-shadow: 0 6px 14px rgba(0,0,0,0.45); }
+  .gap { width: 30px; }
+  #badge { position: absolute; left: 0; width: 1080px; top: 250px; display: flex; justify-content: center; opacity: 0; }
+  .label { background: var(--paper); color: var(--ink); border: 6px solid var(--ink); border-radius: 16px; padding: 20px 46px 18px;
+           display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: 0 10px 24px rgba(0,0,0,0.5); }
+  .label .no { font: 400 52px/1 "Special Elite", monospace; letter-spacing: 0.08em; }
+  .label .tx { font: italic 600 98px/1 "Cormorant Garamond", serif; color: #2b2f45; letter-spacing: 0.01em; }
+  .one .label { flex-direction: row; gap: 18px; padding: 12px 30px 14px; border-radius: 14px; }
+  .one .label .no { font-size: 38px; letter-spacing: 0.06em; }
+  .one .label .tx { font-size: 64px; }
+  .end-line { position: absolute; left: 0; width: 1080px; text-align: center; opacity: 0; }
+  #eTitle1 .rl, #eTitle2 .rl { opacity: 0; }
+</style>
+</head>
+<body>
+  <img id="fimg" alt="" /><img id="fglow" alt="" />
+  <div id="vigB"></div>
+  <canvas id="light" width="1080" height="1920"></canvas>
+  <svg id="scene" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+  <img id="qcpa" src="../shared/brand/qcpa-logo-white.svg" alt="Queen City Performing Arts" />
+  <canvas id="rain" width="1080" height="1920"></canvas>
+  <canvas id="grain" width="540" height="960"></canvas>
+  <div id="scrim"></div>
+
+  <div id="title" style="position:absolute; left:0; top:0; width:1080px; height:1920px; opacity:0">
+    <div class="ransom" id="t1" style="top:300px"></div>
+    <div class="ransom" id="t2" style="top:430px"></div>
+  </div>
+  <div id="badge"><div class="label"><span class="no">POISON PREVIEW</span><span class="tx">Sound of Silence</span></div></div>
+  <div id="end">
+    <div class="end-line" id="eUp" style="top:165px; font:400 92px/1 'Anton'; letter-spacing:0.08em; color:#fff; text-shadow:0 0 18px rgba(255,217,138,0.55), 0 6px 0 rgba(0,0,0,0.6)">UPTOWN SOUND</div>
+    <div class="ransom" id="eTitle1" style="top:270px"></div>
+    <div class="ransom" id="eTitle2" style="top:342px"></div>
+    <div class="end-line" id="eDate" style="top:440px; font:400 86px/1 'Bowlby One SC'; color:var(--lamp); text-shadow:0 0 26px rgba(255,217,138,0.75), 0 5px 0 rgba(0,0,0,0.7)">OCT 24 &amp; 25</div>
+    <div class="end-line" id="eCta" style="top:540px"><span style="display:inline-block; background:#0a0a0a; color:var(--chalk); border:2px solid var(--lamp); font:400 36px/1 'Special Elite'; padding:12px 24px; border-radius:8px; letter-spacing:0.06em">TICKETS &middot; LINK IN BIO</span></div>
+  </div>
+  <div id="flash"></div>
+
+<script src="../shared/gsap.min.js"></script>
+<script src="data/features.js"></script>
+<script>
+  const F = window.FEATURES, FPS = F.fps, D = F.env.length / FPS;
+  const FRAMES = "assets/frames/f_%05d.jpg";
+  const rnd = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const span = (a, b, t) => clamp((t - a) / (b - a), 0, 1);
+  const ease = (p) => (p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
+  const lerp = (a, b, k) => a + (b - a) * k;
+  const byId = (id) => document.getElementById(id);
+  const f1 = (v) => v.toFixed(1);
+
+  // Output: the 9:16 reel, or a still for another shape (?thumb = 3:4 cover, ?fb = 4:5 Facebook post). Stills take the
+  // scene from frameT (footage, lamp, street, rain, the man) and the show name, date and tickets from the end card
+  // (textT), with the one-line Poison Preview card under the title. footDY/drawDY move the footage and the drawn world
+  // up into the shorter frame; man = [dx, dy, scale] keeps him whole above the bottom edge; ends = tops of the text rows.
+  // cobT: the near cobbles fall below a shorter frame, so the stills draw the whole street (as it is a few seconds later).
+  const MODE = location.search.includes("thumb") ? "thumb" : location.search.includes("fb") ? "fb" : "video";
+  const LAY = {
+    video: { H: 1920 },
+    thumb: { H: 1440, textT: 27.5, frameT: 5.0, cobT: 11.5, footDY: -110, drawDY: -110, man: [30, -290, 0.86], ends: [40, 142, 214, 318, 438, 542] },
+    fb:    { H: 1350, textT: 27.5, frameT: 5.0, cobT: 11.5, footDY: -120, drawDY: -150, man: [60, -325, 0.78], ends: [34, 134, 204, 304, 420, 520] },
+  }[MODE];
+  const STILL = MODE !== "video";
+
+  // Cue times (seconds), keyed to the verse (data/whisper-words.json)
+  const T = {
+    fade: 3.2, lampDraw: [0.9, 3.0], streetDraw: [1.8, 4.2], cobbles: [3.2, 11.5],
+    titleIn: 1.4, compact: 5.6, man: { start: 1.0, inFrame: 4.0, end: 24.0 },
+    halo: [12.4, 16.4], collar: [17.6, 18.8], flash: 24.0,
+  };
+
+  // ---------- ransom-note lettering ----------
+  const FONTS = ["Anton", "Rubik Mono One", "Bowlby One SC", "Abril Fatface", "Special Elite", "Permanent Marker"];
+  const SWATCH = [["#f2ecdf", "#111"], ["#111", "#f2ecdf"], ["#ffd98a", "#1b1b1b"], ["#8a8a8a", "#111"], ["#f2ecdf", "#2b2f45"], ["#111", "#ffd98a"]];
+  function ransom(el, text, size, seed) {
+    el.innerHTML = [...text].map((ch, i) => {
+      if (ch === " ") return '<span class="gap"></span>';
+      const r = (k) => rnd(seed * 100 + i * 7 + k);
+      const [bg, fg] = SWATCH[Math.floor(r(1) * SWATCH.length)];
+      const font = FONTS[Math.floor(r(2) * FONTS.length)];
+      const s = Math.round(size * (0.86 + r(3) * 0.3)), rot = (r(4) - 0.5) * 16;
+      return `<span class="rl" style="background:${bg}; color:${fg}; font:400 ${s}px/1 '${font}'; transform:rotate(${rot.toFixed(1)}deg)">${ch}</span>`;
+    }).join("");
+  }
+  ransom(byId("t1"), "PICK YOUR", 92, 3);
+  ransom(byId("t2"), "POISON", 128, 7);
+  ransom(byId("eTitle1"), "PICK YOUR", 60, 11);
+  ransom(byId("eTitle2"), "POISON", 74, 13);
+
+  // ---------- the drawn world: street, lamp, poster ----------
+  // The street recedes from the bottom right toward the left middle. Edges: near (bottom) and far (left middle).
+  const ST = { lN: [330, 1920], rN: [1180, 1600], lF: [-40, 1170], rF: [330, 1050] };
+  const LAMP = { x: 70, base: 1480, lantern: 590 };            // the lamp stands on the left pavement
+  const P = (p) => `${f1(p[0])},${f1(p[1])}`;
+  const mix = (a, b, k) => [lerp(a[0], b[0], k), lerp(a[1], b[1], k)];
+  const depthV = (u) => 1 - Math.pow(1 - u, 1.9);             // perspective: rows bunch up toward the far end
+  let streetSVG = "";
+  // curbs (with a second, pavement line)
+  streetSVG += `<path class="dr st" pathLength="1" d="M ${P(ST.lN)} L ${P(ST.lF)}" style="stroke:url(#fadeL)"/>`
+    + `<path class="dr st" pathLength="1" d="M ${P(ST.rN)} L ${P(mix(ST.rN, ST.rF, 0.62))}" style="stroke:url(#fadeR)"/>`;
+  streetSVG += `<path class="dr st thin" pathLength="1" d="M ${P([ST.lN[0] - 70, 1920])} L ${P([ST.lF[0] - 18, ST.lF[1] - 6])}" style="stroke:url(#fadeL)"/>`;
+  // cobblestones: sketched, irregular, sparse; strongest near the bottom and gone by mid-street (clear of the singers)
+  const ROWS = 16, cobbles = [];
+  for (let k = 0; k < ROWS; k++) {
+    const v0 = depthV(k / ROWS * 0.62), v1 = depthV((k + 1) / ROWS * 0.62), fade = 1 - k / ROWS;
+    const L0 = mix(ST.lN, ST.lF, v0), R0 = mix(ST.rN, ST.rF, v0), L1 = mix(ST.lN, ST.lF, v1), R1 = mix(ST.rN, ST.rF, v1);
+    let a = (k % 2 ? -0.5 : 0) / 11;
+    while (a < 1) {
+      const w = (0.7 + rnd(k * 53 + a * 97) * 0.6) / 11, b = a + w, id = k * 131 + Math.round(a * 1000);
+      if (b > 0 && rnd(id) > 0.38) {                       // skip some: a sketch, not a grid
+        const aa = clamp(a, 0, 1), bb = clamp(b, 0, 1);
+        const q = [mix(L0, R0, aa), mix(L0, R0, bb), mix(L1, R1, bb), mix(L1, R1, aa)];
+        const cx = (q[0][0] + q[1][0] + q[2][0] + q[3][0]) / 4, cy = (q[0][1] + q[1][1] + q[2][1] + q[3][1]) / 4;
+        const sh = q.map(([x, y], i) => [cx + (x - cx) * (0.72 + rnd(id + i) * 0.16) + (rnd(id + i + 9) - 0.5) * 10 * fade, cy + (y - cy) * (0.62 + rnd(id + i + 4) * 0.2)]);
+        const m = (i, j) => mix(sh[i], sh[j], 0.5);
+        // mostly just the top and one side of each stone, as a quick pen sketch would
+        const d = `M ${P(m(3, 0))} Q ${P(sh[0])} ${P(m(0, 1))} Q ${P(sh[1])} ${P(m(1, 2))}` + (rnd(id + 30) > 0.5 ? ` Q ${P(sh[2])} ${P(m(2, 3))}` : "");
+        if (cx > -20 && cx < 1100 && cy < 1940) cobbles.push(`<path class="dr cb" data-row="${k}" pathLength="1" d="${d}" style="opacity:${(0.5 * fade).toFixed(2)}"/>`);
+      }
+      a = b;
+    }
+  }
+  streetSVG += cobbles.join("");
+
+  const lx = LAMP.x;
+  const lampSVG = [
+    `M ${lx - 40} ${LAMP.base} L ${lx + 40} ${LAMP.base} L ${lx + 32} ${LAMP.base - 30} L ${lx - 32} ${LAMP.base - 30} Z`,          // base
+    `M ${lx - 28} ${LAMP.base - 30} L ${lx - 22} ${LAMP.base - 72} L ${lx + 22} ${LAMP.base - 72} L ${lx + 28} ${LAMP.base - 30}`,
+    `M ${lx - 13} ${LAMP.base - 72} L ${lx - 8} 690 M ${lx + 13} ${LAMP.base - 72} L ${lx + 8} 690`,                                    // pole
+    `M ${lx} ${LAMP.base - 80} L ${lx} 700`,
+    `M ${lx - 18} 1000 L ${lx + 18} 1000 M ${lx - 19} 1014 L ${lx + 19} 1014`,                                                     // collar
+    `M ${lx - 40} 706 L ${lx + 40} 706 M ${lx - 40} 700 L ${lx - 40} 712 M ${lx + 40} 700 L ${lx + 40} 712`,                         // ladder bar
+    `M ${lx - 22} 682 L ${lx + 22} 682 L ${lx + 14} 662 L ${lx - 14} 662 Z`,                                                        // lantern cup
+    `M ${lx - 26} 662 L ${lx - 46} 560 L ${lx + 46} 560 L ${lx + 26} 662 Z`,                                                        // glass
+    `M ${lx - 9} 662 L ${lx - 16} 560 M ${lx + 9} 662 L ${lx + 16} 560`,
+    `M ${lx - 56} 560 L ${lx} 518 L ${lx + 56} 560 Z`,                                                                              // cap
+    `M ${lx} 518 L ${lx} 498 M ${lx - 5} 493 A 5 5 0 1 0 ${lx + 5} 493 A 5 5 0 1 0 ${lx - 5} 493`,                                  // finial
+  ].map((d) => `<path class="dr lp" pathLength="1" d="${d}"/>`).join("");
+  // an old show poster pasted to the post (the QCPA logo sits on it, crisp, outside the boiling line work)
+  const POSTER = { cx: 80, cy: 1080, w: 150, h: 200, rot: -3 };
+  const posterSVG = `<g transform="rotate(${POSTER.rot} ${POSTER.cx} ${POSTER.cy})">
+    <path class="dr lp" pathLength="1" d="M ${POSTER.cx - 75} ${POSTER.cy - 100} L ${POSTER.cx + 75} ${POSTER.cy - 100} L ${POSTER.cx + 75} ${POSTER.cy + 76} L ${POSTER.cx + 52} ${POSTER.cy + 100} L ${POSTER.cx - 75} ${POSTER.cy + 100} Z" style="fill:rgba(0,0,0,0.72)"/>
+    <path class="dr lp thin" pathLength="1" d="M ${POSTER.cx + 75} ${POSTER.cy + 76} L ${POSTER.cx + 58} ${POSTER.cy + 80} L ${POSTER.cx + 52} ${POSTER.cy + 100}"/>
+    <path class="dr lp thin" pathLength="1" d="M ${POSTER.cx - 86} ${POSTER.cy - 104} L ${POSTER.cx - 62} ${POSTER.cy - 92} M ${POSTER.cx + 62} ${POSTER.cy - 92} L ${POSTER.cx + 86} ${POSTER.cy - 104}"/>
+  </g>`;
+
+  byId("scene").innerHTML = `
+    <defs>
+      <filter id="boil" x="-5%" y="-5%" width="110%" height="110%">
+        <feTurbulence id="boilNoise" type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="1" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="3.2" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+      <linearGradient id="fadeL" gradientUnits="userSpaceOnUse" x1="${ST.lN[0]}" y1="${ST.lN[1]}" x2="${ST.lF[0]}" y2="${ST.lF[1]}">
+        <stop offset="0" stop-color="#f4f2ea"/><stop offset="0.75" stop-color="#f4f2ea" stop-opacity="0.5"/><stop offset="1" stop-color="#f4f2ea" stop-opacity="0"/></linearGradient>
+      <linearGradient id="fadeR" gradientUnits="userSpaceOnUse" x1="${ST.rN[0]}" y1="${ST.rN[1]}" x2="${f1(mix(ST.rN, ST.rF, 0.62)[0])}" y2="${f1(mix(ST.rN, ST.rF, 0.62)[1])}">
+        <stop offset="0" stop-color="#f4f2ea"/><stop offset="1" stop-color="#f4f2ea" stop-opacity="0"/></linearGradient>
+      <style>
+        .dr { fill: none; stroke: #f4f2ea; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 1; stroke-dashoffset: 1; }
+        .st { stroke-width: 3; opacity: 0.6; } .thin { stroke-width: 1.6; opacity: 0.45; }
+        .cb { stroke-width: 1.8; } .lp { stroke-width: 3.2; }
+        .man path { stroke: #f4f2ea; stroke-linejoin: round; stroke-linecap: round; }
+      </style>
+    </defs>
+    <g filter="url(#boil)">
+      <g id="street">${streetSVG}</g>
+      <g id="lamp">${lampSVG}${posterSVG}</g>
+      <g id="man"></g>
+    </g>`;
+  const qcpa = byId("qcpa"), ASPECT = 253.262 / 340.77;
+  Object.assign(qcpa.style, { height: "150px", width: `${150 * ASPECT}px`, left: `${POSTER.cx - 75 * ASPECT}px`, top: `${POSTER.cy - 82}px`, transform: `rotate(${POSTER.rot}deg)` });
+
+  // ---------- the man: back to us, hat, collar up, hunched, hands in pockets; a slow trudging walk ----------
+  // Local units: feet at (0,0), about 600 tall. p = walk phase (0..1, two steps), hunch = 0..1.
+  function manPaths(p, hunch) {
+    const H = hunch, b = -6 * Math.abs(Math.sin(2 * Math.PI * p)), sw = Math.sin(2 * Math.PI * p) * 7, roll = Math.sin(2 * Math.PI * p) * 3;
+    const legs = [[-1, p], [1, (p + 0.5) % 1]].map(([side, q]) => {
+      let fy, lift;
+      if (q < 0.58) { fy = -24 + 34 * (q / 0.58); lift = 0; }                         // planted, sliding back as he walks on
+      else { const r = (q - 0.58) / 0.42; fy = 10 - 34 * r; lift = Math.sin(Math.PI * r); } // swinging forward (away from us)
+      const hx = side * 26, hy = -172 + b, ax = side * (17 + 3 * lift), ay = fy - 14 - 26 * lift;
+      return { side, hx, hy, ax, ay, kx: (hx + ax) / 2 + side * 2, ky: (hy + ay) / 2 + 8 * lift, lift, depth: fy };
+    }).sort((u, v) => u.depth - v.depth);
+    const leg = ({ hx, hy, kx, ky, ax, ay }) => {
+      const e = (x, y, w) => [[x - w, y], [x + w, y]];
+      const [h0, h1] = e(hx, hy, 19), [k0, k1] = e(kx, ky, 16), [a0, a1] = e(ax, ay, 12);
+      return `M ${P(h0)} Q ${P(k0)} ${P(a0)} L ${P(a1)} Q ${P(k1)} ${P(h1)} Z`;
+    };
+    // a heeled shoe seen from behind; lifting, it tips to show the sole
+    const shoe = ({ ax, ay, lift }) => {
+      const t = 6 + 10 * lift;
+      return `M ${f1(ax - 14)} ${f1(ay)} C ${f1(ax - 16)} ${f1(ay + t)} ${f1(ax - 9)} ${f1(ay + t + 7)} ${f1(ax)} ${f1(ay + t + 7)} C ${f1(ax + 9)} ${f1(ay + t + 7)} ${f1(ax + 16)} ${f1(ay + t)} ${f1(ax + 14)} ${f1(ay)} Z`
+        + (lift > 0.25 ? ` M ${f1(ax - 11)} ${f1(ay + t - 1)} L ${f1(ax + 11)} ${f1(ay + t - 1)}` : "");
+    };
+    const y = (v) => f1(v + b), sh = -14 * H;                      // hunching lifts the shoulders toward the hat
+    const X = (x) => f1(x);
+    const coat = `M -34 ${y(-480 + sh)} C -58 ${y(-480 + sh)} -88 ${y(-474 + sh * 0.7)} -96 ${y(-450 + sh * 0.5)} `
+      + `C -104 ${y(-424)} -110 ${y(-386)} -112 ${y(-346)} C -114 ${y(-312)} -110 ${y(-288)} -104 ${y(-266)} `   // shoulder, sleeve, elbow
+      + `C -98 ${y(-252)} -94 ${y(-236)} -96 ${y(-214)} L ${X(-108 + sw)} ${y(-166)} `                               // coat side flaring to the hem
+      + `C ${X(-60 + sw)} ${y(-158 + roll)} ${X(60 + sw)} ${y(-158 - roll)} ${X(108 + sw)} ${y(-166)} `
+      + `L 96 ${y(-214)} C 94 ${y(-236)} 98 ${y(-252)} 104 ${y(-266)} C 110 ${y(-288)} 114 ${y(-312)} 112 ${y(-346)} `
+      + `C 110 ${y(-386)} 104 ${y(-424)} 96 ${y(-450 + sh * 0.5)} C 88 ${y(-474 + sh * 0.7)} 58 ${y(-480 + sh)} 34 ${y(-480 + sh)} Z`;
+    const seams = `M -80 ${y(-428 + sh * 0.4)} C -84 ${y(-380)} -86 ${y(-320)} -84 ${y(-270)} M 80 ${y(-428 + sh * 0.4)} C 84 ${y(-380)} 86 ${y(-320)} 84 ${y(-270)} `   // sleeves meet the back
+      + `M -104 ${y(-266)} L -80 ${y(-258)} M 104 ${y(-266)} L 80 ${y(-258)} `                                                        // cuffs at the pockets
+      + `M -76 ${y(-326)} L 76 ${y(-326)} M -76 ${y(-314)} L 76 ${y(-314)} `                                                          // half belt
+      + `M 0 ${y(-470 + sh)} L ${X(sw * 0.3)} ${y(-232)} L ${X(-9 + sw)} ${y(-161)} M ${X(sw * 0.3)} ${y(-232)} L ${X(9 + sw)} ${y(-161)}`;  // back seam, vent
+    const collar = `M -40 ${y(-478 + sh)} C -44 ${y(-500 + sh)} -42 ${y(-524 + sh)} -34 ${y(-544 + sh * 1.2)} L 34 ${y(-544 + sh * 1.2)} `
+      + `C 42 ${y(-524 + sh)} 44 ${y(-500 + sh)} 40 ${y(-478 + sh)} Z M -36 ${y(-506 + sh)} C -12 ${y(-498 + sh)} 12 ${y(-498 + sh)} 36 ${y(-506 + sh)}`;
+    const hy = -6 * H, Y = (v) => y(v + hy);                        // head down: the hat sits low, nearly on the collar
+    const brim = `M -76 ${Y(-540)} C -70 ${Y(-524)} 70 ${Y(-524)} 76 ${Y(-540)} C 64 ${Y(-556)} -64 ${Y(-556)} -76 ${Y(-540)} Z`;
+    const crown = `M -44 ${Y(-548)} C -46 ${Y(-572)} -44 ${Y(-592)} -36 ${Y(-600)} C -26 ${Y(-606)} -10 ${Y(-596)} 0 ${Y(-590)} `
+      + `C 10 ${Y(-596)} 26 ${Y(-606)} 36 ${Y(-600)} C 44 ${Y(-592)} 46 ${Y(-572)} 44 ${Y(-548)} Z`;
+    const band = `M -45 ${Y(-560)} C -16 ${Y(-552)} 16 ${Y(-552)} 45 ${Y(-560)} M -45 ${Y(-566)} C -16 ${Y(-558)} 16 ${Y(-558)} 45 ${Y(-566)}`;
+    const shade = (a) => `fill:rgba(8,8,12,${a})`;
+    return [
+      ...legs.map((l) => `<path d="${leg(l)}" style="${shade(0.3)}"/><path d="${shoe(l)}" style="${shade(0.55)}"/>`),
+      `<path d="${coat}" style="${shade(0.28)}"/>`, `<path d="${seams}" style="fill:none; opacity:0.75"/>`,
+      `<path d="${collar}" style="${shade(0.35)}"/>`,
+      `<path d="${crown}" style="${shade(0.45)}"/>`, `<path d="${brim}" style="${shade(0.45)}"/>`, `<path d="${band}" style="fill:none; opacity:0.8"/>`,
+    ].join("");
+  }
+  // His path: in from the bottom right, fully in frame by T.man.inFrame, then up the street, shrinking with distance
+  const A = [800, 1880], B = [170, 1120], S_END = 0.42, PERSP = (1 / S_END - 1) / (T.man.end - T.man.inFrame);
+  const manScale = (t) => 1 / (1 + PERSP * (t - T.man.inFrame));
+  function drawMan(t) {
+    const g = byId("man");
+    if (t < T.man.start) { g.innerHTML = ""; return; }
+    let s = manScale(t);
+    const k = (1 - s) / (1 - S_END);                              // 0 at A, 1 at B (can run below 0 before he is in frame)
+    let x = lerp(A[0], B[0], k), y = lerp(A[1], B[1], k);
+    if (STILL) { x += LAY.man[0]; y += LAY.man[1]; s *= LAY.man[2]; }
+    const walk = ((t - T.man.start) / 1.15) % 1;                  // slow trudge: one stride pair every 1.15 s
+    const hunch = 0.35 + 0.65 * ease(span(T.collar[0], T.collar[1], t)) + 0.04 * Math.sin(t * 9) * span(T.collar[0], T.collar[1], t);  // a shiver as he turns his collar up
+    const gone = 1 - span(T.flash, T.flash + 0.6, t);              // vanishes in the flash
+    const lean = Math.sin(2 * Math.PI * walk) * 1.4 - 3;
+    const paths = manPaths(walk, hunch);
+    const sw = (3.4 / Math.max(s, 0.5)).toFixed(2);               // keep the line weight from thinning out too far
+    g.innerHTML = `<g class="man" style="opacity:${gone.toFixed(3)}" transform="translate(${f1(x)},${f1(y)}) scale(${(s * 1.04).toFixed(4)}) rotate(${lean.toFixed(2)})">
+      <g style="stroke-width:${sw}">${paths}</g>
+      <g style="stroke-width:${(sw * 0.4).toFixed(2)}; opacity:0.45" transform="translate(2,-1.5)">${paths.replace(/fill:rgba\([^)]*\)/g, "fill:none")}</g></g>`;
+  }
+
+  // ---------- lamp light: a faint warm cone and a pool on the cobbles; the halo swells on "halo of a street lamp" ----------
+  const lv = byId("light").getContext("2d");
+  const CONE = [[lx - 30, 650], [lx + 34, 650], [640, 1520], [-90, 1580]];
+  function inCone(x, y) {
+    let c = false;
+    for (let i = 0, j = CONE.length - 1; i < CONE.length; j = i++) {
+      const [xi, yi] = CONE[i], [xj, yj] = CONE[j];
+      if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c;
+    }
+    return c;
+  }
+  const lampOn = (t) => ease(span(T.lampDraw[1] - 0.4, T.lampDraw[1] + 1.2, t)) * (0.92 + 0.08 * Math.sin(t * 7.3) * Math.sin(t * 3.1))
+    * (1 + 0.45 * Math.sin(Math.PI * span(T.halo[0], T.halo[1], t)));
+  function drawLight(t) {
+    lv.clearRect(0, 0, 1080, 1920);
+    const I = lampOn(t); if (I <= 0) return;
+    lv.beginPath(); CONE.forEach(([x, y], i) => (i ? lv.lineTo(x, y) : lv.moveTo(x, y))); lv.closePath();
+    const g = lv.createLinearGradient(0, 640, 0, 1560);
+    g.addColorStop(0, `rgba(255,217,138,${0.14 * I})`); g.addColorStop(1, `rgba(255,217,138,${0.03 * I})`);
+    lv.fillStyle = g; lv.fill();
+    lv.save(); lv.translate(260, 1500); lv.scale(1, 0.3);         // an oval pool of light on the cobbles
+    const pool = lv.createRadialGradient(0, 0, 0, 0, 0, 380);
+    pool.addColorStop(0, `rgba(255,217,138,${0.16 * I})`); pool.addColorStop(1, "rgba(255,217,138,0)");
+    lv.fillStyle = pool; lv.fillRect(-380, -380, 760, 760); lv.restore();
+    const halo = lv.createRadialGradient(lx, 610, 0, lx, 610, 190);
+    halo.addColorStop(0, `rgba(255,226,160,${0.55 * I})`); halo.addColorStop(1, "rgba(255,226,160,0)");
+    lv.fillStyle = halo; lv.fillRect(lx - 190, 420, 380, 380);
+    lv.lineCap = "round";                                          // faint rays
+    for (let k = 0; k < 9; k++) {
+      const u = (k + 0.5) / 9, ex = lerp(-60, 600, u), ey = lerp(1570, 1520, u);
+      const a = 0.08 * I * (0.6 + 0.4 * Math.sin(t * 1.3 + k * 1.7));
+      lv.strokeStyle = `rgba(255,236,190,${a.toFixed(3)})`; lv.lineWidth = 2;
+      lv.beginPath(); lv.moveTo(lx + (u - 0.5) * 40, 640); lv.lineTo(lerp(lx, ex, 0.75), lerp(640, ey, 0.75)); lv.stroke();
+    }
+  }
+
+  // ---------- rain: light, blowing in from the upper left; warmer where it falls through the lamplight ----------
+  const rv = byId("rain").getContext("2d");
+  const DIR = [Math.sin(0.33), Math.cos(0.33)];
+  const DROPS = [...Array(170)].map((_, i) => ({ x0: -700 + rnd(i + 1) * 1800, ph: rnd(i + 2), v: 900 + rnd(i + 3) * 420, L: 26 + rnd(i + 4) * 34, a: 0.22 + rnd(i + 5) * 0.3 }));
+  function drawRain(t) {
+    rv.clearRect(0, 0, 1080, 1920);
+    const on = ease(span(0.6, 3.2, t)); if (on <= 0) return;
+    const SPAN = 2400; rv.lineCap = "round";
+    for (const d of DROPS) {
+      const k = (t * d.v + d.ph * SPAN) % SPAN, x = d.x0 + DIR[0] * k, y = -200 + DIR[1] * k;
+      if (x < -60 || x > 1140 || y > 1980) continue;
+      const warm = inCone(x, y), a = d.a * on * (warm ? 1.6 : 1);
+      rv.strokeStyle = warm ? `rgba(255,226,170,${Math.min(0.9, a).toFixed(3)})` : `rgba(240,240,236,${a.toFixed(3)})`;
+      rv.lineWidth = 1.5;
+      rv.beginPath(); rv.moveTo(x, y); rv.lineTo(x - DIR[0] * d.L, y - DIR[1] * d.L); rv.stroke();
+    }
+    // tiny splashes on the cobbles
+    const slot = Math.floor(t * 8);
+    for (let i = 0; i < 16; i++) {
+      const u = rnd(slot * 31 + i), v = rnd(slot * 17 + i) * 0.85, age = (t * 8 - slot);
+      const pL = mix(ST.lN, ST.lF, depthV(v)), pR = mix(ST.rN, ST.rF, depthV(v)), [x, y] = mix(pL, pR, u);
+      const r = (6 + 6 * age) * (1 - depthV(v) * 0.7);
+      rv.strokeStyle = `rgba(240,240,236,${(0.4 * on * (1 - age)).toFixed(3)})`; rv.lineWidth = 1.2;
+      rv.beginPath(); rv.ellipse(x, y, r, r * 0.3, 0, Math.PI, 2 * Math.PI); rv.stroke();
+    }
+  }
+
+  function drawGrain(t) {
+    const gx = byId("grain").getContext("2d"), img = gx.createImageData(540, 960), d = img.data, seed = Math.floor(t * FPS) * 7919;
+    for (let p = 0; p < d.length; p += 4) { const v = (rnd(seed + p * 0.25) * 255) | 0; d[p] = d[p + 1] = d[p + 2] = v; d[p + 3] = 255; }
+    gx.putImageData(img, 0, 0);
+  }
+
+  // ---------- line work drawing itself on ----------
+  const drawn = (sel, a, b, stagger) => {
+    const els = [...document.querySelectorAll(sel)];
+    return (t) => els.forEach((el, i) => {
+      const k = stagger ? stagger(el, i, els.length) : 0;
+      el.style.strokeDashoffset = (1 - ease(span(a + k * (b - a) * 0.7, a + k * (b - a) * 0.7 + (b - a) * 0.3, t))).toFixed(3);
+    });
+  };
+  const drawLamp = drawn("#lamp .dr", T.lampDraw[0], T.lampDraw[1], (el, i, n) => i / n);
+  const drawCurbs = drawn("#street .st", T.streetDraw[0], T.streetDraw[1], () => 0);
+  const drawCobbles = drawn("#street .cb", T.cobbles[0], T.cobbles[1], (el) => +el.dataset.row / ROWS);   // near rows first
+
+  // ---------- timeline (text) ----------
+  const tl = gsap.timeline({ paused: true });
+  tl.fromTo("#title", { opacity: 0, filter: "blur(14px)", y: 16 }, { opacity: 1, filter: "blur(0px)", y: 0, duration: 1.2, ease: "power2.out" }, T.titleIn);
+  tl.fromTo("#scrim", { opacity: 0 }, { opacity: 1, duration: 1.2 }, T.titleIn - 0.2);
+  tl.to("#title", { opacity: 0, y: -160, scale: 0.6, duration: 0.5, ease: "power3.in", transformOrigin: "50% 15%" }, T.compact);
+  tl.fromTo("#badge", { opacity: 0, y: -30 }, { opacity: 1, y: 0, duration: 0.7, ease: "power2.out" }, T.compact + 0.35);
+  tl.to("#scrim", { opacity: 0.55, duration: 0.8 }, T.compact + 0.3);
+  // the flash of a neon light, then the end card flickers on like a neon sign
+  tl.fromTo("#flash", { opacity: 0 }, { opacity: 0.75, duration: 0.05 }, T.flash - 0.03);
+  tl.to("#flash", { opacity: 0, duration: 0.7, ease: "power2.out" }, T.flash + 0.03);
+  tl.to("#badge", { opacity: 0, duration: 0.2 }, T.flash);
+  tl.to("#scrim", { opacity: 1, duration: 0.4 }, T.flash);
+  const flicker = (sel, at) => [0, 1, 0.15, 1, 0.4, 1].forEach((o, i) => tl.set(sel, { opacity: o }, at + i * 0.07));
+  flicker("#eUp", T.flash + 0.25);
+  document.querySelectorAll("#eTitle1 .rl, #eTitle2 .rl").forEach((el, i) => flicker(el, T.flash + 0.45 + i * 0.03));
+  flicker("#eDate", T.flash + 1.05);
+  flicker("#eCta", T.flash + 1.45);
+
+  // ---------- per frame ----------
+  const fimg = byId("fimg"), fglow = byId("fglow"), noise = byId("boilNoise");
+  let lastSrc = "";
+  async function seek(t0) {
+    const t = STILL ? LAY.frameT : t0;                            // the scene's moment (stills: the 0:05 frame)
+    tl.seek(STILL ? LAY.textT : t0, false);                       // the text's moment (stills: the end card)
+    if (STILL) gsap.set("#badge", { opacity: 1, y: 0 });
+    // dreamy fade-in: up from black, out of a soft blur, with a bloom that melts away
+    const fin = ease(span(0, T.fade, t)), blur = 22 * (1 - ease(span(0, 3.8, t)));
+    fimg.style.opacity = fin.toFixed(3);
+    fimg.style.filter = `blur(${blur.toFixed(2)}px)`;
+    fglow.style.opacity = (0.55 * fin * (1 - span(0.8, 5.5, t))).toFixed(3);
+    noise.setAttribute("seed", String(1 + Math.floor(t * FPS / 3) % 97));   // line boil at 10 fps
+    drawLamp(t); drawCurbs(t); drawCobbles(STILL ? LAY.cobT : t);
+    qcpa.style.opacity = ease(span(T.lampDraw[1] - 0.2, T.lampDraw[1] + 0.8, t)).toFixed(3);
+    drawMan(t); drawLight(t); drawRain(t); drawGrain(t);
+    const n = Math.min(F.env.length, Math.floor(t * FPS + 1e-6) + 1);
+    const src = FRAMES.replace("%05d", String(n).padStart(5, "0"));
+    if (src !== lastSrc) {
+      fimg.src = fglow.src = src; lastSrc = src;
+      try { await Promise.all([fimg.decode(), fglow.decode()]); } catch (e) { console.error("frame", n, e.message); }
+    }
+  }
+
+  (async () => {
+    await Promise.all(["italic 600 60px 'Cormorant Garamond'", "400 60px 'Special Elite'", "400 60px Anton"].map((f) => document.fonts.load(f)));
+    await document.fonts.ready;
+    if (STILL) {
+      document.documentElement.style.height = document.body.style.height = LAY.H + "px";
+      ["fimg", "fglow"].forEach((id) => (byId(id).style.top = LAY.footDY + "px"));
+      Object.assign(byId("vigB").style, { display: "block", top: `${LAY.H - 380}px` });   // the crop loses the clip's own bottom vignette
+      ["light", "scene", "rain"].forEach((id) => (byId(id).style.top = LAY.drawDY + "px"));
+      qcpa.style.top = `${POSTER.cy - 82 + LAY.drawDY}px`;
+      document.body.classList.add("one");
+      byId("badge").querySelector(".no").textContent = "POISON PREVIEW:";
+      ["eUp", "eTitle1", "eTitle2", "badge", "eDate", "eCta"].forEach((id, i) => (byId(id).style.top = LAY.ends[i] + "px"));
+      if (MODE === "fb") byId("eCta").querySelector("span").innerHTML = "TICKETS &middot; LINK IN POST";
+    }
+    window.__tl = tl;
+    window.__meta = { duration: D, width: 1080, height: LAY.H };
+    window.__seek = seek;
+    await seek(0);
+  })();
+</script>
+</body>
+</html>

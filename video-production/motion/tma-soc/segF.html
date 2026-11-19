@@ -1,0 +1,280 @@
+<!doctype html>
+<!-- IMP - Span of Control, segment F (scenes 48 to 57): middle management, divisions and groups. ?scene=N picks the scene.
+     Full graphic clips: 48 (from 3.44 s, after a stock shot of a modular building), 49 (two parts around a stock shot),
+     50, 52, 53, 56, 57. Transparent overlays on Descript stock: 51 (two warehouses), 54 (specialists), 55 (factory leads).
+     Times are seconds from each scene's start (whisper words). -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="../shared/tma.css" />
+<link rel="stylesheet" href="lib/page.css" />
+<style>
+  .slot { position: absolute; border: 4px dashed var(--line); border-radius: 14px; background: rgba(255,255,255,0.35); }
+  .tag { position: absolute; height: 40px; padding: 0 16px; border-radius: 20px; font: 900 22px/40px Roboto; letter-spacing: 0.08em; white-space: nowrap; }
+  .ww { position: absolute; top: 300px; width: 600px; height: 330px; border-radius: 30px; background: #fff; box-shadow: var(--shadow);
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; border: 6px solid transparent; }
+  .ww .big { font: 900 104px/1 Roboto; letter-spacing: 0.02em; color: var(--ink); }
+  .ww .sub { font: 700 44px/1 Roboto; color: var(--slate); }
+  .wh { position: absolute; top: 120px; width: 640px; height: 400px; border-radius: 28px; background: rgba(255,255,255,0.93);
+        box-shadow: 0 24px 60px rgba(0,0,0,0.35); }
+  .wh h3 { position: absolute; left: 32px; top: 26px; font: 900 44px/1 Roboto; color: var(--ink); }
+  .ochip { position: absolute; height: 76px; padding: 0 30px; border-radius: 38px; font: 900 40px/76px Roboto; color: #fff; white-space: nowrap;
+           box-shadow: 0 12px 30px rgba(0,0,0,0.35); }
+  .mini { position: absolute; left: 1220px; top: 90px; width: 600px; height: 330px; border-radius: 28px; background: rgba(255,255,255,0.95);
+          box-shadow: 0 24px 60px rgba(0,0,0,0.35); }
+  .lead { position: absolute; top: 230px; width: 520px; height: 150px; border-radius: 26px; color: #fff; box-shadow: var(--shadow);
+          display: flex; align-items: center; justify-content: center; text-align: center; font: 900 46px/1.1 Roboto; }
+  .mem { position: absolute; width: 120px; height: 120px; border-radius: 24px; background: #fff; box-shadow: var(--shadow);
+         display: flex; align-items: center; justify-content: center; }
+  .q { position: absolute; width: 70px; height: 70px; border-radius: 50%; background: var(--red); color: #fff; font: 900 50px/70px Roboto; text-align: center; }
+  .cont { position: absolute; border-radius: 26px; border: 5px solid; background: rgba(255,255,255,0.7); }
+  .cont h4 { position: absolute; left: 26px; top: 20px; font: 900 40px/1 Roboto; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="pv"></div>
+<script src="../shared/gsap.min.js"></script>
+<script src="../shared/motion.js"></script>
+<script src="lib/kit.js"></script>
+<script>
+window.SCENE_LEN = { 48: 24.59, 49: 27.11, 50: 7.25, 51: 9.57, 52: 5.40, 53: 3.11, 54: 9.33, 55: 9.57, 56: 8.40, 57: 11.93 };
+const PIN = `<svg width="90" height="110" viewBox="0 0 90 110"><path d="M45 104 C45 104 8 62 8 40 a37 37 0 0 1 74 0 C82 62 45 104 45 104z" fill="#2c7ef4"/><circle cx="45" cy="40" r="15" fill="#fff"/></svg>`;
+const WRENCH = `<svg width="110" height="110" viewBox="0 0 110 110"><path d="M76 10 a26 26 0 0 0 -24 34 L12 84 a10 10 0 0 0 14 14 l40 -40 a26 26 0 0 0 34 -24 l-14 14 l-14 -4 l-4 -14 z" fill="#f2a93b"/></svg>`;
+const LAPTOP = `<svg width="80" height="64" viewBox="0 0 80 64"><rect x="12" y="6" width="56" height="38" rx="5" fill="#2c7ef4"/><rect x="18" y="12" width="44" height="26" rx="2" fill="#e8f1ff"/><rect x="4" y="46" width="72" height="10" rx="5" fill="#1d2633"/></svg>`;
+const WR_S = WRENCH.replace('width="110" height="110"', 'width="70" height="70"');
+const STAR = `<svg width="34" height="34" viewBox="0 0 34 34"><path d="M17 2 l4.6 9.6 10.4 1.4 -7.6 7.2 1.9 10.3 -9.3 -5 -9.3 5 1.9 -10.3 -7.6 -7.2 10.4 -1.4z" fill="#ffcb73" stroke="#1d2633" stroke-width="2"/></svg>`;
+
+KIT.start((K) => {
+  const { tl, el } = K;
+
+  // WHERE / WHAT split (50 and 53)
+  const whereWhat = (inAt, litWhere, litWhat) => {
+    const a = el("ww", { left: "300px" }, `${PIN}<div class="big">WHERE</div><div class="sub">Divisions</div>`);
+    const b = el("ww", { left: "1020px" }, `${WRENCH}<div class="big">WHAT</div><div class="sub">Groups</div>`);
+    return [a, b];
+  };
+  const light = (card, t, color = "#2c7ef4") => {
+    tl.to(card, { backgroundColor: color, borderColor: color, scale: 1.06, duration: 0.3, ease: "back.out(2)" }, t);
+    tl.to(card.querySelectorAll(".big,.sub"), { color: "#fff", duration: 0.3 }, t);
+    tl.to(card.querySelectorAll("svg path"), { attr: { fill: "#fff" }, duration: 0.3 }, t);
+    tl.to(card.querySelectorAll("svg circle"), { attr: { fill: color }, duration: 0.3 }, t);
+  };
+
+  if (K.SCENE === 48) {
+    // (0 to 3.44 is a stock shot of a modular building.) "plug in (4.12) different levels of management (5.52 / 6.54), just like we can
+    // plug in different resources (8.08 / 8.94) ... in the operations section (13.32), establishing divisions (15.02), groups (15.80),
+    // and branches (16.24). Logistics (17.44) also use branches (18.56) ... divisions and groups now (19.96 / 21.16), then branches (21.98) in a few minutes (23.26)"
+    const k = el("kicker", { fontSize: "28px" }, `<span class="bar"></span>Modular organization`); K.fadeIn(k, 3.5);
+    K.box("ic", 960, 200, "Incident Commander", "ic", 340, 76);
+    [["ops", 330, "Operations"], ["plan", 750, "Planning"], ["log", 1170, "Logistics"], ["fin", 1590, "Finance/Admin"]].forEach(([id, x, l]) => K.box(id, x, 340, l, "sec", 300, 76));
+    K.pop(K.boxes.ic, 3.5, 0.7);
+    ["ops", "plan", "log", "fin"].forEach((id, i) => { K.conn(`c${id}`, "ic", id, 3.75 + i * 0.06, "var(--line)"); K.pop(K.boxes[id], 3.85 + i * 0.08, 0.7); });
+    // plug in a level of management
+    const slot = el("slot", { left: "180px", top: "450px", width: "300px", height: "76px" }); K.fadeIn(slot, 4.1, 0.2);
+    const lvl = K.box("lvl", 330, 488, "Level of management", "sup", 300, 76, 26);
+    K.hide(lvl); tl.fromTo(lvl, { opacity: 0, y: -160 }, { opacity: 1, y: 0, duration: 0.35, ease: "bounce.out", immediateRender: false }, 5.4);
+    K.conn("clvl", "ops", "lvl", 5.75, "var(--amber-deep)");
+    const p1 = K.chip("plug in", 540, 456, "var(--amber)", "var(--ink)", 30); K.pop(p1, 5.6, 0.5);
+    // plug in resources
+    const RES = [["Engine", 190], ["Crew", 330], ["Dozer", 470]];
+    RES.forEach(([l, x], i) => {
+      const b = K.box(`r${i}`, x, 612, l, "pos", 128, 64, 24);
+      K.hide(b); tl.fromTo(b, { opacity: 0, y: -120 }, { opacity: 1, y: 0, duration: 0.3, ease: "bounce.out", immediateRender: false }, 8.05 + i * 0.3);
+    });
+    const p2 = K.chip("…and resources", 560, 580, "var(--blue)", "#fff", 30); K.pop(p2, 8.9, 0.5);
+    K.out([slot, lvl, p1, p2, K.lines.clvl, K.boxes.r0, K.boxes.r1, K.boxes.r2], 11.2, 0.3);
+    // operations: divisions, groups, branches
+    K.restyle(K.boxes.ops, "ic", 13.3); K.pulse(K.boxes.ops, 13.3, 1.08);
+    K.dim([K.boxes.plan, K.boxes.log, K.boxes.fin], 13.3, 0.35);
+    const MOD = [["div", 110, "Divisions", 15.0], ["grp", 330, "Groups", 15.78], ["br1", 550, "Branches", 16.22]];
+    MOD.forEach(([id, x, l, t]) => {
+      const b = K.box(id, x, 500, l, "grp", 200, 70, 26);
+      K.hide(b); tl.fromTo(b, { opacity: 0, y: -140, scale: 0.8 }, { opacity: 1, y: 0, scale: 1, duration: 0.3, ease: "back.out(2.4)", immediateRender: false }, t);
+      K.conn(`c${id}`, "ops", id, t + 0.15, "var(--blue)");
+    });
+    // logistics: branches
+    K.restyle(K.boxes.ops, "sec", 17.4); tl.to(K.boxes.log, { opacity: 1, duration: 0.2 }, 17.4); K.restyle(K.boxes.log, "ic", 17.4); K.pulse(K.boxes.log, 17.4, 1.08);
+    const br2 = K.box("br2", 1170, 500, "Branches", "grp", 200, 70, 26);
+    K.hide(br2); tl.fromTo(br2, { opacity: 0, y: -140, scale: 0.8 }, { opacity: 1, y: 0, scale: 1, duration: 0.3, ease: "back.out(2.4)", immediateRender: false }, 18.52);
+    K.conn("cbr2", "log", "br2", 18.67, "var(--blue)");
+    // now / later
+    const now1 = el("tag", { left: "50px", top: "552px", background: "#22a35a", color: "#fff" }, "NOW"), now2 = el("tag", { left: "273px", top: "552px", background: "#22a35a", color: "#fff" }, "NOW");
+    K.pop(now1, 19.95, 0.5); K.pop(now2, 20.85, 0.5);
+    const l1 = el("tag", { left: "478px", top: "552px", background: "var(--faint)", color: "var(--slate)" }, "LATER"), l2 = el("tag", { left: "1098px", top: "552px", background: "var(--faint)", color: "var(--slate)" }, "LATER");
+    K.pop(l1, 21.95, 0.5); K.pop(l2, 22.1, 0.5);
+    K.dim([K.boxes.br1, br2], 21.95, 0.55);
+  }
+
+  if (K.SCENE === 49) {
+    // part a (0 to 12.47): "reason for middle management (1.67) ... span of control (6.45). Senior managers realize each position (9.33)
+    //   requires a certain level of attention (12.05)". (12.47 to 16.77 is a stock shot of a swamped manager.)
+    // part b (16.77 to end): "establish a new level of middle management (17.91 / 20.51) so that each lower level manager (22.03 / 22.81)
+    //   can focus on their own smaller numbers of people (24.91 / 26.19)"
+    K.header("Span of control", "Why middle management exists", 0.2, 1.1, { tSize: 60 });
+    K.box("mgr", 960, 250, "Manager", "ic", 260, 76);
+    const xs = [...Array(15)].map((_, i) => 176 + i * 112);
+    xs.forEach((x, i) => K.box(`p${i}`, x, 560, "", "pos", 92, 76));
+    K.pop(K.boxes.mgr, 1.6, 0.7);
+    xs.forEach((x, i) => { K.conn(`d${i}`, "mgr", `p${i}`, 2.0 + i * 0.05, "var(--line)", 4, 0.3); K.pop(K.boxes[`p${i}`], 2.1 + i * 0.05, 0.6); });
+    const cnt = K.counter("DIRECT REPORTS", "15", 3.0);
+    // attention: a meter under each position fills
+    const meters = xs.map((x, i) => {
+      const m = el("", { position: "absolute", left: `${x - 40}px`, top: "612px", width: "80px", height: "14px", borderRadius: "7px", background: "var(--faint)", overflow: "hidden" },
+        `<i style="position:absolute;left:0;top:0;bottom:0;width:100%;background:var(--blue);transform-origin:0 50%;transform:scaleX(0)"></i>`);
+      K.fadeIn(m, 9.2, 0.2);
+      tl.to(m.querySelector("i"), { scaleX: 1, duration: 0.25 }, 9.35 + i * 0.12);
+      return m;
+    });
+    const att = K.chip("Attention per position", 700, 140, "var(--blue)", "#fff", 30); att.style.left = "1180px"; att.style.top = "235px"; K.pop(att, 10.9, 0.5);
+    xs.forEach((x, i) => K.lineColor(K.lines[`d${i}`], "#e62324", 11.95 + (i % 5) * 0.03));
+    tl.to(meters.map((m) => m.querySelector("i")), { scaleX: 0.25, backgroundColor: "#e62324", duration: 0.35 }, 12.0);
+    cnt.set("15", 12.0, "var(--red)");
+    // part b
+    K.out([att, ...meters], 16.9, 0.2);
+    xs.forEach((x, i) => K.out(K.lines[`d${i}`], 17.9, 0.3));
+    [400, 960, 1520].forEach((x, j) => {
+      const s = K.box(`s${j}`, x, 405, "Supervisor", "sup", 230, 70, 26);
+      K.hide(s); tl.fromTo(s, { opacity: 0, y: -120 }, { opacity: 1, y: 0, duration: 0.35, ease: "back.out(2)", immediateRender: false }, 18.9 + j * 0.2);
+    });
+    const mid = K.chip("+ middle management", 0, 0, "var(--amber)", "var(--ink)", 30); mid.style.left = "1180px"; mid.style.top = "235px"; K.pop(mid, 19.4, 0.5);
+    [0, 1, 2].forEach((j) => K.conn(`m${j}`, "mgr", `s${j}`, 20.4 + j * 0.05, "var(--amber-deep)", 5, 0.35));
+    xs.forEach((x, i) => K.conn(`e${i}`, `s${Math.floor(i / 5)}`, `p${i}`, 20.7 + i * 0.03, "var(--line)", 4, 0.3));
+    cnt.set("3", 20.6, "#22a35a");
+    K.out(mid, 21.8, 0.2);
+    [0, 1, 2].forEach((j) => {
+      const band = el("", { position: "absolute", left: `${[400, 960, 1520][j] - 280}px`, top: "350px", width: "560px", height: "270px", borderRadius: "28px",
+        background: "rgba(44,126,244,0.10)", border: "4px solid rgba(44,126,244,0.5)" });
+      K.root.insertBefore(band, K.svg);
+      K.fadeIn(band, 22.0 + j * 0.9, 0.3);
+      const five = K.chip("5", 0, 0, "var(--blue)", "#fff", 30); Object.assign(five.style, { left: `${[400, 960, 1520][j] + 170}px`, top: "372px" });
+      K.pop(five, 22.2 + j * 0.9, 0.5);
+    });
+  }
+
+  if (K.SCENE === 50) {
+    // "We talk about operations (1.16). We can divide it (2.72) a couple of ways (3.82 / 4.24). Let's talk about geographic divisions (5.36 / 6.04)"
+    const ops = K.box("ops", 960, 180, "Operations", "ic", 340, 84, 34); K.pop(ops, 0.95, 0.6);
+    const [a, b] = whereWhat();
+    K.pop(a, 3.6, 0.6); K.pop(b, 3.95, 0.6);
+    const sp = el("", { position: "absolute", left: "958px", top: "222px", width: "4px", height: "60px", background: "var(--line)" }); K.fadeIn(sp, 3.5, 0.2);
+    light(a, 5.3); K.dim(b, 5.3, 0.35);
+  }
+
+  if (K.SCENE === 53) {
+    // "Another way to do it is based on what people do (1.76 / 2.26)"
+    const ops = K.box("ops", 960, 180, "Operations", "ic", 340, 84, 34);
+    const [a, b] = whereWhat();
+    tl.set(a, { opacity: 0.35 }, 0);
+    light(b, 1.25, "#f2a93b");
+    K.pulse(b, 1.9, 1.04);
+  }
+
+  if (K.SCENE === 51) {
+    // overlay on warehouse footage: "two warehouses (1.97 / 2.17) and each one has ten employees (3.97 / 4.19), it's pretty logical to put
+    // one person in charge (7.01 / 7.75) of each warehouse (8.29)"
+    [["Warehouse A", 220, 1.9], ["Warehouse B", 1060, 2.15]].forEach(([name, x, t], w) => {
+      const c = el("wh", { left: `${x}px` }, `<h3>${name}</h3>`);
+      K.pop(c, t, 0.7);
+      for (let i = 0; i < 10; i++) { const p = K.person(x + 110 + (i % 5) * 105, 335 + Math.floor(i / 5) * 110, "var(--blue)", 0.85); K.pop(p, 3.95 + w * 0.15 + i * 0.04, 0.3); }
+      const n = K.chip("10", x + 500, 140, "var(--slate)", "#fff", 30); K.pop(n, 4.3 + w * 0.1, 0.5);
+      const lead = K.chip(`${STAR} In charge`, x + 210, 70, "var(--amber)", "var(--ink)", 32); lead.style.display = "flex"; lead.style.alignItems = "center"; lead.style.gap = "10px";
+      K.pop(lead, 7.0 + w * 0.45, 0.4, "back.out(2.4)");
+    });
+  }
+
+  if (K.SCENE === 52) {
+    // "When we divide geographically (0.50 / 1.86), we call them divisions (3.88)"
+    const ops = K.box("ops", 960, 290, "Operations", "ic", 340, 84, 34); K.pop(ops, 0.1, 0.7);
+    K.box("da", 600, 500, "Division A", "grp", 360, 84, 34); K.box("db", 1320, 500, "Division B", "grp", 360, 84, 34);
+    K.conn("ca", "ops", "da", 0.5); K.conn("cb", "ops", "db", 0.6);
+    K.pop(K.boxes.da, 0.7, 0.6); K.pop(K.boxes.db, 0.85, 0.6);
+    [[600, "Warehouse A"], [1320, "Warehouse B"]].forEach(([x, l], i) => {
+      const s = el("", { position: "absolute", left: `${x - 200}px`, top: "560px", width: "400px", textAlign: "center", font: "700 30px/1 Roboto", color: "var(--slate)",
+        display: "flex", justifyContent: "center", alignItems: "center", gap: "10px" }, `${PIN.replace('width="90" height="110"', 'width="26" height="32"')} ${l}`);
+      K.rise(s, 1.5 + i * 0.15, 16);
+    });
+    const big = el("", { position: "absolute", left: 0, right: 0, top: "90px", textAlign: "center", font: "900 110px/1 Roboto", color: "var(--blue)", letterSpacing: "0.02em" }, "DIVISIONS");
+    K.pop(big, 3.8, 1.5, "power3.out");
+    tl.to([K.boxes.da, K.boxes.db], { scale: 1.08, duration: 0.18, yoyo: true, repeat: 1 }, 3.9);
+  }
+
+  if (K.SCENE === 54) {
+    // overlay on specialists at work: "highly specialized (3.95 / 4.31) and need technical supervision (5.79 / 6.41), not just safe oversight (7.55 / 8.11)"
+    const a = el("ochip", { left: "120px", top: "110px", background: "var(--blue)" }, "Highly specialized"); K.slide(a, 3.85, -80);
+    const b = el("ochip", { left: "120px", top: "210px", background: "var(--amber)", color: "var(--ink)" }, "Needs technical supervision"); K.slide(b, 5.7, -80);
+    const c = el("ochip", { left: "120px", top: "310px", background: "rgba(29,38,51,0.85)" }, "not just oversight"); K.slide(c, 7.45, -80);
+  }
+
+  if (K.SCENE === 55) {
+    // overlay on factory footage: "computer technicians (2.64 / 3.04) may report to a senior computer technician (4.78 / 5.58), while all the
+    // mechanics (7.34) may report to a senior mechanic (8.72 / 8.94)" (the footage cuts to mechanics at 6.28)
+    const card = el("mini", {}); K.pop(card, 2.6, 0.7);
+    const mk = (lead, member, icon, t0, t1, color) => {
+      const g = el("", { position: "absolute", left: 0, top: 0, width: "600px", height: "330px" }, "", card);
+      const L = el("", { position: "absolute", left: "120px", top: "36px", width: "360px", height: "80px", borderRadius: "16px", background: color, color: color === "var(--amber)" ? "var(--ink)" : "#fff",
+        font: "900 34px/80px Roboto", textAlign: "center", boxShadow: "var(--shadow)" }, lead, g);
+      const ln = el("", { position: "absolute", left: "298px", top: "116px", width: "4px", height: "40px", background: "var(--line)" }, "", g);
+      const hb = el("", { position: "absolute", left: "110px", top: "154px", width: "380px", height: "4px", background: "var(--line)" }, "", g);
+      const ms = [110, 300, 490].map((x) => el("", { position: "absolute", left: `${x - 70}px`, top: "176px", width: "140px", height: "120px", borderRadius: "16px", background: "#fff",
+        border: "4px solid var(--faint)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "6px", font: "700 22px/1 Roboto", color: "var(--slate)" },
+        `${icon}<span>${member}</span>`, g));
+      ms.forEach((m, i) => K.pop(m, t0 + i * 0.08, 0.6));
+      K.fadeIn([ln, hb], t1 - 0.1, 0.2); K.pop(L, t1, 0.6);
+      return g;
+    };
+    const g1 = mk("Senior computer tech", "Tech", LAPTOP.replace('width="80" height="64"', 'width="60" height="48"'), 2.7, 4.75, "var(--blue)");
+    tl.to(g1, { opacity: 0, duration: 0.25 }, 6.2);
+    tl.to(card, { opacity: 0, scale: 0.9, duration: 0.25 }, 6.2);
+    tl.fromTo(card, { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)", immediateRender: false }, 7.15);
+    const g2 = mk("Senior mechanic", "Mechanic", WR_S.replace('width="70" height="70"', 'width="50" height="50"'), 7.3, 8.7, "var(--amber)");
+  }
+
+  if (K.SCENE === 56) {
+    // "each leader may have the same leadership skills (2.19 / 2.87), neither (3.85) would likely excel (4.99) at leading the other team's people (6.91 / 7.31)"
+    const L = el("lead", { left: "260px", background: "var(--blue)" }, "Senior<br>computer tech");
+    const R = el("lead", { left: "1140px", background: "var(--amber)", color: "var(--ink)" }, "Senior<br>mechanic");
+    K.pop(L, 0.3, 0.7); K.pop(R, 0.45, 0.7);
+    const teamL = [370, 520, 670].map((x) => el("mem", { left: `${x - 60}px`, top: "450px" }, LAPTOP));
+    const teamR = [1250, 1400, 1550].map((x) => el("mem", { left: `${x - 60}px`, top: "450px" }, WR_S));
+    [...teamL, ...teamR].forEach((m, i) => K.pop(m, 0.6 + i * 0.06, 0.6));
+    [[L, 400], [R, 1280]].forEach(([n, x], i) => { const c = K.chip("Leadership ✓", x - 30, 150, "#22a35a", "#fff", 30); K.pop(c, 2.15 + i * 0.15, 0.5); K.out(c, 3.7, 0.2); });
+    // swap
+    tl.to(L, { left: "1140px", duration: 0.7, ease: "power2.inOut" }, 3.85); tl.to(L, { y: -60, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.out" }, 3.85);
+    tl.to(R, { left: "260px", duration: 0.7, ease: "power2.inOut" }, 3.85); tl.to(R, { y: 60, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.out" }, 3.85);
+    [...teamL, ...teamR].forEach((m, i) => {
+      const q = el("q", { left: `${parseFloat(m.style.left) + 80}px`, top: "420px" }, "?");
+      K.pop(q, 4.95 + i * 0.07, 0.3, "back.out(3)");
+      tl.to(q, { rotation: i % 2 ? 12 : -12, duration: 0.25, yoyo: true, repeat: 5, ease: "sine.inOut" }, 5.4);
+    });
+    const x = el("", { position: "absolute", left: 0, right: 0, top: "90px", textAlign: "center", font: "900 76px/1 Roboto", color: "var(--red)" }, "Same skills, wrong team");
+    K.pop(x, 5.0, 1.4, "power3.out");
+  }
+
+  if (K.SCENE === 57) {
+    // "when we group people by their function (1.61), we call them groups (3.11). And yes (4.61), you can have groups within divisions (5.81 / 6.39)
+    //  or divisions within groups (7.09 / 7.83) depending on the level of leadership (9.89) that you need (11.07)"
+    const big = el("", { position: "absolute", left: 0, right: 0, top: "90px", textAlign: "center", font: "900 110px/1 Roboto", color: "var(--amber-deep)", letterSpacing: "0.02em" }, "GROUPS");
+    const ops = K.box("ops", 960, 290, "Operations", "ic", 340, 84, 34); K.pop(ops, 0.3, 0.7);
+    K.box("ga", 600, 500, "Computer tech group", "sup", 420, 84, 32); K.box("gb", 1320, 500, "Mechanic group", "sup", 420, 84, 32);
+    K.conn("ca", "ops", "ga", 1.3); K.conn("cb", "ops", "gb", 1.4);
+    K.pop(K.boxes.ga, 1.5, 0.6); K.pop(K.boxes.gb, 1.65, 0.6);
+    K.pop(big, 3.0, 1.5, "power3.out");
+    K.out([big, ops, K.boxes.ga, K.boxes.gb, K.lines.ca, K.lines.cb], 4.4, 0.3);
+    const nest = (x, title, color, items, ikind, t) => {
+      const c = el("cont", { left: `${x}px`, top: "170px", width: "700px", height: "420px", borderColor: color }, `<h4 style="color:${color}">${title}</h4>`);
+      K.pop(c, t, 0.7);
+      items.forEach((l, i) => { const b = K.box(`${title}${i}`, x + 190 + i * 320, 420, l, ikind, 280, 90, 30); K.pop(b, t + 0.35 + i * 0.15, 0.5); });
+      return c;
+    };
+    const c1 = nest(180, "Division A", "#2c7ef4", ["Tech group", "Mechanic group"], "sup", 5.75);
+    const c2 = nest(1040, "Mechanic group", "#f2a93b", ["Division A", "Division B"], "grp", 7.05);
+    const w = el("", { position: "absolute", left: "880px", top: "330px", width: "160px", textAlign: "center", font: "900 44px/1 Roboto", color: "var(--slate)" }, "or");
+    K.fadeIn(w, 6.85, 0.2);
+    const need = K.chip("Match the leadership you need", 0, 0, "var(--ink)", "#fff", 34); Object.assign(need.style, { left: "0", right: "0", top: "86px", margin: "0 auto", width: "fit-content" });
+    K.rise(need, 9.8, 20);
+  }
+}, { full: [48, 49, 50, 52, 53, 56, 57] });
+</script>
+</body>
+</html>

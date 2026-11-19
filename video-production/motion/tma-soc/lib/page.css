@@ -1,0 +1,13 @@
+/* Shared page rules for the Span of Control scene pages (segments E to K). Overlays render on transparent;
+   html.full scenes are full graphic clips on the TMA grey. ?preview adds a stand-in footage frame and caption gradient. */
+html, body { background: transparent; }
+html.full, html.full body { background: var(--bg); }
+html.preview:not(.full) body { background: linear-gradient(135deg, #5b6470, #2f3640 60%, #20252c); }
+#pv { position: absolute; inset: 0; display: none; pointer-events: none; z-index: 99;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 62%, rgba(0,0,0,0.78) 100%); }
+html.preview #pv { display: block; }
+#root { position: absolute; inset: 0; }
+.card { position: absolute; background: #fff; border-radius: 22px; box-shadow: var(--shadow); }
+.lbl { position: absolute; font: 900 46px/1 Roboto; color: #fff; text-shadow: 0 6px 20px rgba(0,0,0,0.5); white-space: nowrap; }
+.ink { color: var(--ink); text-shadow: none; }
+.ic { display: block; }

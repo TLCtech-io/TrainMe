@@ -1,0 +1,158 @@
+<!doctype html>
+<!-- IMP - Span of Control, WORKING 13:41-14:21. Delegation math: +1 deputy, -3 positions = -2; then +3 support, -9 = -6. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="../shared/tma.css" />
+<style>
+  .node { position: absolute; height: 74px; border-radius: 14px; background: var(--white); border: 3px solid var(--blue);
+          display: flex; align-items: center; justify-content: center; font: 700 24px/1 "Roboto"; box-shadow: var(--shadow); }
+  .node.ic { background: var(--blue); color: var(--white); height: 84px; font-size: 28px; }
+  .node.dep { background: var(--amber); border-color: var(--amber-deep); }
+  .ln { position: absolute; background: var(--line); }
+  .counter { position: absolute; right: 120px; top: 92px; width: 330px; height: 170px; display: flex; flex-direction: column;
+             align-items: flex-end; justify-content: center; padding-right: 36px; }
+  .counter .lab { font: 700 20px/1 "Roboto"; letter-spacing: 0.16em; color: var(--slate); }
+  .counter .num { font: 900 108px/1 "Roboto"; margin-top: 8px; }
+  .chips { position: absolute; left: 120px; top: 228px; display: flex; gap: 14px; }
+  .phase { position: absolute; inset: 0; }
+</style>
+</head>
+<body>
+  <div class="kicker" id="kicker"><span class="bar"></span>Delegation</div>
+  <div class="title" id="t1">Add a deputy, shrink your span</div>
+  <div class="title" id="t2">Multiple support positions</div>
+  <div class="card counter" id="counter"><div class="lab">DIRECT REPORTS</div><div class="num" id="num">0</div></div>
+
+  <div class="phase" id="p1"><div class="chips">
+    <div class="chip blue" id="c11">+1 deputy</div><div class="chip red" id="c12">&minus;3 positions</div><div class="chip amber" id="c13">= 2 fewer direct reports</div>
+  </div></div>
+  <div class="phase" id="p2"><div class="chips">
+    <div class="chip blue" id="c21">+3 support</div><div class="chip red" id="c22">&minus;9 positions</div><div class="chip amber" id="c23">= 6 fewer direct reports</div>
+  </div></div>
+
+<script src="../shared/gsap.min.js"></script>
+<script src="../shared/motion.js"></script>
+<script>
+  const D = 40;
+  // Seconds from clip start (WORKING 13:41). Rick: "By appointing a support position..." at 13:45.
+  const T = {
+    build: 0.5, deputy: 4.6, regroup: 7.8, minus2: 10.2, pulseAdd: 13.0, pulseSub: 15.5,
+    p2: 21.6, supports: 24.0, regroup2: 26.5, minus6: 29.0, pulseAdd2: 31.0, pulseSub2: 32.5,
+  };
+  const IC_X = 960, IC_TOP = 324, IC_BOTTOM = 408, BUS_Y = 462, L2_TOP = 518, L2_BOTTOM = 592, L3_TOP = 694, CL_BUS = 640;
+
+  function mk(parent, cls, css, html = "", id) {
+    const d = document.createElement("div"); d.className = cls; Object.assign(d.style, css); d.innerHTML = html;
+    if (id) d.id = id; document.getElementById(parent).appendChild(d); return d;
+  }
+  const px = (n) => `${n}px`;
+  const vline = (p, x, y1, y2, id) => mk(p, "ln", { left: px(x - 2), top: px(y1), width: "4px", height: px(y2 - y1) }, "", id);
+  const hline = (p, x1, x2, y, id) => mk(p, "ln", { left: px(x1), top: px(y - 2), width: px(x2 - x1), height: "4px" }, "", id);
+  const node = (p, cls, cx, top, w, label, id) => mk(p, `node ${cls}`, { left: px(cx - w / 2), top: px(top), width: px(w) }, label, id);
+
+  // Phase 1: IC with 7 positions; three of them will move under a deputy.
+  const P1 = [325, 521, 717, 913, 1203, 1399, 1595]; // node centers; right three are the deputy's future cluster
+  node("p1", "ic", IC_X, IC_TOP, 340, "Incident Commander", "ic1");
+  vline("p1", IC_X, IC_BOTTOM, BUS_Y, "stem1");
+  hline("p1", P1[0], P1[6], BUS_Y, "bus1");
+  P1.forEach((x, i) => { vline("p1", x, BUS_Y, L3_TOP, `ls1_${i}`); node("p1", "", x, L3_TOP, 170, "Position", `n1_${i}`); });
+  vline("p1", 1399, BUS_Y, L2_TOP, "dstub");
+  node("p1", "dep", 1399, L2_TOP, 200, "Deputy", "dep");
+  vline("p1", 1399, L2_BOTTOM, CL_BUS, "dstem");
+  hline("p1", 1203, 1595, CL_BUS, "dbus");
+  [1203, 1399, 1595].forEach((x, i) => vline("p1", x, CL_BUS, L3_TOP, `ds_${i}`));
+
+  // Phase 2: IC with 9 positions in three clusters; three support positions take them over.
+  const CL = [[204, 376, 548], [788, 960, 1132], [1372, 1544, 1716]];
+  node("p2", "ic", IC_X, IC_TOP, 340, "Incident Commander", "ic2");
+  vline("p2", IC_X, IC_BOTTOM, BUS_Y, "stem2");
+  hline("p2", 204, 1716, BUS_Y, "bus2");
+  CL.flat().forEach((x, i) => { vline("p2", x, BUS_Y, L3_TOP, `ls2_${i}`); node("p2", "", x, L3_TOP, 150, "Position", `n2_${i}`); });
+  CL.forEach((c, k) => {
+    vline("p2", c[1], BUS_Y, L2_TOP, `sstub${k}`);
+    node("p2", "dep", c[1], L2_TOP, 180, "Support", `sup${k}`);
+    vline("p2", c[1], L2_BOTTOM, CL_BUS, `sstem${k}`);
+    hline("p2", c[0], c[2], CL_BUS, `sbus${k}`);
+    c.forEach((x, j) => vline("p2", x, CL_BUS, L3_TOP, `ss${k}_${j}`));
+  });
+
+  const tl = gsap.timeline({ paused: true });
+  const pop = (sel, t) => tl.fromTo(sel, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(2)" }, t);
+  const drawV = (sel, t, d = 0.3) => tl.fromTo(sel, { scaleY: 0 }, { scaleY: 1, duration: d, ease: "power2.out", transformOrigin: "50% 0%" }, t);
+  const drawH = (sel, t, d = 0.5) => tl.fromTo(sel, { scaleX: 0 }, { scaleX: 1, duration: d, ease: "power2.out", transformOrigin: "50% 50%" }, t);
+  const flash = (color, t) => { tl.to("#num", { color, scale: 1.12, duration: 0.18 }, t); tl.to("#num", { color: "#1d2633", scale: 1, duration: 0.6 }, t + 0.25); };
+  const pulse = (sel, t) => tl.to(sel, { scale: 1.1, duration: 0.25, yoyo: true, repeat: 1, ease: "sine.inOut" }, t);
+
+  tl.fromTo("#kicker", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 0.1);
+  tl.fromTo("#t1", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.25);
+  tl.set("#t2", { opacity: 0 }, 0);
+  tl.fromTo("#counter", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, 0.4);
+  tl.set(["#c11", "#c12", "#c13", "#c21", "#c22", "#c23", "#p2"], { opacity: 0 }, 0);
+
+  // Phase 1 build
+  pop("#ic1", T.build);
+  drawV("#stem1", T.build + 0.3);
+  drawH("#bus1", T.build + 0.5);
+  P1.forEach((_, i) => { drawV(`#ls1_${i}`, T.build + 0.8 + i * 0.08); tl.fromTo(`#n1_${i}`, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 }, T.build + 0.9 + i * 0.08); });
+  tl.set(["#dstub", "#dep", "#dstem", "#dbus", "#ds_0", "#ds_1", "#ds_2"], { opacity: 0 }, 0);
+  // +1 deputy
+  tl.set("#dstub", { opacity: 1 }, T.deputy);
+  drawV("#dstub", T.deputy, 0.25);
+  pop("#dep", T.deputy + 0.15);
+  pop("#c11", T.deputy + 0.2);
+  flash("#2c7ef4", T.deputy + 0.3);
+  // -3 positions: the right cluster now reports to the deputy
+  [4, 5, 6].forEach((i) => tl.to(`#ls1_${i}`, { opacity: 0, duration: 0.4 }, T.regroup));
+  tl.to("#bus1", { width: 1399 - 325, duration: 0.5, ease: "power2.inOut" }, T.regroup);
+  tl.set(["#dstem", "#dbus", "#ds_0", "#ds_1", "#ds_2"], { opacity: 1 }, T.regroup + 0.2);
+  drawV("#dstem", T.regroup + 0.2, 0.2);
+  drawH("#dbus", T.regroup + 0.35, 0.35);
+  [0, 1, 2].forEach((i) => drawV(`#ds_${i}`, T.regroup + 0.55, 0.2));
+  [4, 5, 6].forEach((i) => tl.to(`#n1_${i}`, { borderColor: "#f2a93b", duration: 0.4 }, T.regroup + 0.4));
+  pop("#c12", T.regroup + 0.3);
+  flash("#e62324", T.regroup + 0.4);
+  pop("#c13", T.minus2);
+  pulse("#c11", T.pulseAdd);
+  pulse("#c12", T.pulseSub);
+
+  // Phase 2
+  tl.to(["#p1", "#t1"], { opacity: 0, duration: 0.4 }, T.p2);
+  tl.to("#p2", { opacity: 1, duration: 0.01 }, T.p2 + 0.4);
+  tl.fromTo("#t2", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, T.p2 + 0.4);
+  pop("#ic2", T.p2 + 0.5);
+  drawV("#stem2", T.p2 + 0.7);
+  drawH("#bus2", T.p2 + 0.9);
+  CL.flat().forEach((_, i) => { drawV(`#ls2_${i}`, T.p2 + 1.1 + i * 0.06); tl.fromTo(`#n2_${i}`, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 }, T.p2 + 1.2 + i * 0.06); });
+  CL.forEach((c, k) => {
+    tl.set([`#sstub${k}`, `#sup${k}`, `#sstem${k}`, `#sbus${k}`, `#ss${k}_0`, `#ss${k}_1`, `#ss${k}_2`], { opacity: 0 }, 0);
+    // +3 support
+    tl.set(`#sstub${k}`, { opacity: 1 }, T.supports + k * 0.25);
+    drawV(`#sstub${k}`, T.supports + k * 0.25, 0.25);
+    pop(`#sup${k}`, T.supports + 0.15 + k * 0.25);
+    // -9 positions
+    c.forEach((_, j) => tl.to(`#ls2_${k * 3 + j}`, { opacity: 0, duration: 0.4 }, T.regroup2));
+    tl.set([`#sstem${k}`, `#sbus${k}`, `#ss${k}_0`, `#ss${k}_1`, `#ss${k}_2`], { opacity: 1 }, T.regroup2 + 0.2);
+    drawV(`#sstem${k}`, T.regroup2 + 0.2, 0.2);
+    drawH(`#sbus${k}`, T.regroup2 + 0.35, 0.35);
+    c.forEach((_, j) => { drawV(`#ss${k}_${j}`, T.regroup2 + 0.55, 0.2); tl.to(`#n2_${k * 3 + j}`, { borderColor: "#f2a93b", duration: 0.4 }, T.regroup2 + 0.4); });
+  });
+  tl.to("#bus2", { scaleX: (1544 - 376) / (1716 - 204), duration: 0.5, ease: "power2.inOut" }, T.regroup2);
+  pop("#c21", T.supports + 0.3);
+  flash("#2c7ef4", T.supports + 0.6);
+  pop("#c22", T.regroup2 + 0.3);
+  flash("#e62324", T.regroup2 + 0.4);
+  pop("#c23", T.minus6);
+  pulse("#c21", T.pulseAdd2);
+  pulse("#c22", T.pulseSub2);
+
+  const num = document.getElementById("num");
+  M.register(tl, { duration: D, width: 1920, height: 1080 }, (t) => {
+    const v = t < T.p2 + 0.2
+      ? M.keys([[T.build + 0.8, 0], [T.build + 1.6, 7], [T.deputy + 0.3, 7], [T.deputy + 0.6, 8], [T.regroup + 0.4, 8], [T.regroup + 0.8, 5]], t)
+      : M.keys([[T.p2 + 1.1, 0], [T.p2 + 1.9, 9], [T.supports + 0.3, 9], [T.supports + 0.9, 12], [T.regroup2 + 0.4, 12], [T.regroup2 + 1.0, 3]], t);
+    num.textContent = Math.round(v);
+  });
+</script>
+</body>
+</html>

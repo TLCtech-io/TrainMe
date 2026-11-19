@@ -1,0 +1,102 @@
+<!doctype html>
+<!-- IMP - Span of Control, WORKING 0:40-1:02. Rick's kitchen range: six burners, but his span is three. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="../shared/tma.css" />
+<style>
+  .stove { position: absolute; left: 120px; top: 260px; width: 980px; height: 530px; border-radius: 28px;
+           background: linear-gradient(160deg, #2a3442, #1d2633); box-shadow: var(--shadow); overflow: hidden; }
+  .burner { position: absolute; width: 240px; height: 240px; }
+  .burner svg { position: absolute; inset: 0; width: 240px; height: 240px; }
+  .glow { position: absolute; left: -90px; top: -90px; width: 420px; height: 420px; border-radius: 50%;
+          background: radial-gradient(circle, rgba(255, 203, 115, 0.55) 0%, rgba(255, 203, 115, 0) 62%); }
+  .glow.red { background: radial-gradient(circle, rgba(230, 35, 36, 0.6) 0%, rgba(230, 35, 36, 0) 62%); }
+  .alert { position: absolute; right: 6px; top: 6px; width: 64px; height: 64px; border-radius: 50%; background: var(--red);
+           color: var(--white); display: flex; align-items: center; justify-content: center; font: 900 40px/1 "Roboto"; }
+  .side { position: absolute; left: 1180px; top: 300px; width: 640px; }
+  .big { font: 900 220px/0.9 "Roboto"; letter-spacing: -0.02em; }
+  .under { width: 120px; height: 12px; border-radius: 6px; margin: 18px 0 22px; }
+  .label { font: 700 44px/1.15 "Roboto"; }
+  .sub { font: 400 30px/1.3 "Roboto"; color: var(--slate); margin-top: 14px; }
+</style>
+</head>
+<body>
+  <div class="kicker" id="kicker"><span class="bar"></span>An analogy from the kitchen</div>
+  <div class="title" id="title">Know your burner limit</div>
+
+  <div class="stove" id="stove"></div>
+
+  <div class="side" id="phA">
+    <div class="big">6</div><div class="under" style="background: var(--line)"></div>
+    <div class="label">burners on the range</div>
+    <div class="sub">Plus two ovens and a 22-inch griddle</div>
+  </div>
+  <div class="side" id="phB">
+    <div class="big" id="numB">0</div><div class="under" style="background: var(--amber)"></div>
+    <div class="label">burners: my span of control</div>
+    <div class="sub">What I can cook at once without losing track</div>
+  </div>
+  <div class="side" id="phC">
+    <div class="big" style="color: var(--red)">4+</div><div class="under" style="background: var(--red)"></div>
+    <div class="label">and I lose the full scope</div>
+    <div class="sub" id="subC2">Something burns, or a key ingredient gets missed.</div>
+  </div>
+
+<script src="../shared/gsap.min.js"></script>
+<script src="../shared/motion.js"></script>
+<script>
+  const D = 22;
+  const T = { burners: 0.6, mySpan: 8.0, overload: 14.0, burns: 20.0 }; // from clip start (WORKING 0:40)
+  const RING = "#3a4654";
+  const stove = document.getElementById("stove");
+  const centers = [[163, 150], [490, 150], [817, 150], [163, 380], [490, 380], [817, 380]];
+  const ringSvg = (color) => `<svg viewBox="0 0 240 240"><circle cx="120" cy="120" r="100" fill="none" stroke="${color}" stroke-width="12"/>
+    <circle cx="120" cy="120" r="62" fill="none" stroke="${color}" stroke-width="10"/><circle cx="120" cy="120" r="18" fill="${color}"/></svg>`;
+  centers.forEach(([x, y], i) => {
+    const b = document.createElement("div");
+    b.className = "burner"; b.id = `b${i}`;
+    b.style.left = `${x - 120}px`; b.style.top = `${y - 120}px`;
+    const hot = i === 3 ? "#ff5a4e" : "#ffcb73";
+    b.innerHTML = `<div class="glow ${i === 3 ? "red" : ""}" id="g${i}"></div>${ringSvg(RING)}<div id="h${i}" style="position:absolute;inset:0">${ringSvg(hot)}</div>` +
+      (i === 3 ? `<div class="alert" id="alert">!</div>` : "");
+    stove.appendChild(b);
+  });
+
+  const tl = gsap.timeline({ paused: true });
+  tl.fromTo("#kicker", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 0.1);
+  tl.fromTo("#title", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.25);
+  tl.fromTo("#stove", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 0.3);
+  centers.forEach((_, i) => {
+    tl.fromTo(`#b${i}`, { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.8)" }, T.burners + i * 0.12);
+    tl.set([`#g${i}`, `#h${i}`], { opacity: 0 }, 0);
+  });
+  tl.set("#alert", { opacity: 0, scale: 0.3 }, 0);
+
+  // Phase A: the range.
+  tl.fromTo("#phA", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, T.burners + 0.4);
+  // Phase B: my span is three burners.
+  tl.to("#phA", { opacity: 0, y: -24, duration: 0.4 }, T.mySpan);
+  tl.fromTo("#phB", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, T.mySpan + 0.2);
+  [0, 1, 2].forEach((i) => {
+    const t = T.mySpan + 0.3 + i * 0.4;
+    tl.to(`#h${i}`, { opacity: 1, duration: 0.35 }, t);
+    tl.fromTo(`#g${i}`, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.6, ease: "power2.out" }, t);
+  });
+  // Phase C: a fourth burner overloads.
+  tl.to("#phB", { opacity: 0, y: -24, duration: 0.4 }, T.overload);
+  tl.fromTo("#phC", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, T.overload + 0.2);
+  tl.to("#h3", { opacity: 1, duration: 0.3 }, T.overload + 0.2);
+  tl.fromTo("#g3", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.6, ease: "power2.out" }, T.overload + 0.2);
+  tl.to("#alert", { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(2.5)" }, T.overload + 0.5);
+  tl.to("#alert", { scale: 1.18, duration: 0.45, yoyo: true, repeat: 9, ease: "sine.inOut" }, T.overload + 1.0);
+  tl.to("#g3", { opacity: 0.55, duration: 0.45, yoyo: true, repeat: 9, ease: "sine.inOut" }, T.overload + 1.0);
+  tl.fromTo("#subC2", { opacity: 0.0 }, { opacity: 1, duration: 0.5 }, T.burns - 0.2);
+
+  const numB = document.getElementById("numB");
+  M.register(tl, { duration: D, width: 1920, height: 1080 }, (t) => {
+    numB.textContent = Math.round(M.keys([[T.mySpan + 0.3, 0], [T.mySpan + 1.2, 3]], t));
+  });
+</script>
+</body>
+</html>

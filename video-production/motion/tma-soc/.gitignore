@@ -1,0 +1,3 @@
+# Renders and source shots stay out of git
+out/
+src/
